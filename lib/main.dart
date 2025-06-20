@@ -7,7 +7,7 @@ var globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -18,15 +18,16 @@ class MyApp extends StatelessWidget {
     return Sizer(
       builder: (context, orientation, deviceType) {
         return MaterialApp(
-          title: 'tran_s_application',
+          theme: theme,
+          title: 'Travel Concierge',
           debugShowCheckedModeBanner: false,
-          initialRoute: AppRoutes.initialRoute,
+          initialRoute: AppRoutes.travelExplorationScreen,
           routes: AppRoutes.routes,
           builder: (context, child) {
             return MediaQuery(
               data: MediaQuery.of(
                 context,
-              ).copyWith(textScaler: TextScaler.linear(1.0)),
+              ).copyWith(textScaler: const TextScaler.linear(1.0)),
               child: child!,
             );
           },

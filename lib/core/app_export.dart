@@ -1,8 +1,9 @@
-export '../routes/app_routes.dart';
-export '../theme/theme_helper.dart';
-export '../theme/text_style_helper.dart';
-export 'utils/image_constant.dart';
-export 'utils/size_utils.dart';
-export 'services/api_config.dart';
-export 'services/travel_concierge_service.dart';
-export 'models/api_models.dart';
+export 'package:travel_concierge/main.dart';
+export 'package:travel_concierge/theme/theme_helper.dart';
+export 'package:travel_concierge/theme/text_style_helper.dart';
+export 'package:travel_concierge/routes/app_routes.dart';
+export 'package:travel_concierge/core/utils/size_utils.dart';
+export 'package:travel_concierge/core/utils/image_constant.dart';
+export 'package:travel_concierge/core/services/api_config.dart';
+export 'package:travel_concierge/core/services/travel_concierge_service.dart';
+export 'package:travel_concierge/core/models/api_models.dart';

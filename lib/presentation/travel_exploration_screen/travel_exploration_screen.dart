@@ -18,7 +18,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TravelConciergeService _travelService = TravelConciergeService();
 
-  List<SearchResult> _searchResults = [];
+  final List<SearchResult> _searchResults = [];
   bool _isLoading = false;
   bool _isSearching = false;
   bool _sessionInitialized = false;
@@ -43,7 +43,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
 
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
               'Failed to connect to Travel Concierge. Please check if the server is running.'),
           backgroundColor: Colors.red,
@@ -107,7 +107,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFFFFFFFF), appTheme.colorFFFAFA],
+                      colors: [const Color(0xFFFFFFFF), appTheme.colorFFFAFA],
                     ),
                   ),
                   child: Column(
@@ -149,7 +149,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                 "Find your next trip",
                 style: TextStyleHelper.instance.title16Medium,
               ),
-              Spacer(),
+              const Spacer(),
               if (_sessionInitialized)
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 4.h),
@@ -157,7 +157,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                     color: Colors.green.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8.h),
                   ),
-                  child: Text(
+                  child: const Text(
                     'AI Connected',
                     style: TextStyle(
                       color: Colors.green,
@@ -243,7 +243,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                   ? SizedBox(
                       width: 20.h,
                       height: 20.h,
-                      child: CircularProgressIndicator(
+                      child: const CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
                       ),
@@ -333,7 +333,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 4,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -481,7 +481,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
           padding: EdgeInsets.symmetric(horizontal: 24.h),
           child: GridView.builder(
             shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               mainAxisSpacing: 16.h,

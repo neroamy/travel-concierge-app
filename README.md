@@ -40,7 +40,7 @@ To add new routes to the application, update the `lib/routes/app_routes.dart` fi
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:package_name/presentation/home_screen/home_screen.dart';
+import 'package:package_name/presentation/itinerary_screen/itinerary_screen.dart';
 
 class AppRoutes {
   static const String initial = '/';
@@ -48,7 +48,7 @@ class AppRoutes {
 
   static Map<String, WidgetBuilder> routes = {
     initial: (context) => const SplashScreen(),
-    home: (context) => const HomeScreen(),
+    home: (context) => const ItineraryScreen(),
     // Add more routes as needed
   }
 }

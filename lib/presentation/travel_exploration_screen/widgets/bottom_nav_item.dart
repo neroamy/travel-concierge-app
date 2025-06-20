@@ -20,7 +20,7 @@ class BottomNavItem extends StatelessWidget {
           item.label ?? '',
           style: TextStyleHelper.instance.body14.copyWith(
             color: (item.isSelected ?? false)
-                ? Color(0xFF0373F3)
+                ? const Color(0xFF0373F3)
                 : appTheme.colorFFBCBC,
           ),
         ),
