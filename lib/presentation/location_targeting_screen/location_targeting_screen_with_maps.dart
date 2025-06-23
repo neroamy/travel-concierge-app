@@ -605,18 +605,17 @@ class _LocationTargetingScreenWithMapsState
     }).toList();
   }
 
-  /// Navigate to location details screen
+  /// Navigate to itinerary screen when location is selected
   void _navigateToLocationDetails(LocationCardModel location) {
+    // Navigate to itinerary screen as specified in requirements
     Navigator.pushNamed(
       context,
-      AppRoutes.attractionDetailsScreen,
+      AppRoutes.itineraryScreen,
       arguments: {
-        'attractionName': location.title,
-        'description':
-            'Discover the beauty of ${location.title}. Experience luxury accommodation with stunning views and world-class amenities.',
-        'rating': location.rating.toDouble(),
-        'reviews': 120 + (location.title.hashCode.abs() % 180),
-        'imagePath': location.image,
+        'selectedLocation': location.title,
+        'locationImage': location.image,
+        'locationPrice': location.price,
+        'locationRating': location.rating,
       },
     );
   }

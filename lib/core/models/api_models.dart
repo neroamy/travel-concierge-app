@@ -146,3 +146,199 @@ class SearchResult {
     this.functionResponses = const [],
   });
 }
+
+/// Itinerary models for AI agent integration
+class ItineraryRequest {
+  final String destination;
+  final String category;
+  final int days;
+  final Map<String, dynamic>? preferences;
+
+  ItineraryRequest({
+    required this.destination,
+    required this.category,
+    required this.days,
+    this.preferences,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'destination': destination,
+      'category': category,
+      'days': days,
+      'preferences': preferences ?? {},
+    };
+  }
+}
+
+class ItineraryResponse {
+  final List<ItineraryDay> days;
+  final String destination;
+  final Map<String, dynamic> metadata;
+
+  ItineraryResponse({
+    required this.days,
+    required this.destination,
+    required this.metadata,
+  });
+
+  factory ItineraryResponse.fromJson(Map<String, dynamic> json) {
+    final List<dynamic> daysJson = json['days'] ?? [];
+    final List<ItineraryDay> days =
+        daysJson.map((dayJson) => ItineraryDay.fromJson(dayJson)).toList();
+
+    return ItineraryResponse(
+      days: days,
+      destination: json['destination'] ?? '',
+      metadata: json['metadata'] ?? {},
+    );
+  }
+}
+
+class ItineraryDay {
+  final int day;
+  final String date;
+  final List<ItineraryActivity> activities;
+
+  ItineraryDay({
+    required this.day,
+    required this.date,
+    required this.activities,
+  });
+
+  factory ItineraryDay.fromJson(Map<String, dynamic> json) {
+    final List<dynamic> activitiesJson = json['activities'] ?? [];
+    final List<ItineraryActivity> activities = activitiesJson
+        .map((activityJson) => ItineraryActivity.fromJson(activityJson))
+        .toList();
+
+    return ItineraryDay(
+      day: json['day'] ?? 0,
+      date: json['date'] ?? '',
+      activities: activities,
+    );
+  }
+}
+
+class ItineraryActivity {
+  final String time;
+  final String title;
+  final String description;
+  final String location;
+  final WeatherInfo? weather;
+  final ActivityType type;
+
+  ItineraryActivity({
+    required this.time,
+    required this.title,
+    required this.description,
+    required this.location,
+    this.weather,
+    required this.type,
+  });
+
+  factory ItineraryActivity.fromJson(Map<String, dynamic> json) {
+    return ItineraryActivity(
+      time: json['time'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      location: json['location'] ?? '',
+      weather: json['weather'] != null
+          ? WeatherInfo.fromJson(json['weather'])
+          : null,
+      type: ActivityType.fromString(json['type'] ?? 'activity'),
+    );
+  }
+}
+
+class WeatherInfo {
+  final String condition;
+  final String icon;
+  final double temperature;
+  final String description;
+
+  WeatherInfo({
+    required this.condition,
+    required this.icon,
+    required this.temperature,
+    required this.description,
+  });
+
+  factory WeatherInfo.fromJson(Map<String, dynamic> json) {
+    return WeatherInfo(
+      condition: json['condition'] ?? '',
+      icon: json['icon'] ?? '☀️',
+      temperature: (json['temperature'] ?? 0).toDouble(),
+      description: json['description'] ?? '',
+    );
+  }
+}
+
+enum ActivityType {
+  sightseeing,
+  dining,
+  adventure,
+  relaxation,
+  cultural,
+  nightlife,
+  transportation;
+
+  static ActivityType fromString(String value) {
+    switch (value.toLowerCase()) {
+      case 'sightseeing':
+        return ActivityType.sightseeing;
+      case 'dining':
+        return ActivityType.dining;
+      case 'adventure':
+        return ActivityType.adventure;
+      case 'relaxation':
+        return ActivityType.relaxation;
+      case 'cultural':
+        return ActivityType.cultural;
+      case 'nightlife':
+        return ActivityType.nightlife;
+      case 'transportation':
+        return ActivityType.transportation;
+      default:
+        return ActivityType.sightseeing;
+    }
+  }
+
+  String get displayName {
+    switch (this) {
+      case ActivityType.sightseeing:
+        return 'Sightseeing';
+      case ActivityType.dining:
+        return 'Dining';
+      case ActivityType.adventure:
+        return 'Adventure';
+      case ActivityType.relaxation:
+        return 'Relaxation';
+      case ActivityType.cultural:
+        return 'Cultural';
+      case ActivityType.nightlife:
+        return 'Nightlife';
+      case ActivityType.transportation:
+        return 'Transportation';
+    }
+  }
+
+  String get icon {
+    switch (this) {
+      case ActivityType.sightseeing:
+        return '🏛️';
+      case ActivityType.dining:
+        return '🍽️';
+      case ActivityType.adventure:
+        return '⛰️';
+      case ActivityType.relaxation:
+        return '🧘';
+      case ActivityType.cultural:
+        return '🎭';
+      case ActivityType.nightlife:
+        return '🌃';
+      case ActivityType.transportation:
+        return '🚗';
+    }
+  }
+}

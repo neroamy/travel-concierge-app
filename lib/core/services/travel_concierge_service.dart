@@ -80,6 +80,143 @@ class TravelConciergeService {
     }
   }
 
+  /// Generate itinerary from AI agent
+  Stream<SearchResult> generateItinerary({
+    required String destination,
+    required String category,
+    required int days,
+    Map<String, dynamic>? preferences,
+  }) async* {
+    if (_sessionId == null || _userId == null) {
+      yield SearchResult(
+        text: 'Session not initialized. Please try again.',
+        author: 'system',
+        timestamp: DateTime.now(),
+      );
+      return;
+    }
+
+    try {
+      // Create itinerary request
+      final itineraryRequest = ItineraryRequest(
+        destination: destination,
+        category: category,
+        days: days,
+        preferences: preferences,
+      );
+
+      // Create query message for AI agent
+      final query = '''
+Please create a detailed ${days}-day itinerary for ${destination} with focus on ${category} activities.
+Request details: ${jsonEncode(itineraryRequest.toJson())}
+Include specific times, activities, locations, and weather information for each day.
+''';
+
+      yield* searchTravel(query);
+    } catch (e) {
+      yield SearchResult(
+        text: 'Error generating itinerary: $e',
+        author: 'system',
+        timestamp: DateTime.now(),
+      );
+    }
+  }
+
+  /// Get activity details from AI agent
+  Stream<SearchResult> getActivityDetails({
+    required String activityTitle,
+    required String location,
+    required String time,
+  }) async* {
+    if (_sessionId == null || _userId == null) {
+      yield SearchResult(
+        text: 'Session not initialized. Please try again.',
+        author: 'system',
+        timestamp: DateTime.now(),
+      );
+      return;
+    }
+
+    try {
+      final query = '''
+Please provide detailed information about the activity: ${activityTitle}
+Location: ${location}
+Scheduled time: ${time}
+Include: description, requirements, duration, cost, weather recommendations, and nearby attractions.
+''';
+
+      yield* searchTravel(query);
+    } catch (e) {
+      yield SearchResult(
+        text: 'Error getting activity details: $e',
+        author: 'system',
+        timestamp: DateTime.now(),
+      );
+    }
+  }
+
+  /// Get weather information for specific location and time
+  Stream<SearchResult> getWeatherInfo({
+    required String location,
+    required String date,
+    required String time,
+  }) async* {
+    if (_sessionId == null || _userId == null) {
+      yield SearchResult(
+        text: 'Session not initialized. Please try again.',
+        author: 'system',
+        timestamp: DateTime.now(),
+      );
+      return;
+    }
+
+    try {
+      final query = '''
+Please provide weather information for:
+Location: ${location}
+Date: ${date}
+Time: ${time}
+Include: temperature, conditions, rainfall probability, clothing recommendations, and activity suitability.
+''';
+
+      yield* searchTravel(query);
+    } catch (e) {
+      yield SearchResult(
+        text: 'Error getting weather information: $e',
+        author: 'system',
+        timestamp: DateTime.now(),
+      );
+    }
+  }
+
+  /// Save itinerary to user preferences
+  Future<bool> saveItinerary({
+    required ItineraryResponse itinerary,
+    Map<String, dynamic>? userPreferences,
+  }) async {
+    if (_sessionId == null || _userId == null) {
+      return false;
+    }
+
+    try {
+      // TODO: Implement actual save to backend
+      // For now, we'll simulate a successful save
+      print('Saving itinerary for ${itinerary.destination}');
+      print('Days: ${itinerary.days.length}');
+
+      // In a real implementation, this would:
+      // 1. Send POST request to save endpoint
+      // 2. Include user ID, session ID, and itinerary data
+      // 3. Handle response and return success/failure
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      return true;
+    } catch (e) {
+      print('Error saving itinerary: $e');
+      return false;
+    }
+  }
+
   /// Handle Server-Sent Events response
   Stream<SearchResult> _handleSSEResponse(
       http.StreamedResponse response) async* {
@@ -157,6 +294,8 @@ class TravelConciergeService {
         return '🏨 Found hotel options';
       case 'itinerary_agent':
         return '📅 Generated itinerary';
+      case 'weather_agent':
+        return '🌤️ Weather information updated';
       default:
         return null;
     }

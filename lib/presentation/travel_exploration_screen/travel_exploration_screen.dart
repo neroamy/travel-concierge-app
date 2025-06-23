@@ -41,14 +41,19 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
       _sessionInitialized = success;
     });
 
-    if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Failed to connect to Travel Concierge. Please check if the server is running.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    if (!success && mounted) {
+      // Use WidgetsBinding to ensure the frame is complete before showing snackbar
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Failed to connect to Travel Concierge. Please check if the server is running.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      });
     }
   }
 
