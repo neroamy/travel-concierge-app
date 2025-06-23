@@ -25,6 +25,11 @@ class ImageConstant {
   // Attraction Details Screen
   static String imgNordicCottage = '${_basePath}img_rectangle_465.png';
 
+  // Location Targeting Screen
+  static String imgMapBackground =
+      '${_basePath}img_rectangle_465.png'; // Placeholder for map background
+  static String imgLocationPin = '${_basePath}img_group_7.svg';
+
   // Custom Image View Screen
   static String imgImageNotFound = '${_basePath}image_not_found.png';
 }

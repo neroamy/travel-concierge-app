@@ -169,6 +169,16 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: appTheme.colorFF0373,
+        foregroundColor: appTheme.whiteCustom,
+        onPressed: () {
+          Navigator.pushNamed(
+              context, AppRoutes.locationTargetingScreenWithMaps);
+        },
+        tooltip: 'Location Map',
+        child: Icon(Icons.map_outlined, size: 24.h),
+      ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }
@@ -263,6 +273,28 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                       ),
                     ),
                 ],
+              ),
+            ),
+          ),
+          SizedBox(width: 12.h),
+          // Map Button
+          GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(
+                  context, AppRoutes.locationTargetingScreenWithMaps);
+            },
+            child: Container(
+              width: 52.h,
+              height: 52.h,
+              decoration: BoxDecoration(
+                color: appTheme.colorFF0373.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(26.h),
+                border: Border.all(color: appTheme.colorFF0373, width: 1.5),
+              ),
+              child: Icon(
+                Icons.map_outlined,
+                size: 24.h,
+                color: appTheme.colorFF0373,
               ),
             ),
           ),

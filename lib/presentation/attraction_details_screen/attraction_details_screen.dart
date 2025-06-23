@@ -282,7 +282,8 @@ class _AttractionDetailsScreenState extends State<AttractionDetailsScreen> {
         Expanded(
           child: GestureDetector(
             onTap: () {
-              _showSnackBar("Viewing other attractions...");
+              Navigator.pushNamed(
+                  context, AppRoutes.locationTargetingScreenWithMaps);
             },
             child: Container(
               height: 54.h,
@@ -292,7 +293,7 @@ class _AttractionDetailsScreenState extends State<AttractionDetailsScreen> {
               ),
               child: Center(
                 child: Text(
-                  "View other",
+                  "Explore Map",
                   style: TextStyle(
                     fontSize: 16.fSize,
                     fontWeight: FontWeight.w500,

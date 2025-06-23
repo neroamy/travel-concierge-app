@@ -15,6 +15,11 @@ dependencies:
   http: ^1.1.0
   cached_network_image: ^3.3.1
   flutter_svg: ^2.0.10+1
+  google_maps_flutter: ^2.7.0
+  google_places_flutter: ^2.0.9
+  geocoding: ^2.1.1
+  geolocator: ^10.1.0
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
