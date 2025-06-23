@@ -22,6 +22,9 @@ class ImageConstant {
   static String imgRectangle465200x142 =
       '${_basePath}img_rectangle_465_200x142.png';
 
+  // Attraction Details Screen
+  static String imgNordicCottage = '${_basePath}img_rectangle_465.png';
+
   // Custom Image View Screen
   static String imgImageNotFound = '${_basePath}image_not_found.png';
 }

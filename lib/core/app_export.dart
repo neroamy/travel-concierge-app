@@ -7,3 +7,4 @@ export 'package:travel_concierge/core/utils/image_constant.dart';
 export 'package:travel_concierge/core/services/api_config.dart';
 export 'package:travel_concierge/core/services/travel_concierge_service.dart';
 export 'package:travel_concierge/core/models/api_models.dart';
+export 'package:travel_concierge/presentation/attraction_details_screen/attraction_details_screen.dart';

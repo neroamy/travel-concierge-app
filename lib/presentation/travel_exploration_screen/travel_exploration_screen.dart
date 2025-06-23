@@ -93,6 +93,42 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
     });
   }
 
+  void _navigateToAttractionDetails(LocationCategoryModel category) {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.attractionDetailsScreen,
+      arguments: {
+        'attractionName': category.name ?? 'Unknown Location',
+        'description':
+            'Discover the beauty of ${category.name ?? 'this amazing location'}. With ${category.locationCount ?? 'multiple locations'} to explore, you\'ll find endless opportunities for adventure and relaxation.',
+        'rating': 4.5 +
+            ((category.name?.hashCode.abs() ?? 0) % 10) /
+                20, // Dynamic rating based on name
+        'reviews': 50 +
+            ((category.name?.hashCode.abs() ?? 0) %
+                200), // Dynamic review count
+        'imagePath': category.image ?? ImageConstant.imgNordicCottage,
+      },
+    );
+  }
+
+  void _navigateToDestinationDetails(TravelDestinationModel destination) {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.attractionDetailsScreen,
+      arguments: {
+        'attractionName': destination.name ?? 'Amazing Destination',
+        'description':
+            'Experience the breathtaking beauty of ${destination.name ?? 'this incredible destination'}. From stunning landscapes to rich culture, this destination offers unforgettable adventures and memories that will last a lifetime.',
+        'rating': double.tryParse(destination.rating ?? '4.8') ?? 4.8,
+        'reviews': 120 +
+            ((destination.name?.hashCode.abs() ?? 0) %
+                180), // Dynamic review count
+        'imagePath': destination.image ?? ImageConstant.imgNordicCottage,
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -438,6 +474,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
               return TravelDestinationCard(
                 destination: destinations[index],
                 width: 230.h,
+                onTap: () => _navigateToDestinationDetails(destinations[index]),
               );
             },
           ),
@@ -490,14 +527,20 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
             ),
             itemCount: 2,
             itemBuilder: (context, index) {
-              return LocationCategoryCard(category: categories[index]);
+              return LocationCategoryCard(
+                category: categories[index],
+                onTap: () => _navigateToAttractionDetails(categories[index]),
+              );
             },
           ),
         ),
         SizedBox(height: 16.h),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.h),
-          child: LocationCategoryCard(category: categories[2]),
+          child: LocationCategoryCard(
+            category: categories[2],
+            onTap: () => _navigateToAttractionDetails(categories[2]),
+          ),
         ),
       ],
     );
