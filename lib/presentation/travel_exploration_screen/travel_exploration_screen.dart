@@ -18,9 +18,6 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TravelConciergeService _travelService = TravelConciergeService();
 
-  final List<SearchResult> _searchResults = [];
-  bool _isLoading = false;
-  bool _isSearching = false;
   bool _sessionInitialized = false;
 
   @override
@@ -58,44 +55,110 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
   }
 
   void _onSearchSubmitted(String query) {
-    if (query.trim().isEmpty || !_sessionInitialized) return;
+    if (query.trim().isEmpty) return;
 
-    setState(() {
-      _isLoading = true;
-      _isSearching = true;
-      _searchResults.clear();
-    });
+    print('🚀 Navigating to AI Chat with query: "$query"');
 
-    _travelService.searchTravel(query).listen(
-      (result) {
-        setState(() {
-          _searchResults.add(result);
-        });
-      },
-      onDone: () {
-        setState(() {
-          _isLoading = false;
-        });
-      },
-      onError: (error) {
-        setState(() {
-          _isLoading = false;
-          _searchResults.add(SearchResult(
-            text: 'Error: $error',
-            author: 'system',
-            timestamp: DateTime.now(),
-          ));
-        });
+    // Navigate to AI Chat Screen instead of direct search
+    Navigator.pushNamed(
+      context,
+      AppRoutes.aiChatScreen,
+      arguments: {
+        'initialQuery': query.trim(),
       },
     );
   }
 
-  void _clearSearch() {
-    setState(() {
-      _isSearching = false;
-      _searchResults.clear();
-      _searchController.clear();
-    });
+  void _showSearchingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(color: appTheme.colorFF0373),
+            SizedBox(width: 16.h),
+            const Text('Searching locations...'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _performSearch(String query) async {
+    try {
+      // Use the AI service to search
+      final searchResults = <PlaceSearchResult>[];
+
+      print('🔍 Starting search for: "$query"');
+
+      await for (final result in _travelService.searchTravel(query)) {
+        print('📡 Received result from API:');
+        print('   Author: ${result.author}');
+        print('   Text length: ${result.text.length}');
+        print('   Content: ${result.text}');
+        print('---');
+
+        if (result.author != 'system' && result.author != 'user') {
+          // This is the AI response with place data
+          print('🎯 Processing AI response...');
+          final places = ResponseParser.parseAIResponse(result.text);
+          print('✅ Parsed ${places.length} places from response');
+
+          for (int i = 0; i < places.length; i++) {
+            final place = places[i];
+            print('📍 Place $i:');
+            print('   Title: ${place.title}');
+            print('   Address: ${place.address}');
+            print('   Highlights: ${place.highlights}');
+            print('   Rating: ${place.rating}');
+            print('   Coordinates: ${place.latitude}, ${place.longitude}');
+            print('   Google Maps URL: ${place.googleMapsUrl}');
+          }
+
+          searchResults.addAll(places);
+          break; // Take the first AI response
+        }
+      }
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.of(context).pop();
+
+        if (searchResults.isNotEmpty) {
+          // Navigate to maps screen with search results
+          Navigator.pushNamed(
+            context,
+            AppRoutes.locationTargetingScreenWithMaps,
+            arguments: {
+              'searchQuery': query,
+              'searchResults': searchResults,
+            },
+          );
+        } else {
+          // No results found
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('No locations found for "$query"'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Close loading dialog and show error
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('Error: Could not get information from Google Maps API'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      print('Search error: $e');
+    }
   }
 
   void _navigateToAttractionDetails(LocationCategoryModel category) {
@@ -156,15 +219,8 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                     children: [
                       _buildHeaderSection(),
                       _buildSearchSection(),
-
-                      // Show search results if searching, otherwise show default content
-                      if (_isSearching)
-                        _buildSearchResultsSection()
-                      else ...[
-                        _buildHorizontalLocationSection(),
-                        _buildGridLocationSection(),
-                      ],
-
+                      _buildHorizontalLocationSection(),
+                      _buildGridLocationSection(),
                       SizedBox(height: 100.h),
                     ],
                   ),
@@ -173,16 +229,6 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: appTheme.colorFF0373,
-        foregroundColor: appTheme.whiteCustom,
-        onPressed: () {
-          Navigator.pushNamed(
-              context, AppRoutes.locationTargetingScreenWithMaps);
-        },
-        tooltip: 'Location Map',
-        child: Icon(Icons.map_outlined, size: 24.h),
       ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
@@ -221,7 +267,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
           ),
           SizedBox(height: 4.h),
           Text(
-            _isSearching ? "Search Results" : "Nordic scenery",
+            "Nordic scenery",
             style: TextStyleHelper.instance.headline26SemiBold,
           ),
         ],
@@ -245,29 +291,50 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
               child: Row(
                 children: [
                   SizedBox(width: 16.h),
-                  CustomImageView(
-                    imagePath: ImageConstant.imgGroup7,
-                    height: 24.h,
-                    width: 24.h,
+                  Icon(
+                    Icons.search,
+                    color: Colors.grey,
+                    size: 24.h,
                   ),
                   SizedBox(width: 12.h),
                   Expanded(
                     child: TextField(
                       controller: _searchController,
                       decoration: InputDecoration(
-                        hintText:
-                            "Ask about travel destinations, planning, booking...",
-                        hintStyle: TextStyleHelper.instance.title16,
+                        hintText: "Search destinations, places, activities...",
+                        hintStyle: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                          fontFamily: 'Poppins',
+                        ),
                         border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 15.h),
+                      ),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Poppins',
+                        color: Colors.black,
                       ),
                       textInputAction: TextInputAction.search,
                       onSubmitted: _onSearchSubmitted,
-                      enabled: _sessionInitialized && !_isLoading,
+                      onTap: () {
+                        // Debug: Show snackbar when tapped
+                        print('TextField tapped!');
+                      },
+                      onChanged: (value) {
+                        // Debug: Print when text changes
+                        print('Text changed: $value');
+                        setState(() {}); // Update UI for clear button
+                      },
                     ),
                   ),
-                  if (_isSearching)
+                  if (_searchController.text.isNotEmpty)
                     GestureDetector(
-                      onTap: _clearSearch,
+                      onTap: () {
+                        print('Clear button tapped!');
+                        _searchController.clear();
+                        setState(() {});
+                      },
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8.h),
                         child: Icon(
@@ -282,191 +349,36 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
             ),
           ),
           SizedBox(width: 12.h),
-          // Map Button
+          // Search Button
           GestureDetector(
             onTap: () {
-              Navigator.pushNamed(
-                  context, AppRoutes.locationTargetingScreenWithMaps);
+              print('Search button tapped! Query: ${_searchController.text}');
+              final query = _searchController.text.trim();
+              if (query.isNotEmpty) {
+                _onSearchSubmitted(query);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter search text')),
+                );
+              }
             },
             child: Container(
               width: 52.h,
               height: 52.h,
               decoration: BoxDecoration(
-                color: appTheme.colorFF0373.withOpacity(0.1),
+                color: appTheme.colorFF0373,
                 borderRadius: BorderRadius.circular(26.h),
-                border: Border.all(color: appTheme.colorFF0373, width: 1.5),
               ),
               child: Icon(
-                Icons.map_outlined,
+                Icons.search,
+                color: Colors.white,
                 size: 24.h,
-                color: appTheme.colorFF0373,
               ),
-            ),
-          ),
-          SizedBox(width: 12.h),
-          Container(
-            width: 52.h,
-            height: 52.h,
-            decoration: BoxDecoration(
-              color: appTheme.colorFF0373,
-              borderRadius: BorderRadius.circular(26.h),
-            ),
-            child: Center(
-              child: _isLoading
-                  ? SizedBox(
-                      width: 20.h,
-                      height: 20.h,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : CustomImageView(
-                      imagePath: ImageConstant.imgGroup104,
-                      height: 24.h,
-                      width: 24.h,
-                    ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  Widget _buildSearchResultsSection() {
-    if (_searchResults.isEmpty && _isLoading) {
-      return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.h, vertical: 40.h),
-        child: Center(
-          child: Column(
-            children: [
-              CircularProgressIndicator(color: appTheme.colorFF0373),
-              SizedBox(height: 16.h),
-              Text(
-                'Travel Concierge is thinking...',
-                style: TextStyleHelper.instance.title16,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24.h, vertical: 16.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ...(_searchResults
-              .map((result) => _buildSearchResultCard(result))
-              .toList()),
-          if (_isLoading)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 16.h,
-                    height: 16.h,
-                    child: CircularProgressIndicator(
-                      color: appTheme.colorFF0373,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                  SizedBox(width: 12.h),
-                  Text(
-                    'Getting more information...',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchResultCard(SearchResult result) {
-    final isSystem = result.author == 'system';
-    final isAgent = result.author != 'system' && result.author != 'user';
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(16.h),
-      decoration: BoxDecoration(
-        color: isSystem ? Colors.blue.withOpacity(0.05) : Colors.white,
-        borderRadius: BorderRadius.circular(12.h),
-        border: Border.all(
-          color: isSystem ? Colors.blue.withOpacity(0.2) : appTheme.colorFFE9E9,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (isAgent)
-            Row(
-              children: [
-                Icon(
-                  Icons.smart_toy,
-                  size: 16.h,
-                  color: appTheme.colorFF0373,
-                ),
-                SizedBox(width: 8.h),
-                Text(
-                  result.author,
-                  style: TextStyle(
-                    color: appTheme.colorFF0373,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          if (isAgent) SizedBox(height: 8.h),
-          Text(
-            result.text,
-            style: TextStyle(
-              fontSize: 14,
-              color: isSystem ? Colors.blue[700] : Colors.black87,
-              fontWeight: isSystem ? FontWeight.w500 : FontWeight.normal,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            _formatTime(result.timestamp),
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatTime(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inMinutes < 1) {
-      return 'Just now';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours}h ago';
-    } else {
-      return '${difference.inDays}d ago';
-    }
   }
 
   Widget _buildHorizontalLocationSection() {

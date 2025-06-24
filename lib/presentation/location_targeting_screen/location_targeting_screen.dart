@@ -17,12 +17,101 @@ class _LocationTargetingScreenState extends State<LocationTargetingScreen> {
   final TextEditingController _searchController = TextEditingController();
   final PageController _pageController = PageController();
   int _currentCardIndex = 0;
+  String? _searchQuery;
+  List<LocationCardModel> _searchResults = [];
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Check if we have search arguments
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null && args['searchQuery'] != null) {
+        _searchQuery = args['searchQuery'];
+        _searchController.text = _searchQuery!;
+        _performSearch(_searchQuery!);
+      }
+    });
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _performSearch(String query) {
+    setState(() {
+      _isLoading = true;
+      _searchResults.clear();
+    });
+
+    // Simulate search results based on query
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+
+      List<LocationCardModel> mockResults = _generateSearchResults(query);
+
+      setState(() {
+        _searchResults = mockResults;
+        _isLoading = false;
+      });
+    });
+  }
+
+  List<LocationCardModel> _generateSearchResults(String query) {
+    // Mock search results based on query
+    final allLocations = [
+      LocationCardModel.legacy(
+        title: "Sunset evening avenue",
+        image: ImageConstant.imgRectangle465,
+        price: "\$299 / night",
+        rating: 4,
+        isFavorited: false,
+      ),
+      LocationCardModel.legacy(
+        title: "Hanging bridge resort",
+        image: ImageConstant.imgRectangle464,
+        price: "\$199 / night",
+        rating: 4,
+        isFavorited: true,
+      ),
+      LocationCardModel.legacy(
+        title: "Mountain view lodge",
+        image: ImageConstant.imgRectangle463,
+        price: "\$399 / night",
+        rating: 5,
+        isFavorited: false,
+      ),
+      LocationCardModel.legacy(
+        title: "Beach paradise resort",
+        image: ImageConstant.imgRectangle462,
+        price: "\$459 / night",
+        rating: 5,
+        isFavorited: false,
+      ),
+      LocationCardModel.legacy(
+        title: "Nordic winter cabin",
+        image: ImageConstant.imgRectangle465,
+        price: "\$199 / night",
+        rating: 4,
+        isFavorited: false,
+      ),
+    ];
+
+    // Filter based on search query
+    if (query.toLowerCase().contains('beach')) {
+      return [allLocations[3], allLocations[0]];
+    } else if (query.toLowerCase().contains('mountain')) {
+      return [allLocations[2], allLocations[4]];
+    } else if (query.toLowerCase().contains('resort')) {
+      return [allLocations[1], allLocations[3]];
+    } else {
+      return allLocations.take(3).toList();
+    }
   }
 
   @override
@@ -164,7 +253,7 @@ class _LocationTargetingScreenState extends State<LocationTargetingScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: "Search...",
+                hintText: "Search locations...",
                 hintStyle: TextStyle(
                   fontSize: 16.fSize,
                   color: const Color(0xFFAEAEAE),
@@ -177,6 +266,28 @@ class _LocationTargetingScreenState extends State<LocationTargetingScreen> {
                 fontSize: 16.fSize,
                 color: appTheme.blackCustom,
                 fontFamily: 'Poppins',
+              ),
+              onSubmitted: (query) {
+                if (query.trim().isNotEmpty) {
+                  _performSearch(query);
+                }
+              },
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              final query = _searchController.text.trim();
+              if (query.isNotEmpty) {
+                _performSearch(query);
+              }
+            },
+            child: Container(
+              margin: EdgeInsets.only(right: 8.h),
+              padding: EdgeInsets.all(8.h),
+              child: Icon(
+                Icons.search,
+                color: appTheme.colorFF0373,
+                size: 20.h,
               ),
             ),
           ),
@@ -230,7 +341,9 @@ class _LocationTargetingScreenState extends State<LocationTargetingScreen> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 25.h),
               child: Text(
-                "Location targeting",
+                _searchQuery != null
+                    ? "Search Results for \"$_searchQuery\""
+                    : "Location targeting",
                 style: TextStyle(
                   fontSize: 24.fSize,
                   fontWeight: FontWeight.w600,
@@ -252,29 +365,58 @@ class _LocationTargetingScreenState extends State<LocationTargetingScreen> {
 
   /// Builds the horizontal scrollable location cards
   Widget _buildLocationCards() {
-    final List<LocationCardModel> locations = [
-      LocationCardModel(
-        title: "Sunset evening avenue",
-        image: ImageConstant.imgRectangle465,
-        price: "\$299 / night",
-        rating: 4,
-        isFavorited: false,
-      ),
-      LocationCardModel(
-        title: "Hanging bridge resort",
-        image: ImageConstant.imgRectangle464,
-        price: "\$199 / night",
-        rating: 4,
-        isFavorited: true,
-      ),
-      LocationCardModel(
-        title: "Mountain view lodge",
-        image: ImageConstant.imgRectangle463,
-        price: "\$399 / night",
-        rating: 5,
-        isFavorited: false,
-      ),
-    ];
+    if (_isLoading) {
+      return SizedBox(
+        height: 166.h,
+        child: Center(
+          child: CircularProgressIndicator(
+            color: appTheme.colorFF0373,
+          ),
+        ),
+      );
+    }
+
+    final List<LocationCardModel> locations = _searchResults.isNotEmpty
+        ? _searchResults
+        : [
+            LocationCardModel.legacy(
+              title: "Sunset evening avenue",
+              image: ImageConstant.imgRectangle465,
+              price: "\$299 / night",
+              rating: 4,
+              isFavorited: false,
+            ),
+            LocationCardModel.legacy(
+              title: "Hanging bridge resort",
+              image: ImageConstant.imgRectangle464,
+              price: "\$199 / night",
+              rating: 4,
+              isFavorited: true,
+            ),
+            LocationCardModel.legacy(
+              title: "Mountain view lodge",
+              image: ImageConstant.imgRectangle463,
+              price: "\$399 / night",
+              rating: 5,
+              isFavorited: false,
+            ),
+          ];
+
+    if (locations.isEmpty) {
+      return SizedBox(
+        height: 166.h,
+        child: Center(
+          child: Text(
+            "No locations found for \"$_searchQuery\"",
+            style: TextStyle(
+              fontSize: 16.fSize,
+              color: Colors.grey,
+              fontFamily: 'Poppins',
+            ),
+          ),
+        ),
+      );
+    }
 
     return SizedBox(
       height: 166.h,
@@ -312,7 +454,8 @@ class _LocationTargetingScreenState extends State<LocationTargetingScreen> {
       arguments: {
         'selectedLocation': location.title,
         'locationImage': location.image,
-        'locationPrice': location.price,
+        'locationPrice':
+            location.address, // address contains the price for legacy data
         'locationRating': location.rating,
       },
     );

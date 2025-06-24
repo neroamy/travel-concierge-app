@@ -1,7 +1,10 @@
 /// API Configuration for Travel Concierge Client
 class ApiConfig {
   // Server Configuration
-  static const String baseUrl = 'http://127.0.0.1:8000';
+  // NOTE: Use PC's IP address when testing on real device
+  // To find PC IP: run 'ipconfig' in cmd and look for Wi-Fi adapter IPv4 Address
+  // Make sure PC and mobile device are on the same Wi-Fi network
+  static const String baseUrl = 'http://192.168.1.7:8002';
   static const String appName = 'travel_concierge';
 
   // Endpoints
@@ -36,5 +39,10 @@ class ApiConfig {
   // Build API docs URL
   static String getDocsUrl() {
     return '$baseUrl$docsEndpoint';
+  }
+
+  // Helper method to test connection
+  static String getHealthCheckUrl() {
+    return '$baseUrl/health';
   }
 }

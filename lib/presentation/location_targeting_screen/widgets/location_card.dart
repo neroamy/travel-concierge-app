@@ -3,24 +3,58 @@ import 'package:flutter/material.dart';
 import '../../../core/app_export.dart';
 import '../../../widgets/custom_image_view.dart';
 
-/// Model class for location cards
+/// Model class for location cards with new format
 class LocationCardModel {
   final String title;
-  final String image;
-  final String price;
-  final int rating;
-  final bool isFavorited;
+  final String address;
+  final String highlights;
+  final double rating;
+  final String? image;
+  final double? latitude;
+  final double? longitude;
 
   LocationCardModel({
     required this.title,
-    required this.image,
-    required this.price,
+    required this.address,
+    required this.highlights,
     required this.rating,
-    required this.isFavorited,
+    this.image,
+    this.latitude,
+    this.longitude,
   });
+
+  // Factory constructor for API data
+  factory LocationCardModel.fromPlaceSearchResult(PlaceSearchResult place) {
+    return LocationCardModel(
+      title: place.title,
+      address: place.address,
+      highlights: place.highlights,
+      rating: place.rating,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      image: null, // Will use default placeholder
+    );
+  }
+
+  // Factory constructor for legacy data (backward compatibility)
+  factory LocationCardModel.legacy({
+    required String title,
+    required String image,
+    required String price,
+    required int rating,
+    required bool isFavorited,
+  }) {
+    return LocationCardModel(
+      title: title,
+      address: price, // Use price as address for legacy
+      highlights: 'Legacy location',
+      rating: rating.toDouble(),
+      image: image,
+    );
+  }
 }
 
-/// Widget for displaying location card with image, title, rating, and price
+/// Widget for displaying location card with new format
 class LocationCard extends StatelessWidget {
   final LocationCardModel location;
   final VoidCallback? onTap;
@@ -90,7 +124,8 @@ class LocationCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8.h),
         child: CustomImageView(
-          imagePath: location.image,
+          imagePath: location.image ??
+              ImageConstant.imgRectangle464, // Default placeholder
           fit: BoxFit.cover,
           width: 80.h,
           height: 140.h,
@@ -109,15 +144,20 @@ class LocationCard extends StatelessWidget {
         // Location Title
         _buildLocationTitle(),
 
-        SizedBox(height: 16.h),
+        SizedBox(height: 8.h),
+
+        // Address
+        _buildAddressSection(),
+
+        SizedBox(height: 8.h),
+
+        // Highlights
+        _buildHighlightsSection(),
+
+        const Spacer(),
 
         // Rating Section
         _buildRatingSection(),
-
-        SizedBox(height: 12.h),
-
-        // Price Section with Favorite Button
-        _buildPriceSection(),
       ],
     );
   }
@@ -129,7 +169,7 @@ class LocationCard extends StatelessWidget {
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
-        fontSize: 16.fSize,
+        fontSize: 15.fSize,
         fontWeight: FontWeight.w600,
         fontFamily: 'Poppins',
         color: appTheme.blackCustom,
@@ -138,88 +178,91 @@ class LocationCard extends StatelessWidget {
     );
   }
 
-  /// Builds the rating section with stars
+  /// Builds the address section
+  Widget _buildAddressSection() {
+    return Row(
+      children: [
+        Icon(
+          Icons.location_on,
+          size: 12.h,
+          color: Colors.grey,
+        ),
+        SizedBox(width: 4.h),
+        Expanded(
+          child: Text(
+            location.address,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11.fSize,
+              fontWeight: FontWeight.w400,
+              fontFamily: 'Poppins',
+              color: Colors.grey[600],
+              height: 1.2,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Builds the highlights section
+  Widget _buildHighlightsSection() {
+    return Text(
+      location.highlights,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontSize: 12.fSize,
+        fontWeight: FontWeight.w400,
+        fontFamily: 'Poppins',
+        color: Colors.grey[700],
+        height: 1.3,
+      ),
+    );
+  }
+
+  /// Builds the rating section with number
   Widget _buildRatingSection() {
     return Row(
       children: [
-        // Star Rating
-        ...List.generate(5, (index) {
-          return Padding(
-            padding: EdgeInsets.only(right: 3.h),
-            child: Icon(
-              index < location.rating ? Icons.star : Icons.star_border,
-              size: 14.h,
-              color: index < location.rating
-                  ? const Color(0xFFFFB800)
-                  : const Color(0xFFE0E0E0),
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
-  /// Builds the price section with favorite button
-  Widget _buildPriceSection() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // "from" label
-              Text(
-                "from",
-                style: TextStyle(
-                  fontSize: 12.fSize,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: 'Poppins',
-                  color: const Color(0xFFAEAEAE),
-                ),
-              ),
-
-              SizedBox(height: 4.h),
-
-              // Price
-              Text(
-                location.price,
-                style: TextStyle(
-                  fontSize: 14.fSize,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Poppins',
-                  color: appTheme.blackCustom,
-                ),
-              ),
-            ],
+        Icon(
+          Icons.star,
+          size: 16.h,
+          color: const Color(0xFFFFB800),
+        ),
+        SizedBox(width: 4.h),
+        Text(
+          location.rating.toStringAsFixed(1),
+          style: TextStyle(
+            fontSize: 14.fSize,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Poppins',
+            color: appTheme.blackCustom,
           ),
         ),
-
-        // Favorite Button
-        _buildFavoriteButton(),
+        const Spacer(),
+        // Optional favorite button (can be removed if not needed)
+        if (onFavoriteToggle != null) _buildFavoriteButton(),
       ],
     );
   }
 
-  /// Builds the favorite button
+  /// Builds the favorite button (optional)
   Widget _buildFavoriteButton() {
     return GestureDetector(
       onTap: onFavoriteToggle,
       child: Container(
-        width: 34.h,
-        height: 34.h,
+        width: 28.h,
+        height: 28.h,
         decoration: BoxDecoration(
-          color: location.isFavorited
-              ? appTheme.colorFF0373.withOpacity(0.1)
-              : const Color(0xFFF5F5F5),
+          color: const Color(0xFFF5F5F5),
           shape: BoxShape.circle,
         ),
         child: Icon(
-          location.isFavorited ? Icons.favorite : Icons.favorite_border,
-          size: 16.h,
-          color: location.isFavorited
-              ? appTheme.colorFF0373
-              : const Color(0xFFAEAEAE),
+          Icons.favorite_border,
+          size: 14.h,
+          color: const Color(0xFFAEAEAE),
         ),
       ),
     );
