@@ -4,7 +4,7 @@ class ApiConfig {
   // NOTE: Use PC's IP address when testing on real device
   // To find PC IP: run 'ipconfig' in cmd and look for Wi-Fi adapter IPv4 Address
   // Make sure PC and mobile device are on the same Wi-Fi network
-  static const String baseUrl = 'http://192.168.1.7:8002';
+  static const String baseUrl = 'http://192.168.1.10:8002';
   static const String appName = 'travel_concierge';
 
   // Endpoints

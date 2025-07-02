@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
+import '../../widgets/floating_chat_button.dart';
 
 class ItineraryScreen extends StatefulWidget {
   const ItineraryScreen({super.key});
@@ -44,24 +45,30 @@ class _ItineraryScreenState extends State<ItineraryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: appTheme.whiteCustom,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeaderSection(),
-                    _buildFeaturedDestination(),
-                    _buildScheduleSection(),
-                    SizedBox(height: 100.h), // Space for bottom nav
-                  ],
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHeaderSection(),
+                        _buildFeaturedDestination(),
+                        _buildScheduleSection(),
+                        SizedBox(height: 100.h), // Space for bottom nav
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+          // Floating Chat Button
+          const FloatingChatButton(),
+        ],
       ),
       bottomNavigationBar: _buildBottomNavBar(),
     );

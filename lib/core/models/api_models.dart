@@ -623,3 +623,144 @@ class AIResponseAnalyzer {
     return '${response.substring(0, 97)}...';
   }
 }
+
+/// User Profile models for Profile Settings
+class UserProfile {
+  final String id;
+  final String username;
+  final String email;
+  final String address;
+  final String interests; // sở thích
+  final String? avatarUrl;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  UserProfile({
+    required this.id,
+    required this.username,
+    required this.email,
+    required this.address,
+    required this.interests,
+    this.avatarUrl,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      id: json['id'] ?? '',
+      username: json['username'] ?? '',
+      email: json['email'] ?? '',
+      address: json['address'] ?? '',
+      interests: json['interests'] ?? '',
+      avatarUrl: json['avatar_url'],
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'email': email,
+      'address': address,
+      'interests': interests,
+      'avatar_url': avatarUrl,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+
+  /// Create a copy with updated fields
+  UserProfile copyWith({
+    String? id,
+    String? username,
+    String? email,
+    String? address,
+    String? interests,
+    String? avatarUrl,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return UserProfile(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      address: address ?? this.address,
+      interests: interests ?? this.interests,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+/// Profile update request model
+class ProfileUpdateRequest {
+  final String username;
+  final String email;
+  final String address;
+  final String interests;
+  final String? avatarUrl;
+
+  ProfileUpdateRequest({
+    required this.username,
+    required this.email,
+    required this.address,
+    required this.interests,
+    this.avatarUrl,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'username': username,
+      'email': email,
+      'address': address,
+      'interests': interests,
+      'avatar_url': avatarUrl,
+    };
+  }
+}
+
+/// Password change request model
+class PasswordChangeRequest {
+  final String currentPassword;
+  final String newPassword;
+  final String confirmPassword;
+
+  PasswordChangeRequest({
+    required this.currentPassword,
+    required this.newPassword,
+    required this.confirmPassword,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'current_password': currentPassword,
+      'new_password': newPassword,
+      'confirm_password': confirmPassword,
+    };
+  }
+}
+
+/// Profile API response model
+class ProfileApiResponse {
+  final bool success;
+  final String message;
+  final UserProfile? data;
+
+  ProfileApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ProfileApiResponse.fromJson(Map<String, dynamic> json) {
+    return ProfileApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'] != null ? UserProfile.fromJson(json['data']) : null,
+    );
+  }
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_export.dart';
 import '../../widgets/custom_image_view.dart';
+import '../../widgets/floating_chat_button.dart';
 import './widgets/bottom_nav_item.dart';
 import './widgets/location_category_card.dart';
 import './widgets/travel_destination_card.dart';
@@ -17,6 +18,8 @@ class TravelExplorationScreen extends StatefulWidget {
 class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TravelConciergeService _travelService = TravelConciergeService();
+  final GlobalChatService _globalChatService = GlobalChatService();
+  final ProfileService _profileService = ProfileService();
 
   bool _sessionInitialized = false;
 
@@ -24,6 +27,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
   void initState() {
     super.initState();
     _initializeSession();
+    _initializeProfile();
   }
 
   @override
@@ -33,7 +37,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
   }
 
   Future<void> _initializeSession() async {
-    final success = await _travelService.initializeSession();
+    final success = await _globalChatService.ensureSessionInitialized();
     setState(() {
       _sessionInitialized = success;
     });
@@ -54,17 +58,29 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
     }
   }
 
+  /// Initialize user profile
+  Future<void> _initializeProfile() async {
+    await _profileService.initializeProfile();
+    if (mounted) {
+      setState(() {
+        // Trigger UI refresh to show user avatar
+      });
+    }
+  }
+
   void _onSearchSubmitted(String query) {
     if (query.trim().isEmpty) return;
 
     print('🚀 Navigating to AI Chat with query: "$query"');
 
-    // Navigate to AI Chat Screen instead of direct search
+    // Navigate to AI Chat Screen with global session
     Navigator.pushNamed(
       context,
       AppRoutes.aiChatScreen,
       arguments: {
         'initialQuery': query.trim(),
+        'useGlobalSession': true,
+        'conversationHistory': _globalChatService.conversationHistory,
       },
     );
   }
@@ -200,35 +216,44 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SizedBox(
-        width: double.maxFinite,
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [const Color(0xFFFFFFFF), appTheme.colorFFFAFA],
+      body: Stack(
+        children: [
+          SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            const Color(0xFFFFFFFF),
+                            appTheme.colorFFFAFA
+                          ],
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHeaderSection(),
+                          _buildSearchSection(),
+                          _buildHorizontalLocationSection(),
+                          _buildGridLocationSection(),
+                          SizedBox(height: 100.h),
+                        ],
+                      ),
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeaderSection(),
-                      _buildSearchSection(),
-                      _buildHorizontalLocationSection(),
-                      _buildGridLocationSection(),
-                      SizedBox(height: 100.h),
-                    ],
-                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+          // Floating Chat Button
+          const FloatingChatButton(),
+        ],
       ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
@@ -242,33 +267,90 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
         children: [
           Row(
             children: [
-              Text(
-                "Find your next trip",
-                style: TextStyleHelper.instance.title16Medium,
+              // Left side content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Find your next trip",
+                      style: TextStyleHelper.instance.title16Medium,
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      "Nordic scenery",
+                      style: TextStyleHelper.instance.headline26SemiBold,
+                    ),
+                  ],
+                ),
               ),
-              const Spacer(),
-              if (_sessionInitialized)
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8.h),
-                  ),
-                  child: const Text(
-                    'AI Connected',
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
+
+              // Right side content
+              Column(
+                children: [
+                  // User Avatar - Clickable to navigate to Profile Settings
+                  GestureDetector(
+                    onTap: () async {
+                      // Initialize profile service if needed
+                      await _profileService.initializeProfile();
+
+                      // Navigate to Profile Settings
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.profileSettingsScreen,
+                      );
+                    },
+                    child: Container(
+                      width: 48.h,
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: appTheme.colorFF0373.withOpacity(0.1),
+                        border: Border.all(
+                          color: appTheme.colorFF0373.withOpacity(0.3),
+                          width: 2.h,
+                        ),
+                        image: _profileService.getAvatarUrl() != null
+                            ? DecorationImage(
+                                image: NetworkImage(
+                                    _profileService.getAvatarUrl()!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: _profileService.getAvatarUrl() == null
+                          ? Icon(
+                              Icons.person,
+                              color: appTheme.colorFF0373,
+                              size: 24.h,
+                            )
+                          : null,
                     ),
                   ),
-                ),
+
+                  SizedBox(height: 8.h),
+
+                  // AI Connection Status
+                  if (_sessionInitialized)
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.h, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8.h),
+                      ),
+                      child: const Text(
+                        'AI Connected',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ],
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            "Nordic scenery",
-            style: TextStyleHelper.instance.headline26SemiBold,
           ),
         ],
       ),
@@ -318,8 +400,17 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                       textInputAction: TextInputAction.search,
                       onSubmitted: _onSearchSubmitted,
                       onTap: () {
-                        // Debug: Show snackbar when tapped
-                        print('TextField tapped!');
+                        // Navigate to AI Chat Screen with global session when tapped
+                        print('🚀 Navigating to AI Chat from search field tap');
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.aiChatScreen,
+                          arguments: {
+                            'useGlobalSession': true,
+                            'conversationHistory':
+                                _globalChatService.conversationHistory,
+                          },
+                        );
                       },
                       onChanged: (value) {
                         // Debug: Print when text changes

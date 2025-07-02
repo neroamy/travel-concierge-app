@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import '../../core/app_export.dart';
 import '../../core/services/google_maps_service.dart';
 import '../../core/services/travel_concierge_service.dart';
+import '../../widgets/floating_chat_button.dart';
 import './widgets/location_card.dart';
 
 class LocationTargetingScreenWithMaps extends StatefulWidget {
@@ -240,6 +241,9 @@ class _LocationTargetingScreenWithMapsState
               _locationCards.isEmpty &&
               _currentSearchQuery != null)
             _buildNoResultsMessage(),
+
+          // Floating Chat Button
+          const FloatingChatButton(),
         ],
       ),
     );

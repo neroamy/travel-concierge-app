@@ -6,6 +6,7 @@ import '../presentation/location_targeting_screen/location_targeting_screen.dart
 import '../presentation/location_targeting_screen/location_targeting_screen_with_maps.dart';
 import '../presentation/weather_query_screen/weather_query_screen.dart';
 import '../presentation/ai_chat_screen/ai_chat_screen.dart';
+import '../presentation/profile_settings_screen/profile_settings_screen.dart';
 
 class AppRoutes {
   static const String travelExplorationScreen = '/travel_exploration_screen';
@@ -16,6 +17,7 @@ class AppRoutes {
       '/location_targeting_screen_with_maps';
   static const String weatherQueryScreen = '/weather_query_screen';
   static const String aiChatScreen = '/ai_chat_screen';
+  static const String profileSettingsScreen = '/profile_settings_screen';
   static const String initialRoute = '/initialRoute';
 
   static Map<String, WidgetBuilder> routes = {
@@ -27,6 +29,7 @@ class AppRoutes {
         const LocationTargetingScreenWithMaps(),
     weatherQueryScreen: (context) => const WeatherQueryScreen(),
     aiChatScreen: (context) => const AIChatScreen(),
+    profileSettingsScreen: (context) => const ProfileSettingsScreen(),
     initialRoute: (context) => const TravelExplorationScreen(),
   };
 }

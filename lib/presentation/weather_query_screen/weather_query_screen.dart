@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
+import '../../widgets/floating_chat_button.dart';
 
 class WeatherQueryScreen extends StatefulWidget {
   const WeatherQueryScreen({super.key});
@@ -59,19 +60,25 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: appTheme.whiteCustom,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildCategoryTabs(),
-            _buildDaySelector(),
-            Expanded(
-              child: _buildItineraryContent(),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                _buildCategoryTabs(),
+                _buildDaySelector(),
+                Expanded(
+                  child: _buildItineraryContent(),
+                ),
+                _buildViewItineraryButton(),
+                SizedBox(height: 16.h),
+              ],
             ),
-            _buildViewItineraryButton(),
-            SizedBox(height: 16.h),
-          ],
-        ),
+          ),
+          // Floating Chat Button
+          const FloatingChatButton(),
+        ],
       ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
