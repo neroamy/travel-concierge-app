@@ -7,8 +7,12 @@ import '../presentation/location_targeting_screen/location_targeting_screen_with
 import '../presentation/weather_query_screen/weather_query_screen.dart';
 import '../presentation/ai_chat_screen/ai_chat_screen.dart';
 import '../presentation/profile_settings_screen/profile_settings_screen.dart';
+import '../presentation/sign_in_screen/sign_in_screen.dart';
+import '../presentation/splash_screen/splash_screen.dart';
 
 class AppRoutes {
+  static const String splashScreen = '/splash_screen';
+  static const String signInScreen = '/sign_in_screen';
   static const String travelExplorationScreen = '/travel_exploration_screen';
   static const String itineraryScreen = '/itinerary_screen';
   static const String attractionDetailsScreen = '/attraction_details_screen';
@@ -21,6 +25,8 @@ class AppRoutes {
   static const String initialRoute = '/initialRoute';
 
   static Map<String, WidgetBuilder> routes = {
+    splashScreen: (context) => const SplashScreen(),
+    signInScreen: (context) => const SignInScreen(),
     itineraryScreen: (context) => const ItineraryScreen(),
     travelExplorationScreen: (context) => const TravelExplorationScreen(),
     attractionDetailsScreen: (context) => const AttractionDetailsScreen(),
@@ -30,6 +36,6 @@ class AppRoutes {
     weatherQueryScreen: (context) => const WeatherQueryScreen(),
     aiChatScreen: (context) => const AIChatScreen(),
     profileSettingsScreen: (context) => const ProfileSettingsScreen(),
-    initialRoute: (context) => const TravelExplorationScreen(),
+    initialRoute: (context) => const SplashScreen(),
   };
 }

@@ -108,6 +108,23 @@ class GlobalChatService {
     return _profileService.getAvatarUrl();
   }
 
+  /// Update user info for chat display
+  Future<void> updateUserInfo({
+    String? displayName,
+    String? avatarUrl,
+  }) async {
+    // This method will be used to update user info when auth changes
+    // The actual display will use ProfileService data
+    print('🔄 User info updated for chat: $displayName');
+  }
+
+  /// Clear session (for logout)
+  Future<void> clearSession() async {
+    _isSessionInitialized = false;
+    _conversationHistory.clear();
+    print('🗑️ Chat session cleared');
+  }
+
   /// Update chat messages with current profile info
   void syncProfileData() {
     // Update existing user messages to use current profile data

@@ -189,6 +189,37 @@ class ProfileService {
     );
   }
 
+  /// Update profile from authentication data
+  Future<void> updateProfileFromAuth({
+    required String username,
+    required String email,
+    String? fullName,
+    String? avatarUrl,
+    String? address,
+    List<String>? interests,
+  }) async {
+    try {
+      final now = DateTime.now();
+      _currentProfile = UserProfile(
+        id: _currentProfile?.id ?? 'user_${now.millisecondsSinceEpoch}',
+        username: username,
+        email: email,
+        address: address ?? _currentProfile?.address ?? 'Ha Noi, Viet Nam',
+        interests: interests?.join(', ') ??
+            _currentProfile?.interests ??
+            'Travel, Photography, Food',
+        avatarUrl: avatarUrl ?? _currentProfile?.avatarUrl,
+        createdAt: _currentProfile?.createdAt ?? now,
+        updatedAt: now,
+      );
+
+      await _saveProfileToStorage();
+      print('✅ Profile updated from auth data: $username');
+    } catch (e) {
+      print('❌ Error updating profile from auth: $e');
+    }
+  }
+
   /// Clear profile (for logout)
   Future<void> clearProfile() async {
     _currentProfile = null;

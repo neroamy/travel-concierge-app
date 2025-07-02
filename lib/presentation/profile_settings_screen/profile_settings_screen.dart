@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../core/services/profile_service.dart';
+import '../../core/services/auth_service.dart';
 import './widgets/change_password_modal.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class ProfileSettingsScreen extends StatefulWidget {
 class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   final ProfileService _profileService = ProfileService();
+  final AuthService _authService = AuthService();
 
   // Form controllers
   final _usernameController = TextEditingController();
@@ -121,6 +123,70 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         content: Text(message),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  /// Handle logout
+  void _handleLogout() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Logout',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Poppins',
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontFamily: 'Poppins',
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+
+              // Show loading
+              setState(() {
+                _isLoading = true;
+              });
+
+              // Perform logout
+              await _authService.logout();
+
+              // Navigate to sign in screen
+              if (mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.signInScreen,
+                  (route) => false,
+                );
+              }
+            },
+            child: Text(
+              'Logout',
+              style: TextStyle(
+                color: Colors.red.shade600,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Poppins',
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -265,6 +331,41 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           ),
 
           const Spacer(),
+
+          // Logout Button
+          GestureDetector(
+            onTap: _handleLogout,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8.h),
+                border: Border.all(color: Colors.red.shade200),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.logout,
+                    size: 16.h,
+                    color: Colors.red.shade600,
+                  ),
+                  SizedBox(width: 4.h),
+                  Text(
+                    'Logout',
+                    style: TextStyle(
+                      fontSize: 12.fSize,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.red.shade600,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          SizedBox(width: 12.h),
 
           // User Avatar
           Container(

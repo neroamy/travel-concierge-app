@@ -7,7 +7,7 @@ This document outlines the API requirements for the Profile Settings functionali
 ## 🔧 Base Configuration
 
 ```yaml
-Base URL: http://localhost:3000/api
+Base URL: http://localhost:8001/api
 Content-Type: application/json
 Accept: application/json
 ```

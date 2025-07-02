@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
           theme: theme,
           title: 'Travel Concierge',
           debugShowCheckedModeBanner: false,
-          initialRoute: AppRoutes.travelExplorationScreen,
+          initialRoute: AppRoutes.splashScreen,
           routes: AppRoutes.routes,
           builder: (context, child) {
             return MediaQuery(

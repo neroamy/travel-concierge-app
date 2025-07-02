@@ -764,3 +764,90 @@ class ProfileApiResponse {
     );
   }
 }
+
+// Authentication Models
+class LoginRequest {
+  final String username;
+  final String password;
+
+  LoginRequest({
+    required this.username,
+    required this.password,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'username': username,
+      'password': password,
+    };
+  }
+}
+
+class LoginResponse {
+  final bool success;
+  final String? message;
+  final UserData? user;
+  final String? token;
+
+  LoginResponse({
+    required this.success,
+    this.message,
+    this.user,
+    this.token,
+  });
+
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    return LoginResponse(
+      success: json['success'] ?? false,
+      message: json['message'],
+      user: json['user'] != null ? UserData.fromJson(json['user']) : null,
+      token: json['token'],
+    );
+  }
+}
+
+class UserData {
+  final String id;
+  final String username;
+  final String email;
+  final String? fullName;
+  final String? avatarUrl;
+  final String? address;
+  final List<String>? interests;
+
+  UserData({
+    required this.id,
+    required this.username,
+    required this.email,
+    this.fullName,
+    this.avatarUrl,
+    this.address,
+    this.interests,
+  });
+
+  factory UserData.fromJson(Map<String, dynamic> json) {
+    return UserData(
+      id: json['id'] ?? '',
+      username: json['username'] ?? '',
+      email: json['email'] ?? '',
+      fullName: json['full_name'],
+      avatarUrl: json['avatar_url'],
+      address: json['address'],
+      interests: json['interests'] != null
+          ? List<String>.from(json['interests'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'email': email,
+      'full_name': fullName,
+      'avatar_url': avatarUrl,
+      'address': address,
+      'interests': interests,
+    };
+  }
+}
