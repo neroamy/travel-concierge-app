@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../core/services/profile_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../widgets/safe_avatar_image.dart';
 import './widgets/change_password_modal.dart';
+import 'dart:async';
 
 class ProfileSettingsScreen extends StatefulWidget {
   const ProfileSettingsScreen({super.key});
@@ -25,6 +27,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   bool _isLoading = false;
   UserProfile? _currentProfile;
 
+  // Add completer to track logout operation
+  Completer<void>? _logoutCompleter;
+
   @override
   void initState() {
     super.initState();
@@ -33,17 +38,22 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   @override
   void dispose() {
+    // Dispose controllers
     _usernameController.dispose();
     _emailController.dispose();
     _addressController.dispose();
     _interestsController.dispose();
+
+    // Cancel any pending logout operation
+    _logoutCompleter?.complete();
+
     super.dispose();
   }
 
   /// Load user profile data
   void _loadProfile() async {
     final profile = _profileService.currentProfile;
-    if (profile != null) {
+    if (profile != null && mounted) {
       setState(() {
         _currentProfile = profile;
         _usernameController.text = profile.username;
@@ -58,6 +68,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   void _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
     });
@@ -69,36 +81,73 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       interests: _interestsController.text.trim(),
     );
 
-    final response = await _profileService.updateProfile(request);
+    try {
+      final response = await _profileService.updateProfile(request);
 
-    setState(() {
-      _isLoading = false;
-    });
+      if (!mounted) return;
 
-    if (response.success) {
-      // Show success message
-      _showSuccessMessage('Profile updated successfully');
-      // Update current profile
-      _loadProfile();
-    } else {
-      // Show error message
-      _showErrorMessage(response.message);
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (response.success) {
+        // Show success message
+        _showSuccessMessage('Profile updated successfully');
+        // Update current profile
+        _loadProfile();
+      } else {
+        // Show error message
+        _showErrorMessage(response.message);
+      }
+    } catch (e) {
+      print('❌ Error saving profile: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      _showErrorMessage('Failed to update profile. Please try again.');
     }
   }
 
   /// Handle password change
   void _handlePasswordChange() {
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (context) => ChangePasswordModal(
         onPasswordChange: (request) async {
-          final response = await _profileService.changePassword(request);
-          Navigator.of(context).pop();
+          try {
+            final response = await _profileService.changePassword(request);
 
-          if (response.success) {
-            _showSuccessMessage('Password changed successfully');
-          } else {
-            _showErrorMessage(response.message);
+            // Close modal
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
+
+            // Show result message only if widget is still mounted
+            if (mounted) {
+              if (response.success) {
+                _showSuccessMessage('Password changed successfully');
+              } else {
+                _showErrorMessage(response.message);
+              }
+            }
+          } catch (e) {
+            print('❌ Error changing password: $e');
+
+            // Close modal
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
+
+            // Show error message
+            if (mounted) {
+              _showErrorMessage('Failed to change password. Please try again.');
+            }
           }
         },
       ),
@@ -107,6 +156,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   /// Show success message
   void _showSuccessMessage(String message) {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -118,6 +169,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   /// Show error message
   void _showErrorMessage(String message) {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -127,11 +180,13 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     );
   }
 
-  /// Handle logout
+  /// Handle logout with improved error handling
   void _handleLogout() {
+    if (!mounted) return;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(
           'Logout',
           style: TextStyle(
@@ -147,7 +202,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
               'Cancel',
               style: TextStyle(
@@ -157,26 +212,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             ),
           ),
           TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-
-              // Show loading
-              setState(() {
-                _isLoading = true;
-              });
-
-              // Perform logout
-              await _authService.logout();
-
-              // Navigate to sign in screen
-              if (mounted) {
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  AppRoutes.signInScreen,
-                  (route) => false,
-                );
-              }
-            },
+            onPressed: () => _performLogout(dialogContext),
             child: Text(
               'Logout',
               style: TextStyle(
@@ -189,6 +225,67 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         ],
       ),
     );
+  }
+
+  /// Perform logout operation with proper lifecycle management
+  Future<void> _performLogout(BuildContext dialogContext) async {
+    // Create completer to track operation
+    _logoutCompleter = Completer<void>();
+
+    try {
+      // Close dialog first
+      Navigator.of(dialogContext).pop();
+
+      // Only proceed if widget is still mounted
+      if (!mounted) return;
+
+      // Show loading state
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Perform logout with timeout
+      await Future.any([
+        _authService.logout(),
+        Future.delayed(Duration(seconds: 10)), // 10 second timeout
+        _logoutCompleter!.future, // Cancel if widget disposed
+      ]);
+
+      // Check if logout was cancelled (widget disposed)
+      if (_logoutCompleter!.isCompleted) {
+        print('🚫 Logout cancelled - widget disposed');
+        return;
+      }
+
+      // Only navigate if widget is still mounted and logout wasn't cancelled
+      if (mounted && !_logoutCompleter!.isCompleted) {
+        // Use schedulerBinding to ensure navigation happens after frame
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              AppRoutes.signInScreen,
+              (route) => false,
+            );
+          }
+        });
+      }
+    } catch (e) {
+      print('❌ Logout error: $e');
+
+      // Reset loading state if widget is still mounted
+      if (mounted && !_logoutCompleter!.isCompleted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        _showErrorMessage('Logout failed. Please try again.');
+      }
+    } finally {
+      // Complete the logout operation
+      if (!_logoutCompleter!.isCompleted) {
+        _logoutCompleter!.complete();
+      }
+    }
   }
 
   @override
@@ -321,22 +418,31 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
           // Title
           Text(
-            _currentProfile?.username ?? 'Profile Settings',
+            'Settings',
             style: TextStyle(
               fontSize: 20.fSize,
               fontWeight: FontWeight.w600,
               color: appTheme.blackCustom,
-              fontFamily: 'Poppins',
+              fontFamily: 'PoppinsSemiBold',
             ),
           ),
 
-          const Spacer(),
+          Spacer(),
+
+          // User Avatar
+          UserAvatarImage(
+            imageUrl: _profileService.getSafeAvatarUrl(),
+            username: _currentProfile?.username,
+            size: 48.h,
+          ),
+
+          SizedBox(width: 16.h),
 
           // Logout Button
           GestureDetector(
             onTap: _handleLogout,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 6.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
               decoration: BoxDecoration(
                 color: Colors.red.shade50,
                 borderRadius: BorderRadius.circular(8.h),
@@ -355,39 +461,14 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                     'Logout',
                     style: TextStyle(
                       fontSize: 12.fSize,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       color: Colors.red.shade600,
-                      fontFamily: 'Poppins',
+                      fontFamily: 'PoppinsSemiBold',
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-
-          SizedBox(width: 12.h),
-
-          // User Avatar
-          Container(
-            width: 48.h,
-            height: 48.h,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: appTheme.colorFF0373.withOpacity(0.1),
-              image: _currentProfile?.avatarUrl != null
-                  ? DecorationImage(
-                      image: NetworkImage(_currentProfile!.avatarUrl!),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
-            child: _currentProfile?.avatarUrl == null
-                ? Icon(
-                    Icons.person,
-                    color: appTheme.colorFF0373,
-                    size: 24.h,
-                  )
-                : null,
           ),
         ],
       ),
@@ -570,16 +651,18 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                   height: 24.h,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: appTheme.whiteCustom,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      appTheme.whiteCustom,
+                    ),
                   ),
                 )
               : Text(
-                  'Save Settings',
+                  'Save Changes',
                   style: TextStyle(
-                    fontSize: 18.fSize,
+                    fontSize: 16.fSize,
                     fontWeight: FontWeight.w600,
                     color: appTheme.whiteCustom,
-                    fontFamily: 'Poppins',
+                    fontFamily: 'PoppinsSemiBold',
                   ),
                 ),
         ),

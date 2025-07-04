@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/app_export.dart';
+import '../../widgets/safe_avatar_image.dart';
 
 class AIChatScreen extends StatefulWidget {
   const AIChatScreen({super.key});
@@ -437,31 +438,10 @@ class _AIChatScreenState extends State<AIChatScreen> {
           if (isUser) ...[
             SizedBox(width: 8.h),
             // User Avatar - Using Profile Data
-            Container(
-              width: 32.h,
-              height: 32.h,
-              decoration: BoxDecoration(
-                color: appTheme.colorFF0373.withOpacity(0.1),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: appTheme.colorFF0373.withOpacity(0.3),
-                  width: 1.h,
-                ),
-                image: _globalChatService.getUserAvatarUrl() != null
-                    ? DecorationImage(
-                        image: NetworkImage(
-                            _globalChatService.getUserAvatarUrl()!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: _globalChatService.getUserAvatarUrl() == null
-                  ? Icon(
-                      Icons.person,
-                      color: appTheme.colorFF0373,
-                      size: 16.h,
-                    )
-                  : null,
+            UserAvatarImage(
+              imageUrl: _globalChatService.getUserAvatarUrl(),
+              username: _globalChatService.getUserDisplayName(),
+              size: 32.h,
             ),
           ],
         ],

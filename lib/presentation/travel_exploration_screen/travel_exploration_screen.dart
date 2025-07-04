@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../widgets/custom_image_view.dart';
 import '../../widgets/floating_chat_button.dart';
+import '../../widgets/safe_avatar_image.dart';
 import './widgets/bottom_nav_item.dart';
 import './widgets/location_category_card.dart';
 import './widgets/travel_destination_card.dart';
@@ -305,26 +306,16 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                       height: 48.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: appTheme.colorFF0373.withOpacity(0.1),
                         border: Border.all(
                           color: appTheme.colorFF0373.withOpacity(0.3),
                           width: 2.h,
                         ),
-                        image: _profileService.getAvatarUrl() != null
-                            ? DecorationImage(
-                                image: NetworkImage(
-                                    _profileService.getAvatarUrl()!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
                       ),
-                      child: _profileService.getAvatarUrl() == null
-                          ? Icon(
-                              Icons.person,
-                              color: appTheme.colorFF0373,
-                              size: 24.h,
-                            )
-                          : null,
+                      child: UserAvatarImage(
+                        imageUrl: _profileService.getSafeAvatarUrl(),
+                        username: _profileService.getDisplayName(),
+                        size: 44.h,
+                      ),
                     ),
                   ),
 

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/api_models.dart';
 import 'api_config.dart';
+import 'auth_service.dart';
 
 class ProfileService {
   static final ProfileService _instance = ProfileService._internal();
@@ -52,18 +53,23 @@ class ProfileService {
   Future<ProfileApiResponse> updateProfile(ProfileUpdateRequest request) async {
     try {
       final url = '${ApiConfig.baseUrl}/profile/update';
+      final authService = AuthService();
+
       final response = await http.put(
         Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: authService.getAuthHeaders(),
         body: jsonEncode(request.toJson()),
       );
+
+      print('📡 Profile update response status: ${response.statusCode}');
+      print('📡 Profile update response body: ${response.body}');
 
       final apiResponse =
           ProfileApiResponse.fromJson(jsonDecode(response.body));
 
-      if (apiResponse.success && apiResponse.data != null) {
+      if (response.statusCode == 200 &&
+          apiResponse.success &&
+          apiResponse.data != null) {
         _currentProfile = apiResponse.data!;
         await _saveProfileToStorage();
 
@@ -85,18 +91,21 @@ class ProfileService {
       PasswordChangeRequest request) async {
     try {
       final url = '${ApiConfig.baseUrl}/profile/change-password';
+      final authService = AuthService();
+
       final response = await http.put(
         Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: authService.getAuthHeaders(),
         body: jsonEncode(request.toJson()),
       );
+
+      print('📡 Password change response status: ${response.statusCode}');
+      print('📡 Password change response body: ${response.body}');
 
       final apiResponse =
           ProfileApiResponse.fromJson(jsonDecode(response.body));
 
-      if (apiResponse.success) {
+      if (response.statusCode == 200 && apiResponse.success) {
         print('✅ Password changed successfully');
       }
 
@@ -115,9 +124,37 @@ class ProfileService {
     return _currentProfile?.username ?? 'User';
   }
 
-  /// Get avatar URL for UI
+  /// Get avatar URL for UI with validation
   String? getAvatarUrl() {
-    return _currentProfile?.avatarUrl;
+    final avatarUrl = _currentProfile?.avatarUrl;
+
+    // Return null for invalid URLs to trigger fallback
+    if (avatarUrl == null ||
+        avatarUrl.isEmpty ||
+        avatarUrl == 'null' ||
+        avatarUrl.contains('example.com') ||
+        !_isValidAvatarUrl(avatarUrl)) {
+      return null;
+    }
+
+    return avatarUrl;
+  }
+
+  /// Validate avatar URL
+  bool _isValidAvatarUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      return uri.hasScheme &&
+          (uri.scheme == 'http' || uri.scheme == 'https') &&
+          uri.hasAuthority;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Get safe avatar URL for display (never returns invalid URLs)
+  String? getSafeAvatarUrl() {
+    return getAvatarUrl(); // This already validates
   }
 
   /// Load profile from local storage
@@ -152,12 +189,14 @@ class ProfileService {
   Future<bool> _fetchProfileFromAPI() async {
     try {
       final url = '${ApiConfig.baseUrl}/profile';
+      final authService = AuthService();
+
       final response = await http.get(
         Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: authService.getAuthHeaders(),
       );
+
+      print('📡 Fetch profile response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final apiResponse =
@@ -239,7 +278,7 @@ class ProfileService {
     return password.length >= 8;
   }
 
-  /// Get user scenario data for AI agent
+  /// Get user scenario data for AI agent with extended preferences
   Map<String, dynamic> getUserScenarioData() {
     if (_currentProfile == null) return {};
 
@@ -249,9 +288,20 @@ class ProfileService {
       'user_location': _currentProfile!.address,
       'user_interests': _currentProfile!.interests,
       'user_preferences': {
-        'travel_style': 'Explorer',
-        'budget_range': 'Mid-range',
-        'accommodation': 'Hotel & Resort',
+        'passport_nationality':
+            _currentProfile!.passportNationality ?? 'Vietnamese',
+        'seat_preference': _currentProfile!.seatPreference ?? 'window',
+        'food_preference': _currentProfile!.foodPreference ??
+            'Japanese cuisine - Ramen, Sushi, Sashimi',
+        'allergies': _currentProfile!.allergies ?? [],
+        'likes': _currentProfile!.likes ??
+            ['temples', 'beaches', 'mountains', 'museums'],
+        'dislikes': _currentProfile!.dislikes ??
+            ['remote locations', 'dangerous areas'],
+        'price_sensitivity': _currentProfile!.priceSensitivity ?? ['mid-range'],
+        'home_address':
+            _currentProfile!.homeAddress ?? _currentProfile!.address,
+        'local_prefer_mode': _currentProfile!.localPreferMode ?? 'drive',
       },
     };
   }

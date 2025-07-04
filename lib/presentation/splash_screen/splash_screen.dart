@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_export.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/services/api_test_helper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,45 +17,56 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeApp();
+    _checkAuthenticationStatus();
   }
 
-  /// Initialize app and check authentication state
-  Future<void> _initializeApp() async {
+  /// Check authentication status and navigate accordingly
+  Future<void> _checkAuthenticationStatus() async {
     try {
-      // Show splash for at least 2 seconds for better UX
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Initialize authentication service
+      // Initialize authentication system
       await _authService.initializeAuth();
 
-      // Check if user is logged in and session is valid
-      if (_authService.isLoggedIn) {
-        final isSessionValid = await _authService.isSessionValid();
-
-        if (isSessionValid) {
-          // User is logged in and session is valid - go to main app
-          if (mounted) {
-            Navigator.pushReplacementNamed(
-              context,
-              AppRoutes.travelExplorationScreen,
-            );
-          }
-          return;
-        }
+      // Run API tests in debug mode
+      if (const bool.fromEnvironment('dart.vm.product') == false) {
+        print('🧪 Running API connection tests...');
+        await ApiTestHelper.runAllTests();
       }
 
-      // User is not logged in or session is invalid - go to sign in
-      if (mounted) {
+      // Small delay for splash effect
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (!mounted) return;
+
+      if (_authService.isLoggedIn) {
+        // Check if session is still valid
+        final isValid = await _authService.isSessionValid();
+
+        if (isValid) {
+          // User is logged in and session is valid
+          print('✅ Valid session found, navigating to main screen');
+          Navigator.pushReplacementNamed(
+            context,
+            AppRoutes.travelExplorationScreen,
+          );
+        } else {
+          // Session expired, go to login
+          print('⚠️ Session expired, navigating to login');
+          Navigator.pushReplacementNamed(
+            context,
+            AppRoutes.signInScreen,
+          );
+        }
+      } else {
+        // User not logged in
+        print('🔐 No authentication found, navigating to login');
         Navigator.pushReplacementNamed(
           context,
           AppRoutes.signInScreen,
         );
       }
     } catch (e) {
-      print('❌ Error during app initialization: $e');
-
-      // On error, default to sign in screen
+      print('❌ Error during authentication check: $e');
+      // On error, navigate to login screen
       if (mounted) {
         Navigator.pushReplacementNamed(
           context,

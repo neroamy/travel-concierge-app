@@ -61,7 +61,7 @@ class AuthService {
       );
 
       final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/auth/login'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/login/'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -168,10 +168,29 @@ class AuthService {
     }
   }
 
-  /// Logout user
+  /// Logout user (with server call)
   Future<void> logout() async {
     try {
       print('🔓 Logging out user: ${_currentUser?.username}');
+
+      // Call server logout endpoint if we have a token
+      if (_authToken != null) {
+        try {
+          final response = await http.post(
+            Uri.parse('${ApiConfig.baseUrl}/auth/logout/'),
+            headers: getAuthHeaders(),
+          );
+
+          print('📡 Logout response status: ${response.statusCode}');
+          if (response.statusCode == 200) {
+            print('✅ Server logout successful');
+          } else {
+            print('⚠️ Server logout failed, continuing with local logout');
+          }
+        } catch (e) {
+          print('⚠️ Server logout error: $e, continuing with local logout');
+        }
+      }
 
       await _clearAuthData();
 
@@ -223,29 +242,37 @@ class AuthService {
     };
   }
 
-  /// Check if user session is valid
+  /// Check if user session is valid (with server verification)
   Future<bool> isSessionValid() async {
     if (!_isLoggedIn || _authToken == null) {
       return false;
     }
 
     try {
-      // Make a test API call to verify token validity
+      // Call server verify endpoint
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/auth/verify'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/verify/'),
         headers: getAuthHeaders(),
       );
 
+      print('📡 Token verification status: ${response.statusCode}');
+
       if (response.statusCode == 200) {
-        return true;
-      } else {
-        // Token is invalid, clear auth data
-        await _clearAuthData();
-        return false;
+        final responseData = jsonDecode(response.body);
+        if (responseData['success'] == true) {
+          print('✅ Token verification successful');
+          return true;
+        }
       }
+
+      // Token is invalid, clear auth data
+      print('❌ Token verification failed, clearing auth data');
+      await _clearAuthData();
+      return false;
     } catch (e) {
       print('❌ Error verifying session: $e');
-      return false;
+      // On network error, assume session is still valid
+      return true;
     }
   }
 }

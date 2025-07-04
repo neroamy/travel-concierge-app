@@ -1,13 +1,14 @@
 /// API Configuration for Travel Concierge Client
 class ApiConfig {
   // Server Configuration
-  // NOTE: Use PC's IP address when testing on real device
-  // To find PC IP: run 'ipconfig' in cmd and look for Wi-Fi adapter IPv4 Address
-  // Make sure PC and mobile device are on the same Wi-Fi network
-  static const String baseUrl = 'http://192.168.1.10:8002';
+  // NOTE: Update this URL to match your server setup
+  // For local development: http://localhost:8001/api
+  // For testing with real device: http://[PC_IP]:8001/api
+  static const String baseUrl = 'http://192.168.1.10:8001/api';
   static const String appName = 'travel_concierge';
 
-  // Endpoints
+  // Chat/AI Agent Endpoints (different server)
+  static const String chatBaseUrl = 'http://192.168.1.10:8002';
   static const String sessionEndpoint = '/apps/$appName/users';
   static const String messageEndpoint = '/run_sse';
   static const String docsEndpoint = '/docs';
@@ -26,19 +27,19 @@ class ApiConfig {
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 60);
 
-  // Build full session URL
+  // Build full session URL (for chat service)
   static String getSessionUrl(String userId, String sessionId) {
-    return '$baseUrl$sessionEndpoint/$userId/sessions/$sessionId';
+    return '$chatBaseUrl$sessionEndpoint/$userId/sessions/$sessionId';
   }
 
-  // Build message URL
+  // Build message URL (for chat service)
   static String getMessageUrl() {
-    return '$baseUrl$messageEndpoint';
+    return '$chatBaseUrl$messageEndpoint';
   }
 
-  // Build API docs URL
+  // Build API docs URL (for chat service)
   static String getDocsUrl() {
-    return '$baseUrl$docsEndpoint';
+    return '$chatBaseUrl$docsEndpoint';
   }
 
   // Helper method to test connection

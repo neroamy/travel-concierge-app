@@ -5,7 +5,7 @@ This document outlines the authentication API endpoints for the Travel Concierge
 
 ## Base URL
 ```
-http://localhost:3000/api
+http://localhost:8001/api
 ```
 
 ## Authentication Endpoints

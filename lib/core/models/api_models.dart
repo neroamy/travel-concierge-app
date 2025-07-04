@@ -632,6 +632,18 @@ class UserProfile {
   final String address;
   final String interests; // sở thích
   final String? avatarUrl;
+
+  // Extended fields from server
+  final String? passportNationality;
+  final String? seatPreference;
+  final String? foodPreference;
+  final List<String>? allergies;
+  final List<String>? likes;
+  final List<String>? dislikes;
+  final List<String>? priceSensitivity;
+  final String? homeAddress;
+  final String? localPreferMode;
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -642,6 +654,15 @@ class UserProfile {
     required this.address,
     required this.interests,
     this.avatarUrl,
+    this.passportNationality,
+    this.seatPreference,
+    this.foodPreference,
+    this.allergies,
+    this.likes,
+    this.dislikes,
+    this.priceSensitivity,
+    this.homeAddress,
+    this.localPreferMode,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -654,6 +675,20 @@ class UserProfile {
       address: json['address'] ?? '',
       interests: json['interests'] ?? '',
       avatarUrl: json['avatar_url'],
+      passportNationality: json['passport_nationality'],
+      seatPreference: json['seat_preference'],
+      foodPreference: json['food_preference'],
+      allergies: json['allergies'] != null
+          ? List<String>.from(json['allergies'])
+          : null,
+      likes: json['likes'] != null ? List<String>.from(json['likes']) : null,
+      dislikes:
+          json['dislikes'] != null ? List<String>.from(json['dislikes']) : null,
+      priceSensitivity: json['price_sensitivity'] != null
+          ? List<String>.from(json['price_sensitivity'])
+          : null,
+      homeAddress: json['home_address'],
+      localPreferMode: json['local_prefer_mode'],
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
     );
@@ -667,6 +702,15 @@ class UserProfile {
       'address': address,
       'interests': interests,
       'avatar_url': avatarUrl,
+      'passport_nationality': passportNationality,
+      'seat_preference': seatPreference,
+      'food_preference': foodPreference,
+      'allergies': allergies,
+      'likes': likes,
+      'dislikes': dislikes,
+      'price_sensitivity': priceSensitivity,
+      'home_address': homeAddress,
+      'local_prefer_mode': localPreferMode,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -680,6 +724,15 @@ class UserProfile {
     String? address,
     String? interests,
     String? avatarUrl,
+    String? passportNationality,
+    String? seatPreference,
+    String? foodPreference,
+    List<String>? allergies,
+    List<String>? likes,
+    List<String>? dislikes,
+    List<String>? priceSensitivity,
+    String? homeAddress,
+    String? localPreferMode,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -690,6 +743,15 @@ class UserProfile {
       address: address ?? this.address,
       interests: interests ?? this.interests,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      passportNationality: passportNationality ?? this.passportNationality,
+      seatPreference: seatPreference ?? this.seatPreference,
+      foodPreference: foodPreference ?? this.foodPreference,
+      allergies: allergies ?? this.allergies,
+      likes: likes ?? this.likes,
+      dislikes: dislikes ?? this.dislikes,
+      priceSensitivity: priceSensitivity ?? this.priceSensitivity,
+      homeAddress: homeAddress ?? this.homeAddress,
+      localPreferMode: localPreferMode ?? this.localPreferMode,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -704,22 +766,56 @@ class ProfileUpdateRequest {
   final String interests;
   final String? avatarUrl;
 
+  // Extended fields (optional)
+  final String? passportNationality;
+  final String? seatPreference;
+  final String? foodPreference;
+  final List<String>? allergies;
+  final List<String>? likes;
+  final List<String>? dislikes;
+  final List<String>? priceSensitivity;
+  final String? homeAddress;
+  final String? localPreferMode;
+
   ProfileUpdateRequest({
     required this.username,
     required this.email,
     required this.address,
     required this.interests,
     this.avatarUrl,
+    this.passportNationality,
+    this.seatPreference,
+    this.foodPreference,
+    this.allergies,
+    this.likes,
+    this.dislikes,
+    this.priceSensitivity,
+    this.homeAddress,
+    this.localPreferMode,
   });
 
   Map<String, dynamic> toJson() {
-    return {
+    final Map<String, dynamic> data = {
       'username': username,
       'email': email,
       'address': address,
       'interests': interests,
-      'avatar_url': avatarUrl,
     };
+
+    // Only include non-null values
+    if (avatarUrl != null) data['avatar_url'] = avatarUrl;
+    if (passportNationality != null)
+      data['passport_nationality'] = passportNationality;
+    if (seatPreference != null) data['seat_preference'] = seatPreference;
+    if (foodPreference != null) data['food_preference'] = foodPreference;
+    if (allergies != null) data['allergies'] = allergies;
+    if (likes != null) data['likes'] = likes;
+    if (dislikes != null) data['dislikes'] = dislikes;
+    if (priceSensitivity != null) data['price_sensitivity'] = priceSensitivity;
+    if (homeAddress != null) data['home_address'] = homeAddress;
+    if (localPreferMode != null) data['local_prefer_mode'] = localPreferMode;
+
+    return data;
   }
 }
 
