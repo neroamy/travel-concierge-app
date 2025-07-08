@@ -1,0 +1,32 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  <group android:scaleX="0.6"
+      android:scaleY="0.6"
+      android:translateX="21.6"
+      android:translateY="21.6">
+    <!-- Background circle -->
+    <path
+        android:fillColor="#FF0373"
+        android:pathData="M54,54m-48,0a48,48 0,1 1,96 0a48,48 0,1 1,-96 0"/>
+
+    <!-- Airplane icon -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,48L76,48L76,60L32,60z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,44L68,44L68,48L40,48z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M44,40L64,40L64,44L44,44z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,36L60,36L60,40L48,40z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M52,32L56,32L56,36L52,36z"/>
+  </group>
+</vector>

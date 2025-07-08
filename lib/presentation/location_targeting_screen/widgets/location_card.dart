@@ -108,6 +108,11 @@ class LocationCard extends StatelessWidget {
 
   /// Builds the location image section
   Widget _buildLocationImage() {
+    // Fallback logic for image
+    String? imagePath = location.image;
+    if (imagePath == null || imagePath.isEmpty || imagePath == 'null') {
+      imagePath = ImageConstant.imgImageNotFound;
+    }
     return Container(
       width: 80.h,
       height: 140.h,
@@ -124,8 +129,7 @@ class LocationCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8.h),
         child: CustomImageView(
-          imagePath: location.image ??
-              ImageConstant.imgRectangle464, // Default placeholder
+          imagePath: imagePath,
           fit: BoxFit.cover,
           width: 80.h,
           height: 140.h,
