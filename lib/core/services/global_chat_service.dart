@@ -12,6 +12,8 @@ class GlobalChatService {
   final ProfileService _profileService = ProfileService();
   final List<ChatMessage> _conversationHistory = [];
   bool _isSessionInitialized = false;
+  SearchResult?
+      _lastSearchResult; // Store last API result with function responses
 
   /// Get current conversation history
   List<ChatMessage> get conversationHistory => List.from(_conversationHistory);
@@ -44,34 +46,106 @@ class GlobalChatService {
   /// Send message and get AI response
   Future<void> sendMessage(
       String message, Function(ChatMessage) onMessageReceived) async {
+    print('🌐 GlobalChatService: Starting sendMessage for: "$message"');
+
     if (!await ensureSessionInitialized()) {
-      onMessageReceived(ChatMessage(
+      final errorMessage = ChatMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         text: 'Failed to initialize chat session. Please try again.',
         author: 'system',
         timestamp: DateTime.now(),
         isFromUser: false,
-      ));
+      );
+      addMessageToHistory(errorMessage);
+      onMessageReceived(errorMessage);
       return;
     }
 
     // Add user message to history
+    print('👤 Adding user message to history');
     final userMessage = ChatMessage.fromUser(message);
     addMessageToHistory(userMessage);
     onMessageReceived(userMessage);
 
     try {
+      print('🔄 Starting stream from travel service...');
+      bool receivedAIResponse = false;
+      String accumulatedText = '';
+      List<Map<String, dynamic>> allFunctionResponses = [];
+      String? lastAuthor;
+
       await for (final result in _travelService.searchTravel(message)) {
+        print('📡 Received stream result:');
+        print('   - Author: ${result.author}');
+        print('   - Text length: ${result.text.length}');
+        print(
+            '   - Text preview: ${result.text.length > 100 ? result.text.substring(0, 100) + "..." : result.text}');
+
         if (result.author != 'system' && result.author != 'user') {
-          // This is the AI response
-          final aiMessage =
-              ChatMessage.fromApiResponse(result.text, result.author);
-          addMessageToHistory(aiMessage);
-          onMessageReceived(aiMessage);
-          break; // Take the first AI response
+          // This is an AI response - accumulate all parts
+          print('🤖 Processing AI response part...');
+
+          // Accumulate text (skip system indicators)
+          if (!result.text.startsWith('🏝️') &&
+              !result.text.startsWith('📍') &&
+              !result.text.startsWith('✈️') &&
+              !result.text.startsWith('🏨') &&
+              !result.text.startsWith('📅') &&
+              !result.text.startsWith('🌤️')) {
+            if (accumulatedText.isNotEmpty && result.text.trim().isNotEmpty) {
+              accumulatedText += '\n\n' + result.text;
+            } else if (result.text.trim().isNotEmpty) {
+              accumulatedText = result.text;
+            }
+          }
+
+          // Accumulate function responses
+          if (result.functionResponses != null &&
+              result.functionResponses!.isNotEmpty) {
+            allFunctionResponses.addAll(result.functionResponses!);
+            print(
+                '📦 Added ${result.functionResponses!.length} function responses. Total: ${allFunctionResponses.length}');
+          }
+
+          lastAuthor = result.author;
+          receivedAIResponse = true;
+
+          // Continue to collect more parts instead of breaking
+        } else {
+          print('⚠️ Skipping non-AI message: ${result.author}');
         }
       }
+
+      // Process accumulated response after stream ends
+      if (receivedAIResponse && accumulatedText.isNotEmpty) {
+        print('🎯 Processing accumulated AI response:');
+        print('   - Total text length: ${accumulatedText.length}');
+        print('   - Total function responses: ${allFunctionResponses.length}');
+
+        // Create final search result with all accumulated data
+        _lastSearchResult = SearchResult(
+          text: accumulatedText,
+          author: lastAuthor ?? 'agent',
+          timestamp: DateTime.now(),
+          functionResponses: allFunctionResponses,
+        );
+
+        final aiMessage =
+            ChatMessage.fromApiResponse(accumulatedText, lastAuthor ?? 'agent');
+
+        print('📨 Created final AI message:');
+        print('   - ID: ${aiMessage.id}');
+        print('   - Author: ${aiMessage.author}');
+        print('   - Text length: ${aiMessage.text.length}');
+        print('   - Function responses: ${allFunctionResponses.length}');
+
+        addMessageToHistory(aiMessage);
+        onMessageReceived(aiMessage);
+      } else if (!receivedAIResponse) {
+        print('❌ No AI response received from stream');
+      }
     } catch (e) {
+      print('❌ Error in sendMessage: $e');
       final errorMessage = ChatMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         text: 'Connection error. Please try again.',
@@ -83,6 +157,8 @@ class GlobalChatService {
       onMessageReceived(errorMessage);
       print('Global chat error: $e');
     }
+
+    print('✅ GlobalChatService: sendMessage completed');
   }
 
   /// Clear conversation history
@@ -135,5 +211,10 @@ class GlobalChatService {
       }
     }
     print('🔄 Synced chat with profile data: ${getUserDisplayName()}');
+  }
+
+  /// Get last search result with function responses
+  SearchResult? getLastSearchResult() {
+    return _lastSearchResult;
   }
 }

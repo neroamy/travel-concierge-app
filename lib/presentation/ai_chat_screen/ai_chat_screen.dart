@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -109,24 +110,43 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   /// Send message via global chat service
   Future<void> _sendMessageViaGlobalService(String message) async {
+    print('🚀 Sending message via global service: "$message"');
     setState(() {
       _isTyping = true;
     });
 
     await _globalChatService.sendMessage(message, (chatMessage) {
+      print('📨 Received callback message:');
+      print('   - ID: ${chatMessage.id}');
+      print('   - Text: ${chatMessage.text}');
+      print('   - Author: ${chatMessage.author}');
+      print('   - IsFromUser: ${chatMessage.isFromUser}');
+      print('   - Timestamp: ${chatMessage.timestamp}');
+
       setState(() {
         // Update local messages with global chat history
         _messages = [..._globalChatService.conversationHistory];
-        _isTyping = false;
-      });
+        print('📋 Updated local messages count: ${_messages.length}');
 
-      // Analyze response for location data if it's an AI message
-      if (!chatMessage.isFromUser && chatMessage.author != 'system') {
-        _analyzeResponse(chatMessage.text);
-      }
+        // Only set typing to false when we receive an AI response
+        if (!chatMessage.isFromUser && chatMessage.author != 'system') {
+          _isTyping = false;
+          print('🤖 AI response received, stopping typing indicator');
+
+          // Analyze response for location data if it's an AI message
+          // Get function responses from global chat service if available
+          final lastResult = _globalChatService.getLastSearchResult();
+          _analyzeResponse(chatMessage.text,
+              functionResponses: lastResult?.functionResponses);
+        } else {
+          print('👤 User message or system message, keeping typing indicator');
+        }
+      });
 
       _scrollToBottom();
     });
+
+    print('✅ Global service sendMessage completed');
   }
 
   /// Get AI response from service
@@ -143,8 +163,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
             _isTyping = false;
           });
 
-          // Analyze response for location data
-          _analyzeResponse(result.text);
+          // Analyze response for location data with function responses
+          _analyzeResponse(result.text,
+              functionResponses: result.functionResponses);
           _scrollToBottom();
           break; // Take the first AI response
         }
@@ -159,16 +180,42 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   /// Analyze AI response for location results
-  void _analyzeResponse(String response) {
-    final responseType = AIResponseAnalyzer.analyzeResponse(response);
+  void _analyzeResponse(String response,
+      {List<Map<String, dynamic>>? functionResponses}) {
+    print('🔍 Analyzing response for locations...');
+    print('   - Response text length: ${response.length}');
+    print('   - Function responses count: ${functionResponses?.length ?? 0}');
+
+    // Use new analyzer that handles both text and function responses
+    final responseType =
+        functionResponses != null && functionResponses.isNotEmpty
+            ? AIResponseAnalyzer.analyzeResponseWithFunctions(
+                response, functionResponses)
+            : AIResponseAnalyzer.analyzeResponse(response);
+
+    print('   - Response type: $responseType');
 
     if (responseType == AIResponseType.locationList) {
-      final locations = AIResponseAnalyzer.extractLocationResults(response);
+      final locations = AIResponseAnalyzer.extractLocationResults(
+        response,
+        functionResponses: functionResponses,
+      );
+
       setState(() {
         _detectedLocations = locations;
       });
 
-      print('🎯 Detected ${locations.length} locations in chat response');
+      print('🎯 Detected ${locations.length} locations from response');
+      for (int i = 0; i < locations.length; i++) {
+        final loc = locations[i];
+        print('   [$i] ${loc.title} - ${loc.address}');
+        print(
+            '       Rating: ${loc.rating}, Coords: ${loc.latitude},${loc.longitude}');
+        print('       Image URL: ${loc.imageUrl ?? "No image"}');
+        print('       Map URL: ${loc.googleMapsUrl}');
+      }
+    } else {
+      print('❌ No locations detected in response');
     }
   }
 
@@ -220,6 +267,32 @@ class _AIChatScreenState extends State<AIChatScreen> {
         );
       }
     });
+  }
+
+  /// Debug method to print current state
+  void _debugPrintState() {
+    print('🐞 DEBUG STATE:');
+    print('   - Local messages count: ${_messages.length}');
+    print(
+        '   - Global chat history count: ${_globalChatService.conversationHistory.length}');
+    print('   - IsTyping: $_isTyping');
+    print('   - IsLoading: $_isLoading');
+    print('   - UseGlobalSession: $_useGlobalSession');
+
+    print('   - Local messages:');
+    for (int i = 0; i < _messages.length; i++) {
+      final msg = _messages[i];
+      print(
+          '     [$i] ${msg.author}: ${msg.text.length > 50 ? msg.text.substring(0, 50) + "..." : msg.text}');
+    }
+
+    print('   - Global messages:');
+    final globalMessages = _globalChatService.conversationHistory;
+    for (int i = 0; i < globalMessages.length; i++) {
+      final msg = globalMessages[i];
+      print(
+          '     [$i] ${msg.author}: ${msg.text.length > 50 ? msg.text.substring(0, 50) + "..." : msg.text}');
+    }
   }
 
   @override
@@ -347,6 +420,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   /// Build chat messages list
   Widget _buildChatMessages() {
+    print(
+        '🎨 Building chat messages. Count: ${_messages.length}, isTyping: $_isTyping');
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24.h),
       child: ListView.builder(
@@ -354,10 +429,13 @@ class _AIChatScreenState extends State<AIChatScreen> {
         itemCount: _messages.length + (_isTyping ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == _messages.length && _isTyping) {
+            print('💬 Building typing indicator at index: $index');
             return _buildTypingIndicator();
           }
 
           final message = _messages[index];
+          print(
+              '💬 Building message bubble for index: $index - Author: ${message.author} - IsUser: ${message.isFromUser}');
           return _buildMessageBubble(message);
         },
       ),

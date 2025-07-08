@@ -52,30 +52,32 @@ class ProfileService {
   /// Update user profile
   Future<ProfileApiResponse> updateProfile(ProfileUpdateRequest request) async {
     try {
-      final url = '${ApiConfig.baseUrl}/profile/update';
+      // Use correct endpoint as per API spec
+      final profileId = _currentProfile?.id;
+      if (profileId == null || profileId.isEmpty) {
+        return ProfileApiResponse(
+          success: false,
+          message: 'Profile ID is missing. Cannot update profile.',
+        );
+      }
+      final url = '${ApiConfig.baseUrl}/user_manager/profile/$profileId/update';
       final authService = AuthService();
-
       final response = await http.put(
         Uri.parse(url),
         headers: authService.getAuthHeaders(),
         body: jsonEncode(request.toJson()),
       );
-
-      print('📡 Profile update response status: ${response.statusCode}');
-      print('📡 Profile update response body: ${response.body}');
-
+      print('📡 Profile update response status: \\${response.statusCode}');
+      print('📡 Profile update response body: \\${response.body}');
       final apiResponse =
           ProfileApiResponse.fromJson(jsonDecode(response.body));
-
       if (response.statusCode == 200 &&
           apiResponse.success &&
           apiResponse.data != null) {
         _currentProfile = apiResponse.data!;
         await _saveProfileToStorage();
-
-        print('✅ Profile updated successfully: ${_currentProfile!.username}');
+        print('✅ Profile updated successfully: \\${_currentProfile!.username}');
       }
-
       return apiResponse;
     } catch (e) {
       print('❌ Error updating profile: $e');

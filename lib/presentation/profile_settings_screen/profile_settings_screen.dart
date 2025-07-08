@@ -24,6 +24,17 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   final _addressController = TextEditingController();
   final _interestsController = TextEditingController();
 
+  // Form controllers for extended fields
+  final _passportNationalityController = TextEditingController();
+  final _seatPreferenceController = TextEditingController();
+  final _foodPreferenceController = TextEditingController();
+  final _allergiesController = TextEditingController();
+  final _likesController = TextEditingController();
+  final _dislikesController = TextEditingController();
+  final _priceSensitivityController = TextEditingController();
+  final _homeAddressController = TextEditingController();
+  final _localPreferModeController = TextEditingController();
+
   bool _isLoading = false;
   UserProfile? _currentProfile;
 
@@ -43,6 +54,15 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     _emailController.dispose();
     _addressController.dispose();
     _interestsController.dispose();
+    _passportNationalityController.dispose();
+    _seatPreferenceController.dispose();
+    _foodPreferenceController.dispose();
+    _allergiesController.dispose();
+    _likesController.dispose();
+    _dislikesController.dispose();
+    _priceSensitivityController.dispose();
+    _homeAddressController.dispose();
+    _localPreferModeController.dispose();
 
     // Cancel any pending logout operation
     _logoutCompleter?.complete();
@@ -60,6 +80,16 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         _emailController.text = profile.email;
         _addressController.text = profile.address;
         _interestsController.text = profile.interests;
+        _passportNationalityController.text = profile.passportNationality ?? '';
+        _seatPreferenceController.text = profile.seatPreference ?? '';
+        _foodPreferenceController.text = profile.foodPreference ?? '';
+        _allergiesController.text = (profile.allergies ?? []).join(', ');
+        _likesController.text = (profile.likes ?? []).join(', ');
+        _dislikesController.text = (profile.dislikes ?? []).join(', ');
+        _priceSensitivityController.text =
+            (profile.priceSensitivity ?? []).join(', ');
+        _homeAddressController.text = profile.homeAddress ?? '';
+        _localPreferModeController.text = profile.localPreferMode ?? '';
       });
     }
   }
@@ -74,11 +104,41 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       _isLoading = true;
     });
 
+    // Parse list fields from comma-separated input
+    List<String>? parseList(String text) {
+      final trimmed = text.trim();
+      if (trimmed.isEmpty) return null;
+      return trimmed
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+    }
+
     final request = ProfileUpdateRequest(
       username: _usernameController.text.trim(),
       email: _emailController.text.trim(),
       address: _addressController.text.trim(),
       interests: _interestsController.text.trim(),
+      passportNationality: _passportNationalityController.text.trim().isEmpty
+          ? null
+          : _passportNationalityController.text.trim(),
+      seatPreference: _seatPreferenceController.text.trim().isEmpty
+          ? null
+          : _seatPreferenceController.text.trim(),
+      foodPreference: _foodPreferenceController.text.trim().isEmpty
+          ? null
+          : _foodPreferenceController.text.trim(),
+      allergies: parseList(_allergiesController.text),
+      likes: parseList(_likesController.text),
+      dislikes: parseList(_dislikesController.text),
+      priceSensitivity: parseList(_priceSensitivityController.text),
+      homeAddress: _homeAddressController.text.trim().isEmpty
+          ? null
+          : _homeAddressController.text.trim(),
+      localPreferMode: _localPreferModeController.text.trim().isEmpty
+          ? null
+          : _localPreferModeController.text.trim(),
     );
 
     try {
@@ -379,6 +439,96 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                           }
                           return null;
                         },
+                      ),
+
+                      SizedBox(height: 24.h),
+
+                      // Passport Nationality
+                      _buildInputField(
+                        controller: _passportNationalityController,
+                        label: 'Passport Nationality',
+                        hintText: 'Enter your passport nationality',
+                        icon: Icons.flag_outlined,
+                      ),
+
+                      SizedBox(height: 24.h),
+
+                      // Seat Preference
+                      _buildInputField(
+                        controller: _seatPreferenceController,
+                        label: 'Seat Preference',
+                        hintText: 'e.g. window, aisle',
+                        icon: Icons.event_seat_outlined,
+                      ),
+
+                      SizedBox(height: 24.h),
+
+                      // Food Preference
+                      _buildInputField(
+                        controller: _foodPreferenceController,
+                        label: 'Food Preference',
+                        hintText: 'e.g. Japanese cuisine',
+                        icon: Icons.restaurant_outlined,
+                      ),
+
+                      SizedBox(height: 24.h),
+
+                      // Allergies
+                      _buildInputField(
+                        controller: _allergiesController,
+                        label: 'Allergies',
+                        hintText: 'Comma-separated (e.g. peanuts, gluten)',
+                        icon: Icons.warning_amber_outlined,
+                      ),
+
+                      SizedBox(height: 24.h),
+
+                      // Likes
+                      _buildInputField(
+                        controller: _likesController,
+                        label: 'Likes',
+                        hintText: 'Comma-separated (e.g. beaches, museums)',
+                        icon: Icons.thumb_up_outlined,
+                      ),
+
+                      SizedBox(height: 24.h),
+
+                      // Dislikes
+                      _buildInputField(
+                        controller: _dislikesController,
+                        label: 'Dislikes',
+                        hintText: 'Comma-separated (e.g. remote locations)',
+                        icon: Icons.thumb_down_outlined,
+                      ),
+
+                      SizedBox(height: 24.h),
+
+                      // Price Sensitivity
+                      _buildInputField(
+                        controller: _priceSensitivityController,
+                        label: 'Price Sensitivity',
+                        hintText: 'Comma-separated (e.g. mid-range, luxury)',
+                        icon: Icons.attach_money_outlined,
+                      ),
+
+                      SizedBox(height: 24.h),
+
+                      // Home Address
+                      _buildInputField(
+                        controller: _homeAddressController,
+                        label: 'Home Address',
+                        hintText: 'Enter your home address',
+                        icon: Icons.home_outlined,
+                      ),
+
+                      SizedBox(height: 24.h),
+
+                      // Local Prefer Mode
+                      _buildInputField(
+                        controller: _localPreferModeController,
+                        label: 'Local Prefer Mode',
+                        hintText: 'e.g. drive, walk',
+                        icon: Icons.directions_car_outlined,
                       ),
 
                       SizedBox(height: 40.h),

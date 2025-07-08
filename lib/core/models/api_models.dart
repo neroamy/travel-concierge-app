@@ -353,6 +353,7 @@ class PlaceSearchResult {
   final double longitude;
   final String googleMapsUrl;
   final String? placeId;
+  final String? imageUrl;
 
   PlaceSearchResult({
     required this.title,
@@ -363,6 +364,7 @@ class PlaceSearchResult {
     required this.longitude,
     required this.googleMapsUrl,
     this.placeId,
+    this.imageUrl,
   });
 }
 
@@ -499,9 +501,108 @@ class ResponseParser {
         longitude: longitude,
         googleMapsUrl: googleMapsUrl,
         placeId: placeId?.isNotEmpty == true ? placeId : null,
+        imageUrl: null,
       );
     } catch (e) {
       print('Error extracting place info: $e');
+      return null;
+    }
+  }
+
+  /// Extract location results from response
+  static List<PlaceSearchResult> extractLocationResults(String response) {
+    if (AIResponseAnalyzer.hasLocationListPattern(response)) {
+      return ResponseParser.parseAIResponse(response);
+    }
+    return [];
+  }
+
+  /// Extract location results from function responses (new API format)
+  static List<PlaceSearchResult> extractLocationResultsFromFunctions(
+      List<Map<String, dynamic>> functionResponses) {
+    final List<PlaceSearchResult> places = [];
+
+    print('🔍 Processing ${functionResponses.length} function responses...');
+
+    for (final functionResponse in functionResponses) {
+      try {
+        final String? functionName = functionResponse['name'];
+        print('🔧 Processing function: $functionName');
+
+        if (functionName == 'map_tool') {
+          final dynamic response = functionResponse['response'];
+          if (response is Map<String, dynamic>) {
+            final dynamic placesData = response['places'];
+            if (placesData is List) {
+              print(
+                  '📍 Found ${placesData.length} places in map_tool response');
+
+              for (final placeData in placesData) {
+                if (placeData is Map<String, dynamic>) {
+                  final place = _parseMapToolPlace(placeData);
+                  if (place != null) {
+                    places.add(place);
+                    print('✅ Parsed place: ${place.title}');
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        print('❌ Error processing function response: $e');
+      }
+    }
+
+    print('🏁 Total places extracted from functions: ${places.length}');
+    return places;
+  }
+
+  /// Parse individual place from map_tool response
+  static PlaceSearchResult? _parseMapToolPlace(Map<String, dynamic> placeData) {
+    try {
+      final String placeName = placeData['place_name'] ?? '';
+      final String address = placeData['address'] ?? '';
+      final String highlights = placeData['highlights'] ?? '';
+      final String ratingStr = placeData['review_ratings'] ?? '0.0';
+      final String latStr = placeData['lat'] ?? '0.0';
+      final String longStr = placeData['long'] ?? '0.0';
+      final String imageUrl = placeData['image_url'] ?? '';
+      final String mapUrl = placeData['map_url'] ?? '';
+      final String placeId = placeData['place_id'] ?? '';
+
+      // Parse numeric values
+      final double rating = double.tryParse(ratingStr) ?? 0.0;
+      final double latitude = double.tryParse(latStr) ?? 0.0;
+      final double longitude = double.tryParse(longStr) ?? 0.0;
+
+      print('📋 Parsing place:');
+      print('   - Name: $placeName');
+      print('   - Address: $address');
+      print('   - Rating: $rating');
+      print('   - Coordinates: $latitude, $longitude');
+      print('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
+      print('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
+
+      // Validate required fields
+      if (placeName.isEmpty || address.isEmpty) {
+        print('❌ Missing required fields for place');
+        return null;
+      }
+
+      return PlaceSearchResult(
+        title: placeName,
+        address: address,
+        highlights: highlights,
+        rating: rating,
+        latitude: latitude,
+        longitude: longitude,
+        googleMapsUrl: mapUrl,
+        placeId: placeId.isNotEmpty ? placeId : null,
+        imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
+      );
+    } catch (e) {
+      print('❌ Error parsing map tool place: $e');
       return null;
     }
   }
@@ -569,6 +670,18 @@ class AIResponseAnalyzer {
     return AIResponseType.information;
   }
 
+  /// Analyze response with function responses included
+  static AIResponseType analyzeResponseWithFunctions(
+      String response, List<Map<String, dynamic>> functionResponses) {
+    // Check if function responses contain location data
+    if (functionResponses.any((fr) => fr['name'] == 'map_tool')) {
+      return AIResponseType.locationList;
+    }
+
+    // Fallback to text analysis
+    return analyzeResponse(response);
+  }
+
   /// Check if response contains location list format
   static bool hasLocationListPattern(String text) {
     // Multiple indicators for location list
@@ -609,18 +722,119 @@ class AIResponseAnalyzer {
     return questionPhrases.any((phrase) => lowerText.contains(phrase));
   }
 
-  /// Extract location results from response
-  static List<PlaceSearchResult> extractLocationResults(String response) {
-    if (hasLocationListPattern(response)) {
-      return ResponseParser.parseAIResponse(response);
+  /// Extract location results from response and function responses
+  static List<PlaceSearchResult> extractLocationResults(String response,
+      {List<Map<String, dynamic>>? functionResponses}) {
+    final List<PlaceSearchResult> places = [];
+
+    // First try to extract from function responses (new API format)
+    if (functionResponses != null && functionResponses.isNotEmpty) {
+      places.addAll(AIResponseAnalyzer.extractLocationResultsFromFunctions(
+          functionResponses));
     }
-    return [];
+
+    // Fallback to text parsing (old format)
+    if (places.isEmpty && AIResponseAnalyzer.hasLocationListPattern(response)) {
+      places.addAll(ResponseParser.parseAIResponse(response));
+    }
+
+    return places;
   }
 
   /// Get response summary for UI display
   static String getResponseSummary(String response) {
     if (response.length <= 100) return response;
     return '${response.substring(0, 97)}...';
+  }
+
+  /// Extract location results from function responses (new API format)
+  static List<PlaceSearchResult> extractLocationResultsFromFunctions(
+      List<Map<String, dynamic>> functionResponses) {
+    final List<PlaceSearchResult> places = [];
+
+    print('🔍 Processing ${functionResponses.length} function responses...');
+
+    for (final functionResponse in functionResponses) {
+      try {
+        final String? functionName = functionResponse['name'];
+        print('🔧 Processing function: $functionName');
+
+        if (functionName == 'map_tool') {
+          final dynamic response = functionResponse['response'];
+          if (response is Map<String, dynamic>) {
+            final dynamic placesData = response['places'];
+            if (placesData is List) {
+              print(
+                  '📍 Found ${placesData.length} places in map_tool response');
+
+              for (final placeData in placesData) {
+                if (placeData is Map<String, dynamic>) {
+                  final place = _parseMapToolPlace(placeData);
+                  if (place != null) {
+                    places.add(place);
+                    print('✅ Parsed place: ${place.title}');
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        print('❌ Error processing function response: $e');
+      }
+    }
+
+    print('🏁 Total places extracted from functions: ${places.length}');
+    return places;
+  }
+
+  /// Parse individual place from map_tool response
+  static PlaceSearchResult? _parseMapToolPlace(Map<String, dynamic> placeData) {
+    try {
+      final String placeName = placeData['place_name'] ?? '';
+      final String address = placeData['address'] ?? '';
+      final String highlights = placeData['highlights'] ?? '';
+      final String ratingStr = placeData['review_ratings'] ?? '0.0';
+      final String latStr = placeData['lat'] ?? '0.0';
+      final String longStr = placeData['long'] ?? '0.0';
+      final String imageUrl = placeData['image_url'] ?? '';
+      final String mapUrl = placeData['map_url'] ?? '';
+      final String placeId = placeData['place_id'] ?? '';
+
+      // Parse numeric values
+      final double rating = double.tryParse(ratingStr) ?? 0.0;
+      final double latitude = double.tryParse(latStr) ?? 0.0;
+      final double longitude = double.tryParse(longStr) ?? 0.0;
+
+      print('📋 Parsing place:');
+      print('   - Name: $placeName');
+      print('   - Address: $address');
+      print('   - Rating: $rating');
+      print('   - Coordinates: $latitude, $longitude');
+      print('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
+      print('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
+
+      // Validate required fields
+      if (placeName.isEmpty || address.isEmpty) {
+        print('❌ Missing required fields for place');
+        return null;
+      }
+
+      return PlaceSearchResult(
+        title: placeName,
+        address: address,
+        highlights: highlights,
+        rating: rating,
+        latitude: latitude,
+        longitude: longitude,
+        googleMapsUrl: mapUrl,
+        placeId: placeId.isNotEmpty ? placeId : null,
+        imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
+      );
+    } catch (e) {
+      print('❌ Error parsing map tool place: $e');
+      return null;
+    }
   }
 }
 

@@ -32,7 +32,7 @@ class LocationCardModel {
       rating: place.rating,
       latitude: place.latitude,
       longitude: place.longitude,
-      image: null, // Will use default placeholder
+      image: place.imageUrl, // Use API image URL
     );
   }
 
