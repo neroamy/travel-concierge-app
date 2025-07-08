@@ -611,6 +611,7 @@ class ResponseParser {
 /// Enum for AI response types
 enum AIResponseType {
   locationList, // Contains place suggestions
+  itinerary, // Contains travel itinerary
   question, // AI asking for clarification
   information, // General info/explanation
   unknown // Fallback
@@ -657,6 +658,11 @@ class ChatMessage {
 class AIResponseAnalyzer {
   /// Analyze response type to determine handling
   static AIResponseType analyzeResponse(String response) {
+    // Check for itinerary patterns
+    if (hasItineraryPattern(response)) {
+      return AIResponseType.itinerary;
+    }
+
     // Check for location list patterns
     if (hasLocationListPattern(response)) {
       return AIResponseType.locationList;
@@ -678,20 +684,81 @@ class AIResponseAnalyzer {
       return AIResponseType.locationList;
     }
 
+    // Check for itinerary in text response
+    if (hasItineraryPattern(response)) {
+      return AIResponseType.itinerary;
+    }
+
     // Fallback to text analysis
     return analyzeResponse(response);
   }
 
+  /// Check if response contains itinerary format
+  static bool hasItineraryPattern(String text) {
+    print('🔍 Checking itinerary pattern in text...');
+
+    // Multiple indicators for itinerary
+    final hasDayPattern = text.contains(RegExp(r'\*\*Day \d+ \([\d-]+\):\*\*'));
+    print('   - Has day pattern: $hasDayPattern');
+
+    final hasTimeSlots = text.toLowerCase().contains('morning:') ||
+        text.toLowerCase().contains('afternoon:') ||
+        text.toLowerCase().contains('evening:') ||
+        text.toLowerCase().contains('sáng:') ||
+        text.toLowerCase().contains('chiều:') ||
+        text.toLowerCase().contains('tối:');
+    print('   - Has time slots: $hasTimeSlots');
+
+    final hasMultipleDays = RegExp(r'\*\*Day \d+').allMatches(text).length >= 2;
+    print('   - Has multiple days: $hasMultipleDays');
+
+    // Alternative patterns for itinerary
+    final hasAlternativeDayPattern = text.contains(RegExp(r'Day \d+')) &&
+        (text.contains('morning') ||
+            text.contains('afternoon') ||
+            text.contains('evening'));
+    print('   - Has alternative day pattern: $hasAlternativeDayPattern');
+
+    final result = (hasDayPattern && hasTimeSlots && hasMultipleDays) ||
+        hasAlternativeDayPattern;
+    print('   - Final itinerary pattern result: $result');
+
+    return result;
+  }
+
   /// Check if response contains location list format
   static bool hasLocationListPattern(String text) {
+    print('🔍 Checking location list pattern in text...');
+
     // Multiple indicators for location list
     final hasNumberedList = text.contains(RegExp(r'\d+\.\s*\*\*[^*]+\*\*'));
-    final hasAddress = text.toLowerCase().contains('address:');
-    final hasRating = text.toLowerCase().contains('rating:');
+    print('   - Has numbered list: $hasNumberedList');
+
+    final hasAddress = text.toLowerCase().contains('address:') ||
+        text.toLowerCase().contains('địa chỉ:');
+    print('   - Has address: $hasAddress');
+
+    final hasRating = text.toLowerCase().contains('rating:') ||
+        text.toLowerCase().contains('đánh giá:');
+    print('   - Has rating: $hasRating');
+
     final hasMultipleEntries =
         RegExp(r'\d+\.\s*\*\*[^*]+\*\*').allMatches(text).length >= 2;
+    print('   - Has multiple entries: $hasMultipleEntries');
 
-    return hasNumberedList && hasAddress && hasRating && hasMultipleEntries;
+    // Alternative patterns for location list
+    final hasAlternativePattern = text.contains(RegExp(r'\d+\.\s*[A-Za-z]')) &&
+        (text.contains('address') ||
+            text.contains('rating') ||
+            text.contains('địa chỉ'));
+    print('   - Has alternative pattern: $hasAlternativePattern');
+
+    final result =
+        (hasNumberedList && hasAddress && hasRating && hasMultipleEntries) ||
+            hasAlternativePattern;
+    print('   - Final location list pattern result: $result');
+
+    return result;
   }
 
   /// Check if response contains question patterns
@@ -720,6 +787,213 @@ class AIResponseAnalyzer {
     ];
 
     return questionPhrases.any((phrase) => lowerText.contains(phrase));
+  }
+
+  /// Extract itinerary from response
+  static List<ItineraryDayModel> extractItinerary(String response) {
+    final List<ItineraryDayModel> days = [];
+
+    print('📅 Starting to parse itinerary from response...');
+    print('📝 Response text length: ${response.length}');
+
+    try {
+      // Try multiple patterns for day detection
+      List<RegExpMatch> dayMatches = [];
+
+      // Pattern 1: **Day X (YYYY-MM-DD):**
+      final dayPattern1 = RegExp(r'\*\*Day (\d+) \(([\d-]+)\):\*\*');
+      dayMatches = dayPattern1.allMatches(response).toList();
+      print('🔍 Pattern 1 found ${dayMatches.length} matches');
+
+      // Pattern 2: Day X: or **Day X:**
+      if (dayMatches.isEmpty) {
+        final dayPattern2 = RegExp(r'\*\*?Day (\d+):?\*\*?');
+        dayMatches = dayPattern2.allMatches(response).toList();
+        print('🔍 Pattern 2 found ${dayMatches.length} matches');
+      }
+
+      // Pattern 3: Ngày X: (Vietnamese)
+      if (dayMatches.isEmpty) {
+        final dayPattern3 = RegExp(r'\*\*?Ngày (\d+):?\*\*?');
+        dayMatches = dayPattern3.allMatches(response).toList();
+        print('🔍 Pattern 3 found ${dayMatches.length} matches');
+      }
+
+      print('🔍 Total day matches found: ${dayMatches.length}');
+
+      for (final match in dayMatches) {
+        try {
+          final dayNumber = int.parse(match.group(1)!);
+
+          // Try to extract date from the match or generate one
+          String dateString = '';
+          DateTime date;
+
+          if (match.groupCount >= 2 && match.group(2) != null) {
+            dateString = match.group(2)!;
+            date = DateTime.parse(dateString);
+          } else {
+            // Generate a date based on day number (starting from today)
+            date = DateTime.now().add(Duration(days: dayNumber - 1));
+            dateString = date.toIso8601String().split('T')[0];
+          }
+
+          print('📅 Processing Day $dayNumber with date: $dateString');
+
+          final displayDate = _formatDisplayDate(date);
+
+          // Extract activities for this day
+          final activities = _extractActivitiesForDay(response, match);
+
+          if (activities.isNotEmpty) {
+            days.add(ItineraryDayModel(
+              dayNumber: dayNumber,
+              date: date,
+              displayDate: displayDate,
+              activities: activities,
+            ));
+            print(
+                '✅ Successfully parsed Day $dayNumber with ${activities.length} activities');
+          }
+        } catch (e) {
+          print('❌ Error parsing day: $e');
+          continue;
+        }
+      }
+
+      print('🏁 Itinerary parsing completed. Total days: ${days.length}');
+    } catch (e) {
+      print('❌ Error parsing itinerary: $e');
+    }
+
+    return days;
+  }
+
+  /// Extract activities for a specific day
+  static List<ItineraryActivityModel> _extractActivitiesForDay(
+      String text, RegExpMatch dayMatch) {
+    final List<ItineraryActivityModel> activities = [];
+
+    try {
+      // Find the section for this day
+      final startIndex = dayMatch.start;
+      final nextDayMatch =
+          RegExp(r'\*\*?Day \d+').firstMatch(text.substring(dayMatch.end));
+      final endIndex = nextDayMatch != null
+          ? dayMatch.end + nextDayMatch.start
+          : text.length;
+
+      final daySection = text.substring(startIndex, endIndex);
+      print(
+          '📄 Day section: ${daySection.substring(0, daySection.length > 200 ? 200 : daySection.length)}...');
+
+      // Try multiple patterns for activities
+      List<RegExpMatch> activityMatches = [];
+
+      // Pattern 1: * Time: Description
+      final activityPattern1 = RegExp(r'\*\s*([^:]+):\s*([^\n]+)');
+      activityMatches = activityPattern1.allMatches(daySection).toList();
+      print('🔍 Pattern 1 found ${activityMatches.length} activities');
+
+      // Pattern 2: - Time: Description
+      if (activityMatches.isEmpty) {
+        final activityPattern2 = RegExp(r'-\s*([^:]+):\s*([^\n]+)');
+        activityMatches = activityPattern2.allMatches(daySection).toList();
+        print('🔍 Pattern 2 found ${activityMatches.length} activities');
+      }
+
+      // Pattern 3: Time: Description (without bullet)
+      if (activityMatches.isEmpty) {
+        final activityPattern3 = RegExp(r'([^:]+):\s*([^\n]+)');
+        activityMatches = activityPattern3.allMatches(daySection).toList();
+        print('🔍 Pattern 3 found ${activityMatches.length} activities');
+      }
+
+      for (final match in activityMatches) {
+        final timeSlot = match.group(1)?.trim() ?? '';
+        final description = match.group(2)?.trim() ?? '';
+
+        // Filter out non-activity entries
+        if (timeSlot.isNotEmpty && description.isNotEmpty) {
+          // Skip if it's just a header or section title
+          if (timeSlot.toLowerCase().contains('day') ||
+              timeSlot.toLowerCase().contains('ngày') ||
+              timeSlot.length > 20) {
+            continue;
+          }
+
+          // Determine weather icon based on activity type
+          final weatherIcon = _getWeatherIconForActivity(description);
+
+          // Extract title from description (first part before comma or period)
+          final title = _extractTitleFromDescription(description);
+
+          activities.add(ItineraryActivityModel(
+            timeSlot: timeSlot,
+            title: title,
+            description: description,
+            weatherIcon: weatherIcon,
+            isActive: activities.isEmpty, // First activity is active
+          ));
+
+          print('   - $timeSlot: $title');
+        }
+      }
+    } catch (e) {
+      print('❌ Error extracting activities: $e');
+    }
+
+    return activities;
+  }
+
+  /// Format date for display (e.g., "July 10")
+  static String _formatDisplayDate(DateTime date) {
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ];
+    return '${months[date.month - 1]} ${date.day}';
+  }
+
+  /// Get weather icon based on activity description
+  static String _getWeatherIconForActivity(String description) {
+    final lowerDesc = description.toLowerCase();
+
+    if (lowerDesc.contains('hike') || lowerDesc.contains('walk')) return '🥾';
+    if (lowerDesc.contains('drive') || lowerDesc.contains('travel'))
+      return '🚗';
+    if (lowerDesc.contains('check in') || lowerDesc.contains('hotel'))
+      return '🏨';
+    if (lowerDesc.contains('dinner') || lowerDesc.contains('restaurant'))
+      return '🍽️';
+    if (lowerDesc.contains('relax') || lowerDesc.contains('enjoy')) return '😌';
+    if (lowerDesc.contains('visit') || lowerDesc.contains('monument'))
+      return '🏛️';
+    if (lowerDesc.contains('pond') || lowerDesc.contains('lake')) return '🏞️';
+    if (lowerDesc.contains('bridge') || lowerDesc.contains('river'))
+      return '🌉';
+
+    return '📍'; // Default location icon
+  }
+
+  /// Extract title from description
+  static String _extractTitleFromDescription(String description) {
+    // Take first meaningful part before comma, period, or parentheses
+    final titleMatch = RegExp(r'^([^,.(]+)').firstMatch(description);
+    if (titleMatch != null) {
+      return titleMatch.group(1)?.trim() ?? description;
+    }
+    return description;
   }
 
   /// Extract location results from response and function responses
@@ -836,6 +1110,38 @@ class AIResponseAnalyzer {
       return null;
     }
   }
+}
+
+/// Model for parsed itinerary day
+class ItineraryDayModel {
+  final int dayNumber;
+  final DateTime date;
+  final String displayDate; // "July 10"
+  final List<ItineraryActivityModel> activities;
+
+  const ItineraryDayModel({
+    required this.dayNumber,
+    required this.date,
+    required this.displayDate,
+    required this.activities,
+  });
+}
+
+/// Model for individual activity in itinerary
+class ItineraryActivityModel {
+  final String timeSlot; // "Morning", "Afternoon", "Evening"
+  final String title;
+  final String description;
+  final String weatherIcon; // Default icon based on activity type
+  final bool isActive;
+
+  const ItineraryActivityModel({
+    required this.timeSlot,
+    required this.title,
+    required this.description,
+    required this.weatherIcon,
+    this.isActive = false,
+  });
 }
 
 /// User Profile models for Profile Settings

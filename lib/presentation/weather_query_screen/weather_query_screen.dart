@@ -12,49 +12,150 @@ class WeatherQueryScreen extends StatefulWidget {
 class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
   // Selected filters and day
   String _selectedCategory = "Island";
-  int _selectedDay = 2; // Day 2 is active by default per Figma
+  int _selectedDay = 1; // Default to Day 1
 
   // Categories for filter tabs
   final List<String> _categories = ["Island", "Beach", "Resort"];
 
-  // Day data
-  final List<DayModel> _days = [
-    DayModel(day: 1, date: "July 14"),
-    DayModel(day: 2, date: "July 15"),
-    DayModel(day: 3, date: "July 16"),
-  ];
+  // Day data - will be populated from AI response
+  List<DayModel> _days = [];
 
-  // Extended itinerary data based on Figma design
-  final List<ItineraryItemModel> _itineraryItems = [
-    ItineraryItemModel(
-      time: "12:30",
-      title: "Maldives",
-      subtitle: "Save the Turtles",
-      weatherIcon: "📍", // Location icon for active item
-      isActive: true,
-    ),
-    ItineraryItemModel(
-      time: "14:30",
-      title: "Golden beach",
-      subtitle: "Surfing on the sea",
-      weatherIcon: "⛅",
-      isActive: false,
-    ),
-    ItineraryItemModel(
-      time: "17:30",
-      title: "Coconut grove",
-      subtitle: "BBQ party by the sea",
-      weatherIcon: "🌸",
-      isActive: false,
-    ),
-    ItineraryItemModel(
-      time: "21:30",
-      title: "Maldives Islands",
-      subtitle: "Sea blowing",
-      weatherIcon: "🌧️",
-      isActive: false,
-    ),
-  ];
+  // Itinerary data - will be populated from AI response
+  List<ItineraryItemModel> _itineraryItems = [];
+
+  // AI itinerary data
+  List<ItineraryDayModel>? _aiItinerary;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeWithArguments();
+  }
+
+  /// Initialize with arguments from navigation
+  void _initializeWithArguments() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null && args['itinerary'] != null) {
+        final itinerary = args['itinerary'] as List<ItineraryDayModel>;
+        _loadAIItinerary(itinerary);
+      } else {
+        _loadDefaultData();
+      }
+    });
+  }
+
+  /// Load AI itinerary data
+  void _loadAIItinerary(List<ItineraryDayModel> itinerary) {
+    print('📅 Loading AI itinerary with ${itinerary.length} days');
+
+    setState(() {
+      _aiItinerary = itinerary;
+
+      // Convert AI itinerary to day models
+      _days = itinerary
+          .map((day) => DayModel(
+                day: day.dayNumber,
+                date: day.displayDate,
+              ))
+          .toList();
+
+      // Set selected day to first day
+      _selectedDay = _days.isNotEmpty ? _days.first.day : 1;
+
+      // Load activities for selected day
+      _loadActivitiesForSelectedDay();
+    });
+  }
+
+  /// Load default demo data
+  void _loadDefaultData() {
+    print('📅 Loading default demo data');
+
+    setState(() {
+      _days = [
+        DayModel(day: 1, date: "July 14"),
+        DayModel(day: 2, date: "July 15"),
+        DayModel(day: 3, date: "July 16"),
+      ];
+
+      _itineraryItems = [
+        ItineraryItemModel(
+          time: "12:30",
+          title: "Maldives",
+          subtitle: "Save the Turtles",
+          weatherIcon: "📍",
+          isActive: true,
+        ),
+        ItineraryItemModel(
+          time: "14:30",
+          title: "Golden beach",
+          subtitle: "Surfing on the sea",
+          weatherIcon: "⛅",
+          isActive: false,
+        ),
+        ItineraryItemModel(
+          time: "17:30",
+          title: "Coconut grove",
+          subtitle: "BBQ party by the sea",
+          weatherIcon: "🌸",
+          isActive: false,
+        ),
+        ItineraryItemModel(
+          time: "21:30",
+          title: "Maldives Islands",
+          subtitle: "Sea blowing",
+          weatherIcon: "🌧️",
+          isActive: false,
+        ),
+      ];
+    });
+  }
+
+  /// Load activities for the selected day
+  void _loadActivitiesForSelectedDay() {
+    if (_aiItinerary == null) return;
+
+    final selectedDayData = _aiItinerary!.firstWhere(
+      (day) => day.dayNumber == _selectedDay,
+      orElse: () => _aiItinerary!.first,
+    );
+
+    print(
+        '📅 Loading activities for Day $_selectedDay: ${selectedDayData.activities.length} activities');
+
+    setState(() {
+      _itineraryItems = selectedDayData.activities.map((activity) {
+        // Convert time slot to time format
+        final time = _convertTimeSlotToTime(activity.timeSlot);
+
+        return ItineraryItemModel(
+          time: time,
+          title: activity.title,
+          subtitle: activity.description,
+          weatherIcon: activity.weatherIcon,
+          isActive: activity.isActive,
+        );
+      }).toList();
+    });
+  }
+
+  /// Convert time slot to time format
+  String _convertTimeSlotToTime(String timeSlot) {
+    switch (timeSlot.toLowerCase()) {
+      case 'morning':
+        return '09:00';
+      case 'afternoon':
+        return '14:00';
+      case 'evening':
+        return '18:00';
+      case 'late afternoon':
+        return '16:00';
+      default:
+        return '12:00';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +203,7 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
           ),
           // Title
           Text(
-            "Itinerary Form",
+            _aiItinerary != null ? "AI Itinerary" : "Itinerary Form",
             style: TextStyle(
               fontSize: 18.fSize,
               fontWeight: FontWeight.w600,
@@ -170,6 +271,10 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
 
   /// Day selector tabs matching Figma design
   Widget _buildDaySelector() {
+    if (_days.isEmpty) {
+      return SizedBox(height: 24.h);
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 24.h),
       child: Row(
@@ -228,6 +333,30 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
 
   /// Itinerary content with timeline - matching Figma exactly
   Widget _buildItineraryContent() {
+    if (_itineraryItems.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.calendar_today,
+              size: 64.h,
+              color: Colors.grey[400],
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'No activities for this day',
+              style: TextStyle(
+                fontSize: 16.fSize,
+                color: Colors.grey[600],
+                fontFamily: 'Poppins',
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.h),
       child: Column(
@@ -365,7 +494,9 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
           ),
           child: Center(
             child: Text(
-              "View specific itinerary",
+              _aiItinerary != null
+                  ? "View AI Itinerary"
+                  : "View specific itinerary",
               style: TextStyle(
                 fontSize: 16.fSize,
                 fontWeight: FontWeight.w600,
@@ -477,14 +608,17 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
     setState(() {
       _selectedDay = day;
     });
-    // TODO: Load itinerary for selected day
+    // Load activities for selected day
+    _loadActivitiesForSelectedDay();
   }
 
   void _onActionTap() {
     // TODO: Export or share itinerary
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Export itinerary feature coming soon'),
+      SnackBar(
+        content: Text(_aiItinerary != null
+            ? 'Export AI itinerary feature coming soon'
+            : 'Export itinerary feature coming soon'),
         duration: Duration(seconds: 2),
       ),
     );
@@ -503,8 +637,10 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
   void _onViewItineraryTap() {
     // TODO: Navigate to detailed itinerary view or confirmation
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Opening detailed itinerary...'),
+      SnackBar(
+        content: Text(_aiItinerary != null
+            ? 'Opening AI itinerary details...'
+            : 'Opening detailed itinerary...'),
         duration: Duration(seconds: 2),
       ),
     );

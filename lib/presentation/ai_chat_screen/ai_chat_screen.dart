@@ -6,7 +6,9 @@ import '../../core/app_export.dart';
 import '../../widgets/safe_avatar_image.dart';
 
 class AIChatScreen extends StatefulWidget {
-  const AIChatScreen({super.key});
+  final String? initialQuery;
+
+  const AIChatScreen({super.key, this.initialQuery});
 
   @override
   State<AIChatScreen> createState() => _AIChatScreenState();
@@ -15,15 +17,18 @@ class AIChatScreen extends StatefulWidget {
 class _AIChatScreenState extends State<AIChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final TravelConciergeService _travelService = TravelConciergeService();
   final GlobalChatService _globalChatService = GlobalChatService();
+  final TravelConciergeService _travelService = TravelConciergeService();
 
   List<ChatMessage> _messages = [];
   bool _isTyping = false;
   bool _isLoading = false;
+  bool _useGlobalSession = true;
   String? _initialQuery;
+
+  // Detected data from AI responses
   List<PlaceSearchResult> _detectedLocations = [];
-  bool _useGlobalSession = false;
+  List<ItineraryDayModel> _detectedItinerary = [];
 
   @override
   void initState() {
@@ -38,44 +43,38 @@ class _AIChatScreenState extends State<AIChatScreen> {
     super.dispose();
   }
 
-  /// Initialize chat with arguments from navigation
+  /// Initialize chat with initial query if provided
   void _initializeChat() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final args =
-          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      if (args != null) {
-        _initialQuery = args['initialQuery'] as String?;
-        _useGlobalSession = args['useGlobalSession'] as bool? ?? false;
-        final conversationHistory =
-            args['conversationHistory'] as List<ChatMessage>?;
-
-        if (_useGlobalSession) {
-          // Use global chat service for session management
-          setState(() {
-            _messages = [..._globalChatService.conversationHistory];
-          });
-          print('🔄 Loaded ${_messages.length} messages from global session');
-        } else if (conversationHistory != null) {
-          setState(() {
-            _messages = [...conversationHistory];
-          });
-        }
-
-        // Start conversation with initial query if provided
-        if (_initialQuery != null && _initialQuery!.isNotEmpty) {
-          if (_useGlobalSession) {
-            _sendMessageViaGlobalService(_initialQuery!);
-          } else {
-            _sendInitialMessage(_initialQuery!);
-          }
-        }
-      }
-    });
+    if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
+      _initialQuery = widget.initialQuery;
+      _sendMessage(widget.initialQuery!);
+    }
   }
 
-  /// Send initial message and get AI response
-  void _sendInitialMessage(String message) async {
-    // Add user message
+  /// Send message from input field
+  Future<void> _sendMessageFromInput() async {
+    final message = _messageController.text.trim();
+    if (message.isEmpty) return;
+
+    _messageController.clear();
+    await _sendMessage(message);
+  }
+
+  /// Send message to AI
+  Future<void> _sendMessage(String message) async {
+    if (message.trim().isEmpty) return;
+
+    print('💬 Sending message: "$message"');
+
+    if (_useGlobalSession) {
+      await _sendMessageViaGlobalService(message);
+    } else {
+      await _sendMessageViaLocalService(message);
+    }
+  }
+
+  /// Send message via local travel service
+  Future<void> _sendMessageViaLocalService(String message) async {
     final userMessage = ChatMessage.fromUser(message);
     setState(() {
       _messages.add(userMessage);
@@ -84,28 +83,6 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
     _scrollToBottom();
     await _getAIResponse(message);
-  }
-
-  /// Send message to AI and handle response
-  Future<void> _sendMessage() async {
-    final message = _messageController.text.trim();
-    if (message.isEmpty) return;
-
-    _messageController.clear();
-
-    if (_useGlobalSession) {
-      await _sendMessageViaGlobalService(message);
-    } else {
-      // Add user message
-      final userMessage = ChatMessage.fromUser(message);
-      setState(() {
-        _messages.add(userMessage);
-        _isTyping = true;
-      });
-
-      _scrollToBottom();
-      await _getAIResponse(message);
-    }
   }
 
   /// Send message via global chat service
@@ -179,43 +156,137 @@ class _AIChatScreenState extends State<AIChatScreen> {
     }
   }
 
-  /// Analyze AI response for location results
+  /// Analyze AI response for location results and itinerary
   void _analyzeResponse(String response,
       {List<Map<String, dynamic>>? functionResponses}) {
-    print('🔍 Analyzing response for locations...');
+    print('🔍 Analyzing response for locations and itinerary...');
     print('   - Response text length: ${response.length}');
     print('   - Function responses count: ${functionResponses?.length ?? 0}');
+    print(
+        '   - Response preview: ${response.length > 200 ? response.substring(0, 200) + "..." : response}');
 
-    // Use new analyzer that handles both text and function responses
-    final responseType =
-        functionResponses != null && functionResponses.isNotEmpty
-            ? AIResponseAnalyzer.analyzeResponseWithFunctions(
-                response, functionResponses)
-            : AIResponseAnalyzer.analyzeResponse(response);
+    // Debug: Print full response for analysis
+    print('📄 FULL RESPONSE:');
+    print(response);
+    print('📄 END FULL RESPONSE');
 
-    print('   - Response type: $responseType');
+    // Check for itinerary pattern first
+    final hasItinerary = AIResponseAnalyzer.hasItineraryPattern(response);
+    print('   - Has itinerary pattern: $hasItinerary');
 
-    if (responseType == AIResponseType.locationList) {
-      final locations = AIResponseAnalyzer.extractLocationResults(
-        response,
-        functionResponses: functionResponses,
-      );
+    // Check for location pattern
+    final hasLocationList = AIResponseAnalyzer.hasLocationListPattern(response);
+    print('   - Has location list pattern: $hasLocationList');
 
-      setState(() {
-        _detectedLocations = locations;
-      });
+    // Check function responses for map_tool
+    final hasMapTool =
+        functionResponses?.any((fr) => fr['name'] == 'map_tool') ?? false;
+    print('   - Has map_tool function: $hasMapTool');
 
-      print('🎯 Detected ${locations.length} locations from response');
-      for (int i = 0; i < locations.length; i++) {
-        final loc = locations[i];
-        print('   [$i] ${loc.title} - ${loc.address}');
-        print(
-            '       Rating: ${loc.rating}, Coords: ${loc.latitude},${loc.longitude}');
-        print('       Image URL: ${loc.imageUrl ?? "No image"}');
-        print('       Map URL: ${loc.googleMapsUrl}');
+    // Debug function responses
+    if (functionResponses != null && functionResponses.isNotEmpty) {
+      print('🔧 Function responses details:');
+      for (int i = 0; i < functionResponses.length; i++) {
+        final fr = functionResponses[i];
+        print('   [$i] Name: ${fr['name']}');
+        print('       Response type: ${fr['response'].runtimeType}');
+        if (fr['response'] is Map) {
+          print(
+              '       Response keys: ${(fr['response'] as Map).keys.toList()}');
+        }
       }
-    } else {
-      print('❌ No locations detected in response');
+    }
+
+    // Handle itinerary detection
+    if (hasItinerary) {
+      print('📅 Processing itinerary response...');
+      _handleItineraryResponse(response);
+    }
+
+    // Handle location detection (from both text and function responses)
+    if (hasLocationList || hasMapTool) {
+      print('📍 Processing location response...');
+      _handleLocationResponse(response, functionResponses);
+    }
+
+    // If neither detected, try general analysis
+    if (!hasItinerary && !hasLocationList && !hasMapTool) {
+      print('❓ No specific patterns detected, trying general analysis...');
+
+      // Use new analyzer that handles both text and function responses
+      final responseType =
+          functionResponses != null && functionResponses.isNotEmpty
+              ? AIResponseAnalyzer.analyzeResponseWithFunctions(
+                  response, functionResponses)
+              : AIResponseAnalyzer.analyzeResponse(response);
+
+      print('   - General response type: $responseType');
+
+      // Handle different response types
+      switch (responseType) {
+        case AIResponseType.locationList:
+          _handleLocationResponse(response, functionResponses);
+          break;
+        case AIResponseType.itinerary:
+          _handleItineraryResponse(response);
+          break;
+        case AIResponseType.question:
+          print('❓ AI is asking a question');
+          break;
+        case AIResponseType.information:
+          print('ℹ️ AI provided general information');
+          break;
+        default:
+          print('❓ Unknown response type');
+      }
+    }
+
+    // Debug current state after analysis
+    print('🏁 Analysis completed:');
+    print('   - Detected locations: ${_detectedLocations.length}');
+    print('   - Detected itinerary days: ${_detectedItinerary.length}');
+  }
+
+  /// Handle location response
+  void _handleLocationResponse(
+      String response, List<Map<String, dynamic>>? functionResponses) {
+    final locations = AIResponseAnalyzer.extractLocationResults(
+      response,
+      functionResponses: functionResponses,
+    );
+
+    setState(() {
+      _detectedLocations = locations;
+    });
+
+    print('🎯 Detected ${locations.length} locations from response');
+    for (int i = 0; i < locations.length; i++) {
+      final loc = locations[i];
+      print('   [$i] ${loc.title} - ${loc.address}');
+      print(
+          '       Rating: ${loc.rating}, Coords: ${loc.latitude},${loc.longitude}');
+      print('       Image URL: ${loc.imageUrl ?? "No image"}');
+      print('       Map URL: ${loc.googleMapsUrl}');
+    }
+  }
+
+  /// Handle itinerary response
+  void _handleItineraryResponse(String response) {
+    final itinerary = AIResponseAnalyzer.extractItinerary(response);
+
+    setState(() {
+      _detectedItinerary = itinerary;
+    });
+
+    print('📅 Detected ${itinerary.length} days from itinerary response');
+    for (int i = 0; i < itinerary.length; i++) {
+      final day = itinerary[i];
+      print(
+          '   Day ${day.dayNumber} (${day.displayDate}): ${day.activities.length} activities');
+      for (int j = 0; j < day.activities.length; j++) {
+        final activity = day.activities[j];
+        print('     [$j] ${activity.timeSlot}: ${activity.title}');
+      }
     }
   }
 
@@ -256,6 +327,27 @@ class _AIChatScreenState extends State<AIChatScreen> {
     }
   }
 
+  /// Navigate to weather query screen with itinerary
+  void _navigateToWeatherQueryScreen() {
+    if (_detectedItinerary.isNotEmpty) {
+      Navigator.pushNamed(
+        context,
+        AppRoutes.weatherQueryScreen,
+        arguments: {
+          'itinerary': _detectedItinerary,
+          'source': 'ai_chat',
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('No itinerary available to display'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
+
   /// Scroll to bottom of chat
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -278,6 +370,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
     print('   - IsTyping: $_isTyping');
     print('   - IsLoading: $_isLoading');
     print('   - UseGlobalSession: $_useGlobalSession');
+    print('   - Detected locations: ${_detectedLocations.length}');
+    print('   - Detected itinerary days: ${_detectedItinerary.length}');
 
     print('   - Local messages:');
     for (int i = 0; i < _messages.length; i++) {
@@ -292,6 +386,36 @@ class _AIChatScreenState extends State<AIChatScreen> {
       final msg = globalMessages[i];
       print(
           '     [$i] ${msg.author}: ${msg.text.length > 50 ? msg.text.substring(0, 50) + "..." : msg.text}');
+    }
+
+    // Force re-analyze last AI response
+    _forceReanalyzeLastResponse();
+  }
+
+  /// Force re-analyze the last AI response for debugging
+  void _forceReanalyzeLastResponse() {
+    print('🔄 Force re-analyzing last AI response...');
+
+    // Find last AI response
+    final aiMessages = _messages.where((msg) => !msg.isFromUser).toList();
+    if (aiMessages.isNotEmpty) {
+      final lastAiMessage = aiMessages.last;
+      print('📄 Last AI message: ${lastAiMessage.text}');
+
+      // Clear current detections
+      setState(() {
+        _detectedLocations.clear();
+        _detectedItinerary.clear();
+      });
+
+      // Re-analyze
+      _analyzeResponse(lastAiMessage.text);
+
+      print('✅ Re-analysis completed');
+      print('   - New detected locations: ${_detectedLocations.length}');
+      print('   - New detected itinerary days: ${_detectedItinerary.length}');
+    } else {
+      print('❌ No AI messages found');
     }
   }
 
@@ -388,31 +512,84 @@ class _AIChatScreenState extends State<AIChatScreen> {
             ),
           ),
 
-          // Map Navigation Button (only show if locations detected)
-          if (_detectedLocations.isNotEmpty)
-            GestureDetector(
-              onTap: _navigateToLocationScreen,
-              child: Container(
-                width: 48.h,
-                height: 48.h,
-                decoration: BoxDecoration(
-                  color: appTheme.colorFF0373,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: appTheme.colorFF0373.withOpacity(0.3),
-                      blurRadius: 8.h,
-                      offset: Offset(0, 4.h),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.map_outlined,
-                  color: appTheme.whiteCustom,
-                  size: 24.h,
+          // Action Buttons
+          Row(
+            children: [
+              // Debug Button (temporary)
+              GestureDetector(
+                onTap: _debugPrintState,
+                child: Container(
+                  width: 40.h,
+                  height: 40.h,
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.bug_report,
+                    color: appTheme.whiteCustom,
+                    size: 20.h,
+                  ),
                 ),
               ),
-            ),
+
+              SizedBox(width: 8.h),
+
+              // Map Navigation Button (only show if locations detected)
+              if (_detectedLocations.isNotEmpty)
+                GestureDetector(
+                  onTap: _navigateToLocationScreen,
+                  child: Container(
+                    width: 48.h,
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: appTheme.colorFF0373,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: appTheme.colorFF0373.withOpacity(0.3),
+                          blurRadius: 8.h,
+                          offset: Offset(0, 4.h),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.map_outlined,
+                      color: appTheme.whiteCustom,
+                      size: 24.h,
+                    ),
+                  ),
+                ),
+
+              // Plan Button (only show if itinerary detected)
+              if (_detectedItinerary.isNotEmpty) ...[
+                if (_detectedLocations.isNotEmpty) SizedBox(width: 8.h),
+                GestureDetector(
+                  onTap: _navigateToWeatherQueryScreen,
+                  child: Container(
+                    width: 48.h,
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0373F3),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0373F3).withOpacity(0.3),
+                          blurRadius: 8.h,
+                          offset: Offset(0, 4.h),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.calendar_today,
+                      color: appTheme.whiteCustom,
+                      size: 24.h,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ],
       ),
     );
@@ -627,7 +804,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
                   fontFamily: 'Poppins',
                 ),
                 enabled: !_isTyping,
-                onSubmitted: (_) => _sendMessage(),
+                onSubmitted: (_) => _sendMessageFromInput(),
               ),
             ),
           ),
@@ -636,7 +813,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
           // Send Button
           GestureDetector(
-            onTap: _isTyping ? null : _sendMessage,
+            onTap: _isTyping ? null : _sendMessageFromInput,
             child: Container(
               width: 48.h,
               height: 48.h,
