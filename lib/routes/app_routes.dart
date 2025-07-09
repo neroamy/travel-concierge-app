@@ -4,7 +4,7 @@ import '../presentation/itinerary_screen/itinerary_screen.dart';
 import '../presentation/attraction_details_screen/attraction_details_screen.dart';
 import '../presentation/location_targeting_screen/location_targeting_screen.dart';
 import '../presentation/location_targeting_screen/location_targeting_screen_with_maps.dart';
-import '../presentation/weather_query_screen/weather_query_screen.dart';
+import '../presentation/plan_view_screen/plan_view_screen.dart';
 import '../presentation/ai_chat_screen/ai_chat_screen.dart';
 import '../presentation/profile_settings_screen/profile_settings_screen.dart';
 import '../presentation/sign_in_screen/sign_in_screen.dart';
@@ -20,7 +20,7 @@ class AppRoutes {
   static const String locationTargetingScreen = '/location_targeting_screen';
   static const String locationTargetingScreenWithMaps =
       '/location_targeting_screen_with_maps';
-  static const String weatherQueryScreen = '/weather_query_screen';
+  static const String planViewScreen = '/plan_view_screen';
   static const String aiChatScreen = '/ai_chat_screen';
   static const String profileSettingsScreen = '/profile_settings_screen';
   static const String testMockupScreen = '/test_mockup_screen';
@@ -35,7 +35,7 @@ class AppRoutes {
     locationTargetingScreen: (context) => const LocationTargetingScreen(),
     locationTargetingScreenWithMaps: (context) =>
         const LocationTargetingScreenWithMaps(),
-    weatherQueryScreen: (context) => const WeatherQueryScreen(),
+    planViewScreen: (context) => const PlanViewScreen(),
     aiChatScreen: (context) => const AIChatScreen(),
     profileSettingsScreen: (context) => const ProfileSettingsScreen(),
     testMockupScreen: (context) => const TestMockupScreen(),

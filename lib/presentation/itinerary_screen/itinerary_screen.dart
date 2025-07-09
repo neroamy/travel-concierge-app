@@ -522,7 +522,7 @@ class _ItineraryScreenState extends State<ItineraryScreen> {
 
   void _navigateToWeatherQuery() {
     // Navigate to weather query screen (node-id=10-3272)
-    Navigator.pushNamed(context, AppRoutes.weatherQueryScreen);
+    Navigator.pushNamed(context, AppRoutes.planViewScreen);
   }
 
   void _onActivityTap(ItineraryItemModel item) {

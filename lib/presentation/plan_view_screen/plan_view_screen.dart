@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../widgets/floating_chat_button.dart';
 
-class WeatherQueryScreen extends StatefulWidget {
-  const WeatherQueryScreen({super.key});
+class PlanViewScreen extends StatefulWidget {
+  const PlanViewScreen({super.key});
 
   @override
-  State<WeatherQueryScreen> createState() => _WeatherQueryScreenState();
+  State<PlanViewScreen> createState() => _PlanViewScreenState();
 }
 
-class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
+class _PlanViewScreenState extends State<PlanViewScreen> {
   // Selected filters and day
   String _selectedCategory = "schedule";
   int _selectedDay = 1; // Default to Day 1
@@ -228,42 +228,58 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
     );
   }
 
-  /// Category filter tabs exactly matching Figma design
+  /// Category filter tabs: 3 cột đều, icon + text
   Widget _buildCategoryTabs() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.h),
       child: Row(
-        children: List.generate(
-          _categories.length,
-          (index) => _buildCategoryTab(_categories[index]),
-        ),
-      ),
-    );
-  }
-
-  /// Individual category tab
-  Widget _buildCategoryTab(CategoryModel category) {
-    final bool isSelected = _selectedCategory == category.id;
-
-    return GestureDetector(
-      onTap: () => _onCategorySelected(category.id),
-      child: Container(
-        margin: EdgeInsets.only(right: 12.h),
-        padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0373F3) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20.h),
-          border: Border.all(
-            color:
-                isSelected ? const Color(0xFF0373F3) : const Color(0xFFE5E5E5),
-            width: 1.h,
-          ),
-        ),
-        child: Icon(
-          category.icon,
-          size: 20.h,
-          color: isSelected ? appTheme.whiteCustom : const Color(0xFF9E9E9E),
-        ),
+        children: List.generate(_categories.length, (index) {
+          final category = _categories[index];
+          final bool isSelected = _selectedCategory == category.id;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => _onCategorySelected(category.id),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12.h),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? const Color(0xFF0373F3)
+                          : Colors.transparent,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected
+                            ? const Color(0xFF0373F3)
+                            : const Color(0xFFE5E5E5),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(
+                      category.icon,
+                      size: 24.h,
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF9E9E9E),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    category.label,
+                    style: TextStyle(
+                      fontSize: 14.fSize,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected
+                          ? const Color(0xFF0373F3)
+                          : const Color(0xFF9E9E9E),
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
       ),
     );
   }
@@ -330,7 +346,7 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
     );
   }
 
-  /// Itinerary content with timeline - matching Figma exactly
+  /// Itinerary content với timeline liền mạch bằng Stack + timeline tổng, có background xám nhạt
   Widget _buildItineraryContent() {
     if (_itineraryItems.isEmpty) {
       return Center(
@@ -356,124 +372,147 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
       );
     }
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 16.h),
-      child: Column(
-        children: List.generate(
-          _itineraryItems.length,
-          (index) => _buildItineraryItem(
-            _itineraryItems[index],
-            isLast: index == _itineraryItems.length - 1,
-          ),
-        ),
-      ),
-    );
-  }
+    // Tính tổng chiều cao của tất cả item để vẽ timeline
+    final estimatedItemHeight = 72.h; // ước lượng chiều cao trung bình mỗi item
+    final timelineHeight = estimatedItemHeight * _itineraryItems.length;
 
-  /// Individual itinerary item with exact Figma styling
-  Widget _buildItineraryItem(ItineraryItemModel item, {bool isLast = false}) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 32.h),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      margin: EdgeInsets.only(top: 8.h, bottom: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF6F6F6),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 16.h),
+        child: Stack(
           children: [
-            // Time display
-            SizedBox(
-              width: 55.h,
-              child: Text(
-                item.time,
-                style: TextStyle(
-                  fontSize: 16.fSize,
-                  fontWeight: FontWeight.w600,
-                  color: appTheme.blackCustom,
-                  fontFamily: 'Poppins',
-                ),
+            // Timeline tổng chạy dọc
+            Positioned(
+              left: 55.h + 16.h + 16.0, // căn giữa timeline (đã tăng dot size)
+              top: 0,
+              bottom: 0,
+              child: Container(
+                width: 2.5,
+                height: timelineHeight,
+                color: const Color(0xFFE5E5E5),
               ),
             ),
-            SizedBox(width: 16.h),
-            // Timeline indicator
+            // Danh sách item overlay lên timeline
             Column(
-              children: [
-                Container(
-                  width: 12.h,
-                  height: 12.h,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: item.isActive
-                        ? const Color(0xFF0373F3)
-                        : const Color(0xFFE5E5E5),
-                  ),
-                  child: item.isActive
-                      ? Icon(
-                          Icons.location_on,
-                          color: appTheme.whiteCustom,
-                          size: 8.h,
-                        )
-                      : null,
-                ),
-                if (!isLast)
-                  Container(
-                    width: 2.h,
-                    height: 60.h,
-                    color: const Color(0xFFE5E5E5),
-                  ),
-              ],
-            ),
-            SizedBox(width: 16.h),
-            // Content section
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _onItineraryItemTap(item),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.title,
-                            style: TextStyle(
-                              fontSize: 16.fSize,
-                              fontWeight: FontWeight.w600,
-                              color: appTheme.blackCustom,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          SizedBox(height: 4.h),
-                          Text(
-                            item.subtitle,
-                            style: TextStyle(
-                              fontSize: 14.fSize,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF9E9E9E),
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Weather/Status icon
-                    Container(
-                      width: 40.h,
-                      height: 40.h,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFFF5F5F5),
-                      ),
-                      child: Center(
-                        child: Text(
-                          item.weatherIcon,
-                          style: TextStyle(fontSize: 18.fSize),
-                        ),
-                      ),
-                    ),
-                  ],
+              children: List.generate(
+                _itineraryItems.length,
+                (index) => _buildItineraryItem(
+                  _itineraryItems[index],
+                  isFirst: index == 0,
+                  isLast: index == _itineraryItems.length - 1,
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Individual itinerary item chỉ vẽ chấm tròn hoặc icon location, không vẽ line trên/dưới
+  Widget _buildItineraryItem(ItineraryItemModel item,
+      {bool isFirst = false, bool isLast = false}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 8.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Time display
+          SizedBox(
+            width: 55.h,
+            child: Text(
+              item.time,
+              style: TextStyle(
+                fontSize: 16.fSize,
+                fontWeight: FontWeight.w600,
+                color: appTheme.blackCustom,
+                fontFamily: 'Poppins',
+              ),
+            ),
+          ),
+          SizedBox(width: 16.h),
+          // Chấm tròn hoặc icon location overlay lên timeline
+          Container(
+            width: 32.0, // tăng width để dot/icon luôn căn giữa
+            height: 32.0,
+            alignment: Alignment.center,
+            child: Container(
+              width: 28.0,
+              height: 28.0,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: item.isActive
+                    ? const Color(0xFF0373F3)
+                    : const Color(0xFFE5E5E5),
+              ),
+              child: item.isActive
+                  ? Icon(
+                      Icons.location_on,
+                      color: appTheme.whiteCustom,
+                      size: 20.0,
+                    )
+                  : null,
+            ),
+          ),
+          SizedBox(width: 16.h),
+          // Content section
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _onItineraryItemTap(item),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.title,
+                          style: TextStyle(
+                            fontSize: 16.fSize,
+                            fontWeight: FontWeight.w600,
+                            color: appTheme.blackCustom,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          item.subtitle,
+                          style: TextStyle(
+                            fontSize: 14.fSize,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF9E9E9E),
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Weather/Status icon
+                  Container(
+                    width: 40.h,
+                    height: 40.h,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFF5F5F5),
+                    ),
+                    child: Center(
+                      child: Text(
+                        item.weatherIcon,
+                        style: TextStyle(fontSize: 18.fSize),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -605,6 +644,94 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
   void _navigateToHome() {
     Navigator.pushNamed(context, AppRoutes.travelExplorationScreen);
   }
+}
+
+class TimelineDotAndLine extends StatelessWidget {
+  final bool isFirst;
+  final bool isLast;
+  final bool isActive;
+  final double lineColorOpacity;
+  const TimelineDotAndLine({
+    Key? key,
+    required this.isFirst,
+    required this.isLast,
+    required this.isActive,
+    this.lineColorOpacity = 1.0,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 24,
+      child: CustomPaint(
+        size: Size(24, 64), // chiều cao sẽ tự động fit theo nội dung
+        painter: _TimelinePainter(
+          isFirst: isFirst,
+          isLast: isLast,
+          isActive: isActive,
+          lineColorOpacity: lineColorOpacity,
+        ),
+      ),
+    );
+  }
+}
+
+class _TimelinePainter extends CustomPainter {
+  final bool isFirst;
+  final bool isLast;
+  final bool isActive;
+  final double lineColorOpacity;
+  _TimelinePainter({
+    required this.isFirst,
+    required this.isLast,
+    required this.isActive,
+    required this.lineColorOpacity,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint linePaint = Paint()
+      ..color = const Color(0xFFE5E5E5).withOpacity(lineColorOpacity)
+      ..strokeWidth = 2.5
+      ..style = PaintingStyle.stroke;
+    final double centerX = size.width / 2;
+    final double dotRadius = 6;
+    final double top = 0;
+    final double bottom = size.height;
+    final double centerY = size.height / 2;
+
+    // Draw top line
+    if (!isFirst) {
+      canvas.drawLine(
+        Offset(centerX, top),
+        Offset(centerX, centerY - dotRadius),
+        linePaint,
+      );
+    }
+    // Draw bottom line
+    if (!isLast) {
+      canvas.drawLine(
+        Offset(centerX, centerY + dotRadius),
+        Offset(centerX, bottom),
+        linePaint,
+      );
+    }
+    // Draw dot
+    final Paint dotPaint = Paint()
+      ..color = isActive ? const Color(0xFF0373F3) : const Color(0xFFE5E5E5)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(centerX, centerY), dotRadius, dotPaint);
+    if (isActive) {
+      final Paint iconPaint = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill;
+      // Draw a small white location icon (simple circle for now)
+      canvas.drawCircle(Offset(centerX, centerY), 3, iconPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // Data models

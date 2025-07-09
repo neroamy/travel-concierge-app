@@ -748,7 +748,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                           ? () {
                               Navigator.pop(context);
                               Navigator.pushNamed(
-                                  context, AppRoutes.weatherQueryScreen);
+                                  context, AppRoutes.planViewScreen);
                             }
                           : null,
                     ),

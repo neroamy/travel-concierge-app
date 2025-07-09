@@ -401,11 +401,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   /// Navigate to weather query screen with itinerary
-  void _navigateToWeatherQueryScreen() {
+  void _navigateToPlanViewScreen() {
     if (_detectedItinerary.isNotEmpty) {
       Navigator.pushNamed(
         context,
-        AppRoutes.weatherQueryScreen,
+        AppRoutes.planViewScreen,
         arguments: {
           'itinerary': _detectedItinerary,
           'source': 'ai_chat',
@@ -648,7 +648,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
               if (_detectedItinerary.isNotEmpty) ...[
                 if (_detectedLocations.isNotEmpty) SizedBox(width: 8.h),
                 GestureDetector(
-                  onTap: _navigateToWeatherQueryScreen,
+                  onTap: _navigateToPlanViewScreen,
                   child: Container(
                     width: 48.h,
                     height: 48.h,
@@ -1012,7 +1012,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
                       color: const Color(0xFF0373F3),
                       onTap: () {
                         Navigator.pop(context);
-                        _navigateToWeatherQueryScreen();
+                        _navigateToPlanViewScreen();
                       },
                     ),
 
@@ -1108,7 +1108,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
   /// Show combined view (both itinerary and map)
   void _showCombinedView() {
     // For now, navigate to itinerary first, then user can access map from there
-    _navigateToWeatherQueryScreen();
+    _navigateToPlanViewScreen();
 
     // Show a snackbar to inform user
     ScaffoldMessenger.of(context).showSnackBar(
