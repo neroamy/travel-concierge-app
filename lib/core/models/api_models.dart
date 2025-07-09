@@ -1,3 +1,5 @@
+import 'dart:math';
+
 /// Message payload structure
 class MessagePayload {
   final String sessionId;
@@ -1001,18 +1003,129 @@ class AIResponseAnalyzer {
       {List<Map<String, dynamic>>? functionResponses}) {
     final List<PlaceSearchResult> places = [];
 
+    print('🔍 Starting location extraction...');
+
     // First try to extract from function responses (new API format)
     if (functionResponses != null && functionResponses.isNotEmpty) {
-      places.addAll(AIResponseAnalyzer.extractLocationResultsFromFunctions(
-          functionResponses));
+      final functionPlaces =
+          AIResponseAnalyzer.extractLocationResultsFromFunctions(
+              functionResponses);
+      places.addAll(functionPlaces);
+      print(
+          '📍 Extracted ${functionPlaces.length} places from function responses');
     }
 
-    // Fallback to text parsing (old format)
-    if (places.isEmpty && AIResponseAnalyzer.hasLocationListPattern(response)) {
-      places.addAll(ResponseParser.parseAIResponse(response));
+    // Fallback to text parsing (old format or mixed format)
+    if (places.isEmpty || AIResponseAnalyzer.hasLocationListPattern(response)) {
+      final textPlaces = ResponseParser.parseAIResponse(response);
+      places.addAll(textPlaces);
+      print('📍 Extracted ${textPlaces.length} places from text response');
+    }
+
+    // If still no places found, try to extract from any map_url in text
+    if (places.isEmpty &&
+        (response.contains('map_url') ||
+            response.contains('google.com/maps'))) {
+      final fallbackPlaces = _extractPlacesFromMapUrls(response);
+      places.addAll(fallbackPlaces);
+      print(
+          '📍 Extracted ${fallbackPlaces.length} places from map URLs in text');
+    }
+
+    print('🏁 Total places extracted: ${places.length}');
+    return places;
+  }
+
+  /// Extract places from map URLs found in text response
+  static List<PlaceSearchResult> _extractPlacesFromMapUrls(String response) {
+    final List<PlaceSearchResult> places = [];
+
+    try {
+      // Find all Google Maps URLs
+      final urlPattern = RegExp(r'https://maps\.google\.com[^\s\n]+');
+      final urlMatches = urlPattern.allMatches(response);
+
+      print('🔗 Found ${urlMatches.length} Google Maps URLs in response');
+
+      for (final match in urlMatches) {
+        final url = match.group(0)!;
+        print('🔗 Processing URL: $url');
+
+        // Extract place name from URL or surrounding text
+        final placeName = _extractPlaceNameFromContext(response, match.start);
+
+        if (placeName.isNotEmpty) {
+          // Generate approximate coordinates (you can improve this with geocoding)
+          final latitude = 35.6762 + (placeName.hashCode % 100) * 0.001;
+          final longitude = 139.6503 + (placeName.hashCode % 100) * 0.001;
+
+          places.add(PlaceSearchResult(
+            title: placeName,
+            address: 'Location from AI response',
+            highlights: 'Recommended by AI',
+            rating: 4.0,
+            latitude: latitude,
+            longitude: longitude,
+            googleMapsUrl: url,
+            placeId: null,
+            imageUrl: null,
+          ));
+
+          print('✅ Created place: $placeName');
+        }
+      }
+    } catch (e) {
+      print('❌ Error extracting places from map URLs: $e');
     }
 
     return places;
+  }
+
+  /// Extract place name from context around a URL
+  static String _extractPlaceNameFromContext(String text, int urlStart) {
+    try {
+      // Look for place name before the URL (within 100 characters)
+      final beforeUrl = text.substring(max(0, urlStart - 100), urlStart);
+
+      // Try to find a place name pattern
+      final namePatterns = [
+        RegExp(
+            r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*:?\s*$'), // Capitalized words
+        RegExp(r'\*\*([^*]+)\*\*'), // Bold text
+        RegExp(
+            r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+Google Maps'), // Name + Google Maps
+      ];
+
+      for (final pattern in namePatterns) {
+        final match = pattern.firstMatch(beforeUrl);
+        if (match != null && match.group(1) != null) {
+          final name = match.group(1)!.trim();
+          if (name.length > 2 && name.length < 50) {
+            print('📝 Extracted place name: $name');
+            return name;
+          }
+        }
+      }
+
+      // Fallback: use first capitalized words
+      final words = beforeUrl
+          .split(' ')
+          .where((word) =>
+              word.isNotEmpty &&
+              word[0] == word[0].toUpperCase() &&
+              word.length > 2)
+          .toList();
+
+      if (words.isNotEmpty) {
+        final name = words.take(3).join(' '); // Take up to 3 words
+        print('📝 Fallback place name: $name');
+        return name;
+      }
+    } catch (e) {
+      print('❌ Error extracting place name: $e');
+    }
+
+    return 'Unknown Location';
   }
 
   /// Get response summary for UI display

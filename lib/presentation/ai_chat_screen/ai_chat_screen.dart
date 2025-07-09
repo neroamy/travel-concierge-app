@@ -178,6 +178,12 @@ class _AIChatScreenState extends State<AIChatScreen> {
     final hasLocationList = AIResponseAnalyzer.hasLocationListPattern(response);
     print('   - Has location list pattern: $hasLocationList');
 
+    // Check for map_url in text response
+    final hasMapUrlInText = response.contains('map_url') ||
+        response.contains('google.com/maps') ||
+        response.contains('maps.google.com');
+    print('   - Has map_url in text: $hasMapUrlInText');
+
     // Check function responses for map_tool
     final hasMapTool =
         functionResponses?.any((fr) => fr['name'] == 'map_tool') ?? false;
@@ -197,6 +203,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
       }
     }
 
+    // ALWAYS try to extract locations and itinerary from text response
+    // This ensures we catch cases where AI returns structured data in text format
+
     // Handle itinerary detection
     if (hasItinerary) {
       print('📅 Processing itinerary response...');
@@ -204,13 +213,13 @@ class _AIChatScreenState extends State<AIChatScreen> {
     }
 
     // Handle location detection (from both text and function responses)
-    if (hasLocationList || hasMapTool) {
+    if (hasLocationList || hasMapTool || hasMapUrlInText) {
       print('📍 Processing location response...');
       _handleLocationResponse(response, functionResponses);
     }
 
-    // If neither detected, try general analysis
-    if (!hasItinerary && !hasLocationList && !hasMapTool) {
+    // If no specific patterns detected, still try to extract any structured data
+    if (!hasItinerary && !hasLocationList && !hasMapTool && !hasMapUrlInText) {
       print('❓ No specific patterns detected, trying general analysis...');
 
       // Use new analyzer that handles both text and function responses
@@ -439,6 +448,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
           ],
         ),
       ),
+      // Floating Action Button for quick access
+      floatingActionButton: _buildFloatingActionButton(),
     );
   }
 
@@ -809,6 +820,206 @@ class _AIChatScreenState extends State<AIChatScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Build floating action button for quick access to Map and Plan
+  Widget? _buildFloatingActionButton() {
+    // Only show if we have detected locations or itinerary
+    if (_detectedLocations.isEmpty && _detectedItinerary.isEmpty) {
+      return null;
+    }
+
+    return FloatingActionButton.extended(
+      onPressed: () {
+        _showQuickActionsDialog();
+      },
+      backgroundColor: appTheme.colorFF0373,
+      icon: Icon(
+        Icons.flash_on,
+        color: appTheme.whiteCustom,
+      ),
+      label: Text(
+        'Quick Actions',
+        style: TextStyle(
+          color: appTheme.whiteCustom,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  /// Show quick actions dialog
+  void _showQuickActionsDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: appTheme.whiteCustom,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.h),
+            topRight: Radius.circular(20.h),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              margin: EdgeInsets.only(top: 12.h),
+              width: 40.h,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.h),
+              ),
+            ),
+
+            Padding(
+              padding: EdgeInsets.all(24.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Quick Actions',
+                    style: TextStyle(
+                      fontSize: 20.fSize,
+                      fontWeight: FontWeight.w600,
+                      color: appTheme.blackCustom,
+                    ),
+                  ),
+
+                  SizedBox(height: 16.h),
+
+                  // Map Action
+                  if (_detectedLocations.isNotEmpty)
+                    _buildQuickActionTile(
+                      icon: Icons.map_outlined,
+                      title: 'View on Map',
+                      subtitle: '${_detectedLocations.length} locations found',
+                      color: appTheme.colorFF0373,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _navigateToLocationScreen();
+                      },
+                    ),
+
+                  // Plan Action
+                  if (_detectedItinerary.isNotEmpty)
+                    _buildQuickActionTile(
+                      icon: Icons.calendar_today,
+                      title: 'View Itinerary',
+                      subtitle: '${_detectedItinerary.length} days planned',
+                      color: const Color(0xFF0373F3),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _navigateToWeatherQueryScreen();
+                      },
+                    ),
+
+                  // Combined Action
+                  if (_detectedLocations.isNotEmpty &&
+                      _detectedItinerary.isNotEmpty)
+                    _buildQuickActionTile(
+                      icon: Icons.explore,
+                      title: 'Plan & Explore',
+                      subtitle: 'View both itinerary and map',
+                      color: Colors.green,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showCombinedView();
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build quick action tile
+  Widget _buildQuickActionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.h),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12.h),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48.h,
+              height: 48.h,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: appTheme.whiteCustom,
+                size: 24.h,
+              ),
+            ),
+            SizedBox(width: 16.h),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16.fSize,
+                      fontWeight: FontWeight.w600,
+                      color: appTheme.blackCustom,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 14.fSize,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: color,
+              size: 16.h,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Show combined view (both itinerary and map)
+  void _showCombinedView() {
+    // For now, navigate to itinerary first, then user can access map from there
+    _navigateToWeatherQueryScreen();
+
+    // Show a snackbar to inform user
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            'Viewing itinerary. Use the map button in the itinerary screen to see locations.'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 3),
       ),
     );
   }
