@@ -24,11 +24,16 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
 
   bool _sessionInitialized = false;
 
+  // Data availability tracking
+  bool _hasMapData = false;
+  bool _hasPlanData = false;
+
   @override
   void initState() {
     super.initState();
     _initializeSession();
     _initializeProfile();
+    _checkDataAvailability();
   }
 
   @override
@@ -67,6 +72,16 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
         // Trigger UI refresh to show user avatar
       });
     }
+  }
+
+  /// Check if map and plan data are available
+  void _checkDataAvailability() {
+    // For now, we'll set these to false since we don't have persistent data
+    // In a real app, you would check against a data service or local storage
+    setState(() {
+      _hasMapData = false; // TODO: Check actual map data availability
+      _hasPlanData = false; // TODO: Check actual plan data availability
+    });
   }
 
   void _onSearchSubmitted(String query) {
@@ -252,10 +267,11 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
               ],
             ),
           ),
-          // Floating Chat Button
-          const FloatingChatButton(),
+          // Floating Chat Button removed - now using Quick Actions instead
         ],
       ),
+      floatingActionButton: _buildQuickActionsButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }
@@ -339,6 +355,10 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                         ),
                       ),
                     ),
+
+                  SizedBox(height: 8.h),
+
+                  // Test Button
                 ],
               ),
             ],
@@ -622,6 +642,208 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
         children: List.generate(
           items.length,
           (index) => BottomNavItem(item: items[index]),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsButton() {
+    return FloatingActionButton(
+      onPressed: () {
+        _showQuickActionsDialog();
+      },
+      backgroundColor: appTheme.colorFF0373,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30.h),
+      ),
+      child: const Icon(
+        Icons.flash_on,
+        color: Colors.white,
+        size: 24,
+      ),
+    );
+  }
+
+  /// Show quick actions dialog
+  void _showQuickActionsDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: appTheme.whiteCustom,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.h),
+            topRight: Radius.circular(20.h),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              margin: EdgeInsets.only(top: 12.h),
+              width: 40.h,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(24.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Quick Actions',
+                      style: TextStyle(
+                        fontSize: 20.fSize,
+                        fontWeight: FontWeight.w600,
+                        color: appTheme.blackCustom,
+                      ),
+                    ),
+
+                    SizedBox(height: 16.h),
+
+                    // Chat with AI
+                    _buildQuickActionTile(
+                      icon: Icons.chat_bubble_outline,
+                      title: 'Chat with AI',
+                      subtitle: 'Get travel recommendations',
+                      color: appTheme.colorFF0373,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onSearchSubmitted('Tell me about travel destinations');
+                      },
+                    ),
+
+                    // Search Locations
+                    _buildQuickActionTile(
+                      icon: Icons.search,
+                      title: 'Search Locations',
+                      subtitle: 'Find places to visit',
+                      color: const Color(0xFF0373F3),
+                      isEnabled: _hasMapData,
+                      onTap: _hasMapData
+                          ? () {
+                              Navigator.pop(context);
+                              Navigator.pushNamed(
+                                  context, AppRoutes.locationTargetingScreen);
+                            }
+                          : null,
+                    ),
+
+                    // View Plan
+                    _buildQuickActionTile(
+                      icon: Icons.calendar_today,
+                      title: 'View Plan',
+                      subtitle: 'Check your itinerary',
+                      color: Colors.orange,
+                      isEnabled: _hasPlanData,
+                      onTap: _hasPlanData
+                          ? () {
+                              Navigator.pop(context);
+                              Navigator.pushNamed(
+                                  context, AppRoutes.weatherQueryScreen);
+                            }
+                          : null,
+                    ),
+
+                    // Test Mockup
+                    _buildQuickActionTile(
+                      icon: Icons.science_outlined,
+                      title: 'Test Mockup',
+                      subtitle: 'Test UI with mock data',
+                      color: Colors.green,
+                      isLast: true,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(
+                            context, AppRoutes.testMockupScreen);
+                      },
+                    ),
+
+                    // Add bottom padding for safe area
+                    SizedBox(height: 16.h),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build quick action tile
+  Widget _buildQuickActionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback? onTap,
+    bool isLast = false,
+    bool isEnabled = true,
+  }) {
+    return GestureDetector(
+      onTap: isEnabled ? onTap : null,
+      child: Container(
+        margin: EdgeInsets.only(bottom: isLast ? 0 : 12.h),
+        padding: EdgeInsets.all(16.h),
+        decoration: BoxDecoration(
+          color: color.withOpacity(isEnabled ? 0.1 : 0.05),
+          borderRadius: BorderRadius.circular(12.h),
+          border: Border.all(color: color.withOpacity(isEnabled ? 0.3 : 0.1)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48.h,
+              height: 48.h,
+              decoration: BoxDecoration(
+                color: isEnabled ? color : Colors.grey,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: appTheme.whiteCustom,
+                size: 24.h,
+              ),
+            ),
+            SizedBox(width: 16.h),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16.fSize,
+                      fontWeight: FontWeight.w600,
+                      color:
+                          isEnabled ? appTheme.blackCustom : Colors.grey[400],
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 14.fSize,
+                      color: isEnabled ? Colors.grey[600] : Colors.grey[400],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: isEnabled ? color : Colors.grey[400],
+              size: 16.h,
+            ),
+          ],
         ),
       ),
     );

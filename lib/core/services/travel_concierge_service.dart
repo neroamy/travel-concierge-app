@@ -248,6 +248,20 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
             final textParts = content.getTextParts();
             final functionResponses = content.getFunctionResponses();
 
+            // Debug: Log function responses
+            if (functionResponses.isNotEmpty) {
+              print('🔧 Found ${functionResponses.length} function responses:');
+              for (int i = 0; i < functionResponses.length; i++) {
+                final fr = functionResponses[i];
+                print('   [$i] Name: ${fr['name']}');
+                print('       Response type: ${fr['response'].runtimeType}');
+                if (fr['response'] is Map) {
+                  print(
+                      '       Response keys: ${(fr['response'] as Map).keys.toList()}');
+                }
+              }
+            }
+
             // Yield text parts as separate results
             for (String text in textParts) {
               if (text.trim().isNotEmpty) {

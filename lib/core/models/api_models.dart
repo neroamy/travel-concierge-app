@@ -101,8 +101,9 @@ class EventContent {
     final List<MessagePart> parts = partsJson.map((partJson) {
       return MessagePart(
         text: partJson['text'],
-        functionCall: partJson['functionCall'],
-        functionResponse: partJson['functionResponse'],
+        functionCall: partJson['functionCall'] ?? partJson['function_call'],
+        functionResponse:
+            partJson['functionResponse'] ?? partJson['function_response'],
       );
     }).toList();
 
@@ -531,36 +532,17 @@ class ResponseParser {
         final String? functionName = functionResponse['name'];
         print('🔧 Processing function: $functionName');
 
-        if (functionName == 'map_tool') {
+        if (functionName == 'map_tool' || functionName == 'poi_agent') {
           final dynamic response = functionResponse['response'];
           if (response is Map<String, dynamic>) {
             final dynamic placesData = response['places'];
             if (placesData is List) {
               print(
-                  '📍 Found ${placesData.length} places in map_tool response');
+                  '📍 Found ${placesData.length} places in $functionName response');
 
               for (final placeData in placesData) {
                 if (placeData is Map<String, dynamic>) {
                   final place = _parseMapToolPlace(placeData);
-                  if (place != null) {
-                    places.add(place);
-                    print('✅ Parsed place: ${place.title}');
-                  }
-                }
-              }
-            }
-          }
-        } else if (functionName == 'poi_agent') {
-          final dynamic response = functionResponse['response'];
-          if (response is Map<String, dynamic>) {
-            final dynamic placesData = response['places'];
-            if (placesData is List) {
-              print(
-                  '📍 Found ${placesData.length} places in poi_agent response');
-
-              for (final placeData in placesData) {
-                if (placeData is Map<String, dynamic>) {
-                  final place = _parsePoiAgentPlace(placeData);
                   if (place != null) {
                     places.add(place);
                     print('✅ Parsed place: ${place.title}');
@@ -605,6 +587,13 @@ class ResponseParser {
       print('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
       print('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
 
+      // Generate Google Maps URL only if not provided
+      String finalMapUrl = mapUrl;
+      if (finalMapUrl.isEmpty && latitude != 0.0 && longitude != 0.0) {
+        finalMapUrl = 'https://www.google.com/maps?q=$latitude,$longitude';
+        print('🔗 Generated Google Maps URL: $finalMapUrl');
+      }
+
       // Validate required fields
       if (placeName.isEmpty || address.isEmpty) {
         print('❌ Missing required fields for place');
@@ -618,7 +607,7 @@ class ResponseParser {
         rating: rating,
         latitude: latitude,
         longitude: longitude,
-        googleMapsUrl: mapUrl,
+        googleMapsUrl: finalMapUrl,
         placeId: placeId.isNotEmpty ? placeId : null,
         imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
       );
@@ -778,7 +767,9 @@ class AIResponseAnalyzer {
     print('🔍 Checking itinerary pattern in text...');
 
     // Multiple indicators for itinerary
-    final hasDayPattern = text.contains(RegExp(r'\*\*Day \d+ \([\d-]+\):\*\*'));
+    final hasDayPattern = text.contains(RegExp(r'\*\*Day \d+[^:]*:\*\*')) ||
+        text.contains(RegExp(r'\*\*Day \d+ \([\d-]+\):\*\*')) ||
+        text.contains(RegExp(r'\*\*Day \d+:[^*]*\*\*'));
     print('   - Has day pattern: $hasDayPattern');
 
     final hasTimeSlots = text.toLowerCase().contains('morning:') ||
@@ -786,7 +777,9 @@ class AIResponseAnalyzer {
         text.toLowerCase().contains('evening:') ||
         text.toLowerCase().contains('sáng:') ||
         text.toLowerCase().contains('chiều:') ||
-        text.toLowerCase().contains('tối:');
+        text.toLowerCase().contains('tối:') ||
+        text.toLowerCase().contains('am:') ||
+        text.toLowerCase().contains('pm:');
     print('   - Has time slots: $hasTimeSlots');
 
     final hasMultipleDays = RegExp(r'\*\*Day \d+').allMatches(text).length >= 2;
@@ -796,7 +789,9 @@ class AIResponseAnalyzer {
     final hasAlternativeDayPattern = text.contains(RegExp(r'Day \d+')) &&
         (text.contains('morning') ||
             text.contains('afternoon') ||
-            text.contains('evening'));
+            text.contains('evening') ||
+            text.contains('am') ||
+            text.contains('pm'));
     print('   - Has alternative day pattern: $hasAlternativeDayPattern');
 
     final result = (hasDayPattern && hasTimeSlots && hasMultipleDays) ||
@@ -885,9 +880,9 @@ class AIResponseAnalyzer {
       dayMatches = dayPattern1.allMatches(response).toList();
       print('🔍 Pattern 1 found ${dayMatches.length} matches');
 
-      // Pattern 2: Day X: or **Day X:**
+      // Pattern 2: Day X: or **Day X:** or **Day X: July 15, 2025**
       if (dayMatches.isEmpty) {
-        final dayPattern2 = RegExp(r'\*\*?Day (\d+):?\*\*?');
+        final dayPattern2 = RegExp(r'\*\*?Day (\d+):[^*]*\*\*?');
         dayMatches = dayPattern2.allMatches(response).toList();
         print('🔍 Pattern 2 found ${dayMatches.length} matches');
       }
@@ -1100,8 +1095,10 @@ class AIResponseAnalyzer {
       print('📍 Extracted ${textPlaces.length} places from text response');
     }
 
-    // If still no places found, try to extract from any map_url in text
+    // Only extract from map_url in text if we don't have function responses
+    // This prevents duplicate URLs when server already provides them
     if (places.isEmpty &&
+        (functionResponses == null || functionResponses.isEmpty) &&
         (response.contains('map_url') ||
             response.contains('google.com/maps'))) {
       final fallbackPlaces = _extractPlacesFromMapUrls(response);
@@ -1224,13 +1221,13 @@ class AIResponseAnalyzer {
         final String? functionName = functionResponse['name'];
         print('🔧 Processing function: $functionName');
 
-        if (functionName == 'map_tool') {
+        if (functionName == 'map_tool' || functionName == 'poi_agent') {
           final dynamic response = functionResponse['response'];
           if (response is Map<String, dynamic>) {
             final dynamic placesData = response['places'];
             if (placesData is List) {
               print(
-                  '📍 Found ${placesData.length} places in map_tool response');
+                  '📍 Found ${placesData.length} places in $functionName response');
 
               for (final placeData in placesData) {
                 if (placeData is Map<String, dynamic>) {
@@ -1279,6 +1276,13 @@ class AIResponseAnalyzer {
       print('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
       print('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
 
+      // Generate Google Maps URL only if not provided
+      String finalMapUrl = mapUrl;
+      if (finalMapUrl.isEmpty && latitude != 0.0 && longitude != 0.0) {
+        finalMapUrl = 'https://www.google.com/maps?q=$latitude,$longitude';
+        print('🔗 Generated Google Maps URL: $finalMapUrl');
+      }
+
       // Validate required fields
       if (placeName.isEmpty || address.isEmpty) {
         print('❌ Missing required fields for place');
@@ -1292,7 +1296,7 @@ class AIResponseAnalyzer {
         rating: rating,
         latitude: latitude,
         longitude: longitude,
-        googleMapsUrl: mapUrl,
+        googleMapsUrl: finalMapUrl,
         placeId: placeId.isNotEmpty ? placeId : null,
         imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
       );

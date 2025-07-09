@@ -7,8 +7,17 @@ import '../../widgets/safe_avatar_image.dart';
 
 class AIChatScreen extends StatefulWidget {
   final String? initialQuery;
+  final String? mockupResponse;
+  final List<Map<String, dynamic>>? mockupFunctionResponses;
+  final bool useMockupMode;
 
-  const AIChatScreen({super.key, this.initialQuery});
+  const AIChatScreen({
+    super.key,
+    this.initialQuery,
+    this.mockupResponse,
+    this.mockupFunctionResponses,
+    this.useMockupMode = false,
+  });
 
   @override
   State<AIChatScreen> createState() => _AIChatScreenState();
@@ -45,6 +54,13 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   /// Initialize chat with initial query if provided
   void _initializeChat() {
+    // If mockup mode is enabled and mockup data is provided, inject it first
+    if (widget.useMockupMode && widget.mockupResponse != null) {
+      print('🧪 Initializing chat with mockup data...');
+      injectMockupData(widget.mockupResponse!, widget.mockupFunctionResponses);
+    }
+
+    // Then handle initial query if provided
     if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
       _initialQuery = widget.initialQuery;
       _sendMessage(widget.initialQuery!);
@@ -66,11 +82,52 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
     print('💬 Sending message: "$message"');
 
+    // If in mockup mode, don't make API calls
+    if (widget.useMockupMode) {
+      print('🧪 Mockup mode enabled - skipping API call');
+      // Add user message to chat
+      final userMessage = ChatMessage.fromUser(message);
+      setState(() {
+        _messages.add(userMessage);
+      });
+      _scrollToBottom();
+      return;
+    }
+
     if (_useGlobalSession) {
       await _sendMessageViaGlobalService(message);
     } else {
       await _sendMessageViaLocalService(message);
     }
+  }
+
+  /// Inject mockup data for testing
+  void injectMockupData(
+      String response, List<Map<String, dynamic>>? functionResponses) {
+    print('🧪 Injecting mockup data for testing...');
+
+    // Add a fake user message for context
+    final fakeUserMessage =
+        ChatMessage.fromUser('Show me travel options for Maldives');
+
+    // Create a mock AI message
+    final mockMessage = ChatMessage.fromApiResponse(response, 'mock_agent');
+
+    setState(() {
+      _messages.add(fakeUserMessage);
+      _messages.add(mockMessage);
+      _isTyping = false;
+    });
+
+    // Analyze the mock response
+    _analyzeResponse(response, functionResponses: functionResponses);
+    _scrollToBottom();
+
+    print('✅ Mockup data injected successfully');
+    print('   - Added fake user message');
+    print('   - Added mock AI response');
+    print('   - Response length: ${response.length}');
+    print('   - Function responses: ${functionResponses?.length ?? 0}');
   }
 
   /// Send message via local travel service
@@ -452,11 +509,16 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
             // Input Section
             _buildInputSection(),
+
+            // Add bottom padding for floating action button
+            if (_detectedLocations.isNotEmpty || _detectedItinerary.isNotEmpty)
+              SizedBox(height: 80.h),
           ],
         ),
       ),
       // Floating Action Button for quick access
       floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -517,14 +579,37 @@ class _AIChatScreenState extends State<AIChatScreen> {
                     color: appTheme.blackCustom,
                   ),
                 ),
-                Text(
-                  _isTyping ? 'AI is typing...' : 'Online',
-                  style: TextStyle(
-                    fontSize: 12.fSize,
-                    fontWeight: FontWeight.w400,
-                    fontFamily: 'Poppins',
-                    color: _isTyping ? appTheme.colorFF0373 : Colors.green,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      _isTyping ? 'AI is typing...' : 'Online',
+                      style: TextStyle(
+                        fontSize: 12.fSize,
+                        fontWeight: FontWeight.w400,
+                        fontFamily: 'Poppins',
+                        color: _isTyping ? appTheme.colorFF0373 : Colors.green,
+                      ),
+                    ),
+                    if (widget.useMockupMode) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.orange,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'MOCKUP',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
@@ -833,28 +918,33 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   /// Build floating action button for quick access to Map and Plan
   Widget? _buildFloatingActionButton() {
-    // Only show if we have detected locations or itinerary
-    if (_detectedLocations.isEmpty && _detectedItinerary.isEmpty) {
-      return null;
-    }
+    // Disable Quick Actions button in AI Chat screen since we have Map and Plan buttons in header
+    // Quick Actions should only be shown in other screens like home
+    return null;
 
-    return FloatingActionButton.extended(
-      onPressed: () {
-        _showQuickActionsDialog();
-      },
-      backgroundColor: appTheme.colorFF0373,
-      icon: Icon(
-        Icons.flash_on,
-        color: appTheme.whiteCustom,
-      ),
-      label: Text(
-        'Quick Actions',
-        style: TextStyle(
-          color: appTheme.whiteCustom,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
+    // Original code (commented out):
+    // Only show if we have detected locations or itinerary
+    // if (_detectedLocations.isEmpty && _detectedItinerary.isEmpty) {
+    //   return null;
+    // }
+
+    // return FloatingActionButton.extended(
+    //   onPressed: () {
+    //     _showQuickActionsDialog();
+    //   },
+    //   backgroundColor: appTheme.colorFF0373,
+    //   icon: Icon(
+    //     Icons.flash_on,
+    //     color: appTheme.whiteCustom,
+    //   ),
+    //   label: Text(
+    //     'Quick Actions',
+    //     style: TextStyle(
+    //       color: appTheme.whiteCustom,
+    //       fontWeight: FontWeight.w600,
+    //     ),
+    //   ),
+    // );
   }
 
   /// Show quick actions dialog

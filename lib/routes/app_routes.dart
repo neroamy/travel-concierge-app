@@ -9,6 +9,7 @@ import '../presentation/ai_chat_screen/ai_chat_screen.dart';
 import '../presentation/profile_settings_screen/profile_settings_screen.dart';
 import '../presentation/sign_in_screen/sign_in_screen.dart';
 import '../presentation/splash_screen/splash_screen.dart';
+import '../presentation/test_mockup_screen/test_mockup_screen.dart';
 
 class AppRoutes {
   static const String splashScreen = '/splash_screen';
@@ -22,6 +23,7 @@ class AppRoutes {
   static const String weatherQueryScreen = '/weather_query_screen';
   static const String aiChatScreen = '/ai_chat_screen';
   static const String profileSettingsScreen = '/profile_settings_screen';
+  static const String testMockupScreen = '/test_mockup_screen';
   static const String initialRoute = '/initialRoute';
 
   static Map<String, WidgetBuilder> routes = {
@@ -36,6 +38,7 @@ class AppRoutes {
     weatherQueryScreen: (context) => const WeatherQueryScreen(),
     aiChatScreen: (context) => const AIChatScreen(),
     profileSettingsScreen: (context) => const ProfileSettingsScreen(),
+    testMockupScreen: (context) => const TestMockupScreen(),
     initialRoute: (context) => const SplashScreen(),
   };
 }

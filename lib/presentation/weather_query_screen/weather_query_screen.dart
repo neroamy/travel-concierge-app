@@ -11,11 +11,16 @@ class WeatherQueryScreen extends StatefulWidget {
 
 class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
   // Selected filters and day
-  String _selectedCategory = "Island";
+  String _selectedCategory = "schedule";
   int _selectedDay = 1; // Default to Day 1
 
-  // Categories for filter tabs
-  final List<String> _categories = ["Island", "Beach", "Resort"];
+  // Categories for filter tabs with icons
+  final List<CategoryModel> _categories = [
+    CategoryModel(id: "schedule", icon: Icons.schedule, label: "Schedule"),
+    CategoryModel(
+        id: "restaurant", icon: Icons.restaurant, label: "Restaurant"),
+    CategoryModel(id: "hotel", icon: Icons.hotel, label: "Hotel"),
+  ];
 
   // Day data - will be populated from AI response
   List<DayModel> _days = [];
@@ -172,8 +177,6 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
                 Expanded(
                   child: _buildItineraryContent(),
                 ),
-                _buildViewItineraryButton(),
-                SizedBox(height: 16.h),
               ],
             ),
           ),
@@ -239,14 +242,14 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
   }
 
   /// Individual category tab
-  Widget _buildCategoryTab(String category) {
-    final bool isSelected = _selectedCategory == category;
+  Widget _buildCategoryTab(CategoryModel category) {
+    final bool isSelected = _selectedCategory == category.id;
 
     return GestureDetector(
-      onTap: () => _onCategorySelected(category),
+      onTap: () => _onCategorySelected(category.id),
       child: Container(
         margin: EdgeInsets.only(right: 12.h),
-        padding: EdgeInsets.symmetric(horizontal: 24.h, vertical: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 12.h),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF0373F3) : Colors.transparent,
           borderRadius: BorderRadius.circular(20.h),
@@ -256,14 +259,10 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
             width: 1.h,
           ),
         ),
-        child: Text(
-          category,
-          style: TextStyle(
-            fontSize: 14.fSize,
-            fontWeight: FontWeight.w500,
-            color: isSelected ? appTheme.whiteCustom : const Color(0xFF9E9E9E),
-            fontFamily: 'Poppins',
-          ),
+        child: Icon(
+          category.icon,
+          size: 20.h,
+          color: isSelected ? appTheme.whiteCustom : const Color(0xFF9E9E9E),
         ),
       ),
     );
@@ -357,7 +356,7 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
       );
     }
 
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 16.h),
       child: Column(
         children: List.generate(
@@ -479,37 +478,6 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
     );
   }
 
-  /// "View specific itinerary" button exactly matching Figma
-  Widget _buildViewItineraryButton() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.h),
-      child: GestureDetector(
-        onTap: _onViewItineraryTap,
-        child: Container(
-          width: double.infinity,
-          height: 56.h,
-          decoration: BoxDecoration(
-            color: const Color(0xFF0373F3),
-            borderRadius: BorderRadius.circular(28.h),
-          ),
-          child: Center(
-            child: Text(
-              _aiItinerary != null
-                  ? "View AI Itinerary"
-                  : "View specific itinerary",
-              style: TextStyle(
-                fontSize: 16.fSize,
-                fontWeight: FontWeight.w600,
-                color: appTheme.whiteCustom,
-                fontFamily: 'Poppins',
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   /// Bottom navigation bar with Guide tab active
   Widget _buildBottomNavBar() {
     final List<BottomNavItemModel> navItems = [
@@ -597,9 +565,9 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
   }
 
   // Event handlers
-  void _onCategorySelected(String category) {
+  void _onCategorySelected(String categoryId) {
     setState(() {
-      _selectedCategory = category;
+      _selectedCategory = categoryId;
     });
     // TODO: Filter itinerary items based on category
   }
@@ -630,18 +598,6 @@ class _WeatherQueryScreenState extends State<WeatherQueryScreen> {
       SnackBar(
         content: Text('${item.title} details'),
         duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _onViewItineraryTap() {
-    // TODO: Navigate to detailed itinerary view or confirmation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_aiItinerary != null
-            ? 'Opening AI itinerary details...'
-            : 'Opening detailed itinerary...'),
-        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -689,5 +645,17 @@ class BottomNavItemModel {
     required this.label,
     required this.isSelected,
     required this.onTap,
+  });
+}
+
+class CategoryModel {
+  final String id;
+  final IconData icon;
+  final String label;
+
+  const CategoryModel({
+    required this.id,
+    required this.icon,
+    required this.label,
   });
 }

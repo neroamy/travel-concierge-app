@@ -111,6 +111,20 @@ class GlobalChatService {
           receivedAIResponse = true;
 
           // Continue to collect more parts instead of breaking
+        } else if (result.author == 'system') {
+          // Handle system messages (including function responses)
+          print('🔧 Processing system message: ${result.text}');
+
+          // Accumulate function responses from system messages
+          if (result.functionResponses != null &&
+              result.functionResponses!.isNotEmpty) {
+            allFunctionResponses.addAll(result.functionResponses!);
+            print(
+                '📦 Added ${result.functionResponses!.length} function responses from system message. Total: ${allFunctionResponses.length}');
+          }
+
+          // Mark that we received a response (even if it's a system message)
+          receivedAIResponse = true;
         } else {
           print('⚠️ Skipping non-AI message: ${result.author}');
         }
