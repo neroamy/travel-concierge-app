@@ -550,6 +550,25 @@ class ResponseParser {
               }
             }
           }
+        } else if (functionName == 'poi_agent') {
+          final dynamic response = functionResponse['response'];
+          if (response is Map<String, dynamic>) {
+            final dynamic placesData = response['places'];
+            if (placesData is List) {
+              print(
+                  '📍 Found ${placesData.length} places in poi_agent response');
+
+              for (final placeData in placesData) {
+                if (placeData is Map<String, dynamic>) {
+                  final place = _parsePoiAgentPlace(placeData);
+                  if (place != null) {
+                    places.add(place);
+                    print('✅ Parsed place: ${place.title}');
+                  }
+                }
+              }
+            }
+          }
         }
       } catch (e) {
         print('❌ Error processing function response: $e');
@@ -607,6 +626,65 @@ class ResponseParser {
       print('❌ Error parsing map tool place: $e');
       return null;
     }
+  }
+
+  /// Parse individual place from poi_agent response
+  static PlaceSearchResult? _parsePoiAgentPlace(
+      Map<String, dynamic> placeData) {
+    try {
+      final String placeName = placeData['place_name'] ?? '';
+      final String address = placeData['address'] ?? '';
+      final String highlights = placeData['highlights'] ?? '';
+      final String ratingStr = placeData['review_ratings'] ?? '0.0';
+      final String latStr = placeData['lat'] ?? '0.0';
+      final String longStr = placeData['long'] ?? '0.0';
+      final String imageUrl = placeData['image_url'] ?? '';
+      final String mapUrl = placeData['map_url'] ?? '';
+      final String placeId = placeData['place_id'] ?? '';
+
+      // Parse numeric values
+      final double rating = double.tryParse(ratingStr) ?? 0.0;
+      final double latitude = double.tryParse(latStr) ?? 0.0;
+      final double longitude = double.tryParse(longStr) ?? 0.0;
+
+      print('📋 Parsing poi_agent place:');
+      print('   - Name: $placeName');
+      print('   - Address: $address');
+      print('   - Rating: $rating');
+      print('   - Coordinates: $latitude, $longitude');
+      print('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
+      print('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
+
+      // Validate required fields
+      if (placeName.isEmpty || address.isEmpty) {
+        print('❌ Missing required fields for place');
+        return null;
+      }
+
+      return PlaceSearchResult(
+        title: placeName,
+        address: address,
+        highlights: highlights,
+        rating: rating,
+        latitude: latitude,
+        longitude: longitude,
+        googleMapsUrl: mapUrl.isNotEmpty
+            ? mapUrl
+            : _generateGoogleMapsUrl(latitude, longitude, placeName),
+        placeId: placeId.isNotEmpty ? placeId : null,
+        imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
+      );
+    } catch (e) {
+      print('❌ Error parsing poi_agent place: $e');
+      return null;
+    }
+  }
+
+  /// Generate Google Maps URL from coordinates and place name
+  static String _generateGoogleMapsUrl(
+      double lat, double lng, String placeName) {
+    final encodedPlaceName = Uri.encodeComponent(placeName);
+    return 'https://maps.google.com/maps?q=$lat,$lng&query=$encodedPlaceName';
   }
 }
 

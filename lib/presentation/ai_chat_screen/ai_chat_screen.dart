@@ -184,10 +184,13 @@ class _AIChatScreenState extends State<AIChatScreen> {
         response.contains('maps.google.com');
     print('   - Has map_url in text: $hasMapUrlInText');
 
-    // Check function responses for map_tool
+    // Check function responses for map_tool or poi_agent
     final hasMapTool =
         functionResponses?.any((fr) => fr['name'] == 'map_tool') ?? false;
+    final hasPoiAgent =
+        functionResponses?.any((fr) => fr['name'] == 'poi_agent') ?? false;
     print('   - Has map_tool function: $hasMapTool');
+    print('   - Has poi_agent function: $hasPoiAgent');
 
     // Debug function responses
     if (functionResponses != null && functionResponses.isNotEmpty) {
@@ -213,13 +216,17 @@ class _AIChatScreenState extends State<AIChatScreen> {
     }
 
     // Handle location detection (from both text and function responses)
-    if (hasLocationList || hasMapTool || hasMapUrlInText) {
+    if (hasLocationList || hasMapTool || hasMapUrlInText || hasPoiAgent) {
       print('📍 Processing location response...');
       _handleLocationResponse(response, functionResponses);
     }
 
     // If no specific patterns detected, still try to extract any structured data
-    if (!hasItinerary && !hasLocationList && !hasMapTool && !hasMapUrlInText) {
+    if (!hasItinerary &&
+        !hasLocationList &&
+        !hasMapTool &&
+        !hasMapUrlInText &&
+        !hasPoiAgent) {
       print('❓ No specific patterns detected, trying general analysis...');
 
       // Use new analyzer that handles both text and function responses

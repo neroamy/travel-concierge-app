@@ -1,0 +1,712 @@
+travel_concierge         |
+travel_concierge         | 2025-07-09 02:26:13,754 - INFO - google_llm.py:148 -
+travel_concierge         | LLM Response:
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Text:
+travel_concierge         | {
+travel_concierge         |   "places": [
+travel_concierge         |     {
+travel_concierge         |       "place_name": "Takayama Old Town",
+travel_concierge         |       "address": "Takayama, Gifu Prefecture, Japan",
+travel_concierge         |       "lat": "36.1445",
+travel_concierge         |       "long": "137.2536",
+travel_concierge         |       "review_ratings": "4.5",
+travel_concierge         |       "highlights": "Preserved Edo-era streets with traditional houses, shops, and sake breweries.",
+travel_concierge         |       "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Takayama_old_town_streetscape_01.jpg/1280px-Takayama_old_town_streetscape_01.jpg",
+travel_concierge         |       "map_url": "",
+travel_concierge         |       "place_id": ""
+travel_concierge         |     },
+travel_concierge         |     {
+travel_concierge         |       "place_name": "Hida Folk Village",
+travel_concierge         |       "address": "1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan",
+travel_concierge         |       "lat": "36.1565",
+travel_concierge         |       "long": "137.2384",
+travel_concierge         |       "review_ratings": "4.3",
+travel_concierge         |       "highlights": "Open-air museum showcasing traditional farmhouses and buildings from the Hida region.",
+travel_concierge         |       "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Hida_Folk_Village_03.jpg/1280px-Hida_Folk_Village_03.jpg",
+travel_concierge         |       "map_url": "",
+travel_concierge         |       "place_id": ""
+travel_concierge         |     },
+travel_concierge         |     {
+travel_concierge         |       "place_name": "Takayama Jinya",
+travel_concierge         |       "address": "1-5 Yaemachi, Takayama, Gifu 506-0035, Japan",
+travel_concierge         |       "lat": "36.1434",
+travel_concierge         |       "long": "137.2507",
+travel_concierge         |       "review_ratings": "4.2",
+travel_concierge         |       "highlights": "Former government building dating back to the Edo period, now a museum.",
+travel_concierge         |       "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Takayama_Jinya_Gate.jpg/1280px-Takayama_Jinya_Gate.jpg",
+travel_concierge         |       "map_url": "",
+travel_concierge         |       "place_id": ""
+travel_concierge         |     },
+travel_concierge         |     {
+travel_concierge         |       "place_name": "Higashiyama Walking Course",
+travel_concierge         |       "address": "Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan",
+travel_concierge         |       "lat": "36.1445",
+travel_concierge         |       "long": "137.2536",
+travel_concierge         |       "review_ratings": "4.0",
+travel_concierge         |       "highlights": "A scenic walking path through a collection of temples and shrines.",
+travel_concierge         |       "image_url": "https://livejapan.com/en/in-gifu/in-takayama_hida/in-takayama/article-a1000044/img/inbound/article_1000044pic1.jpg",
+travel_concierge         |       "map_url": "",
+travel_concierge         |       "place_id": ""
+travel_concierge         |     },
+travel_concierge         |     {
+travel_concierge         |       "place_name": "Morning Market",
+travel_concierge         |       "address": "Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)",
+travel_concierge         |       "lat": "36.1445",
+travel_concierge         |       "long": "137.2536",
+travel_concierge         |       "review_ratings": "3.9",
+travel_concierge         |       "highlights": "Lively markets selling local produce, crafts, and snacks.",
+travel_concierge         |       "image_url": "https://fastly.4sqi.net/img/general/600x600/24919007_3t5sZl-Cz4w2gUvD9W5e973VqEQk8xif3w5c7GkZ20c.jpg",
+travel_concierge         |       "map_url": "",
+travel_concierge         |       "place_id": ""
+travel_concierge         |     }
+travel_concierge         |   ]
+travel_concierge         | }
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Function calls:
+travel_concierge         |
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Raw response:
+travel_concierge         | {"sdk_http_response":{"headers":{"content-type":"application/json; charset=UTF-8","vary":"Origin, X-Origin, Referer","content-encoding":"gzip","date":"Wed, 09 Jul 2025 02:26:14 GMT","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=6125","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","transfer-encoding":"chunked"}},"candidates":[{"content":{"parts":[{"text":"{\n  \"places\": [\n    {\n      \"place_name\": \"Takayama Old Town\",\n      \"address\": \"Takayama, Gifu Prefecture, Japan\",\n      \"lat\": \"36.1445\",\n      \"long\": \"137.2536\",\n      \"review_ratings\": \"4.5\",\n      \"highlights\": \"Preserved Edo-era streets with traditional houses, shops, and sake breweries.\",\n      \"image_url\": \"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Takayama_old_town_streetscape_01.jpg/1280px-Takayama_old_town_streetscape_01.jpg\",\n      \"map_url\": \"\",\n      \"place_id\": \"\"\n    },\n    {\n      \"place_name\": \"Hida Folk Village\",\n      \"address\": \"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan\",\n      \"lat\": \"36.1565\",\n      \"long\": \"137.2384\",\n      \"review_ratings\": \"4.3\",\n      \"highlights\": \"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.\",\n      \"image_url\": \"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Hida_Folk_Village_03.jpg/1280px-Hida_Folk_Village_03.jpg\",\n      \"map_url\": \"\",\n      \"place_id\": \"\"\n    },\n    {\n      \"place_name\": \"Takayama Jinya\",\n      \"address\": \"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan\",\n      \"lat\": \"36.1434\",\n      \"long\": \"137.2507\",\n      \"review_ratings\": \"4.2\",\n      \"highlights\": \"Former government building dating back to the Edo period, now a museum.\",\n      \"image_url\": \"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Takayama_Jinya_Gate.jpg/1280px-Takayama_Jinya_Gate.jpg\",\n      \"map_url\": \"\",\n      \"place_id\": \"\"\n    },\n    {\n      \"place_name\": \"Higashiyama Walking Course\",\n      \"address\": \"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan\",\n      \"lat\": \"36.1445\",\n      \"long\": \"137.2536\",\n      \"review_ratings\": \"4.0\",\n      \"highlights\": \"A scenic walking path through a collection of temples and shrines.\",\n      \"image_url\": \"https://livejapan.com/en/in-gifu/in-takayama_hida/in-takayama/article-a1000044/img/inbound/article_1000044pic1.jpg\",\n      \"map_url\": \"\",\n      \"place_id\": \"\"\n    },\n    {\n      \"place_name\": \"Morning Market\",\n      \"address\": \"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)\",\n      \"lat\": \"36.1445\",\n      \"long\": \"137.2536\",\n      \"review_ratings\": \"3.9\",\n      \"highlights\": \"Lively markets selling local produce, crafts, and snacks.\",\n      \"image_url\": \"https://fastly.4sqi.net/img/general/600x600/24919007_3t5sZl-Cz4w2gUvD9W5e973VqEQk8xif3w5c7GkZ20c.jpg\",\n      \"map_url\": \"\",\n      \"place_id\": \"\"\n    }\n  ]\n}"}],"role":"model"},"finish_reason":"STOP","avg_logprobs":-0.29454149635013677}],"model_version":"gemini-2.0-flash-exp","usage_metadata":{"candidates_token_count":937,"candidates_tokens_details":[{"modality":"TEXT","token_count":937}],"prompt_token_count":972,"prompt_tokens_details":[{"modality":"TEXT","token_count":972}],"total_token_count":1909},"automatic_function_calling_history":[],"parsed":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Takayama_old_town_streetscape_01.jpg/1280px-Takayama_old_town_streetscape_01.jpg","map_url":"","place_id":""},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1565","long":"137.2384","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Hida_Folk_Village_03.jpg/1280px-Hida_Folk_Village_03.jpg","map_url":"","place_id":""},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1434","long":"137.2507","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Takayama_Jinya_Gate.jpg/1280px-Takayama_Jinya_Gate.jpg","map_url":"","place_id":""},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://livejapan.com/en/in-gifu/in-takayama_hida/in-takayama/article-a1000044/img/inbound/article_1000044pic1.jpg","map_url":"","place_id":""},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1445","long":"137.2536","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://fastly.4sqi.net/img/general/600x600/24919007_3t5sZl-Cz4w2gUvD9W5e973VqEQk8xif3w5c7GkZ20c.jpg","map_url":"","place_id":""}]}}
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         |
+travel_concierge         | 2025-07-09 02:26:13,756 - INFO - fast_api.py:814 - Generated event in agent run streaming: {"content":{"parts":[{"functionResponse":{"id":"adk-c4121fe5-3feb-4b74-afb4-302d390ef6f0","name":"poi_agent","response":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Takayama_old_town_streetscape_01.jpg/1280px-Takayama_old_town_streetscape_01.jpg","map_url":"","place_id":""},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1565","long":"137.2384","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Hida_Folk_Village_03.jpg/1280px-Hida_Folk_Village_03.jpg","map_url":"","place_id":""},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1434","long":"137.2507","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Takayama_Jinya_Gate.jpg/1280px-Takayama_Jinya_Gate.jpg","map_url":"","place_id":""},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://livejapan.com/en/in-gifu/in-takayama_hida/in-takayama/article-a1000044/img/inbound/article_1000044pic1.jpg","map_url":"","place_id":""},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1445","long":"137.2536","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://fastly.4sqi.net/img/general/600x600/24919007_3t5sZl-Cz4w2gUvD9W5e973VqEQk8xif3w5c7GkZ20c.jpg","map_url":"","place_id":""}]}}}],"role":"user"},"invocationId":"e-d81298dc-dcc7-4689-98be-a7cabf825369","author":"inspiration_agent","actions":{"stateDelta":{"poi":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Takayama_old_town_streetscape_01.jpg/1280px-Takayama_old_town_streetscape_01.jpg","map_url":"","place_id":""},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1565","long":"137.2384","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Hida_Folk_Village_03.jpg/1280px-Hida_Folk_Village_03.jpg","map_url":"","place_id":""},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1434","long":"137.2507","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Takayama_Jinya_Gate.jpg/1280px-Takayama_Jinya_Gate.jpg","map_url":"","place_id":""},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://livejapan.com/en/in-gifu/in-takayama_hida/in-takayama/article-a1000044/img/inbound/article_1000044pic1.jpg","map_url":"","place_id":""},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1445","long":"137.2536","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://fastly.4sqi.net/img/general/600x600/24919007_3t5sZl-Cz4w2gUvD9W5e973VqEQk8xif3w5c7GkZ20c.jpg","map_url":"","place_id":""}]}},"artifactDelta":{},"requestedAuthConfigs":{}},"id":"Cp1kkKI3","timestamp":1752027973.756346}
+travel_concierge         | 2025-07-09 02:26:13,756 - INFO - fast_api.py:814 - Generated event in agent run streaming: {"content":{"parts":[{"functionResponse":{"id":"adk-c4121fe5-3feb-4b74-afb4-302d390ef6f0","name":"poi_agent","response":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Takayama_old_town_streetscape_01.jpg/1280px-Takayama_old_town_streetscape_01.jpg","map_url":"","place_id":""},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1565","long":"137.2384","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Hida_Folk_Village_03.jpg/1280px-Hida_Folk_Village_03.jpg","map_url":"","place_id":""},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1434","long":"137.2507","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Takayama_Jinya_Gate.jpg/1280px-Takayama_Jinya_Gate.jpg","map_url":"","place_id":""},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://livejapan.com/en/in-gifu/in-takayama_hida/in-takayama/article-a1000044/img/inbound/article_1000044pic1.jpg","map_url":"","place_id":""},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1445","long":"137.2536","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://fastly.4sqi.net/img/general/600x600/24919007_3t5sZl-Cz4w2gUvD9W5e973VqEQk8xif3w5c7GkZ20c.jpg","map_url":"","place_id":""}]}}}],"role":"user"},"invocationId":"e-d81298dc-dcc7-4689-98be-a7cabf825369","author":"inspiration_agent","actions":{"stateDelta":{"poi":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Takayama_old_town_streetscape_01.jpg/1280px-Takayama_old_town_streetscape_01.jpg","map_url":"","place_id":""},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1565","long":"137.2384","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Hida_Folk_Village_03.jpg/1280px-Hida_Folk_Village_03.jpg","map_url":"","place_id":""},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1434","long":"137.2507","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Takayama_Jinya_Gate.jpg/1280px-Takayama_Jinya_Gate.jpg","map_url":"","place_id":""},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://livejapan.com/en/in-gifu/in-takayama_hida/in-takayama/article-a1000044/img/inbound/article_1000044pic1.jpg","map_url":"","place_id":""},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1445","long":"137.2536","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://fastly.4sqi.net/img/general/600x600/24919007_3t5sZl-Cz4w2gUvD9W5e973VqEQk8xif3w5c7GkZ20c.jpg","map_url":"","place_id":""}]}},"artifactDelta":{},"requestedAuthConfigs":{}},"id":"Cp1kkKI3","timestamp":1752027973.756346}
+travel_concierge         | 2025-07-09 02:26:13,823 - INFO - google_llm.py:85 - Sending out request, model: gemini-2.0-flash-exp, backend: ml_dev, stream: False
+travel_concierge         | 2025-07-09 02:26:13,823 - INFO - google_llm.py:85 - Sending out request, model: gemini-2.0-flash-exp, backend: ml_dev, stream: False
+travel_concierge         | 2025-07-09 02:26:13,826 - INFO - google_llm.py:91 -
+travel_concierge         | LLM Request:
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | System Instruction:
+travel_concierge         |
+travel_concierge         | You are travel inspiration agent who help users find their next big dream vacation destinations.
+travel_concierge         | Your role and goal is to help the user identify a destination and a few activities at the destination the user is interested in.
+travel_concierge         |
+travel_concierge         | As part of that, user may ask you for general history or knowledge about a destination, in that scenario, answer briefly in the best of your ability, but focus on the goal by relating your answer back to destinations and activities the user may in turn like.
+travel_concierge         | - You will call the two agent tool `place_agent(inspiration query)` and `poi_agent(destination)` when appropriate:
+travel_concierge         |   - Use `place_agent` to recommend general vacation destinations given vague ideas, be it a city, a region, a country.
+travel_concierge         |   - Use `poi_agent` to provide points of interests and acitivities suggestions, once the user has a specific city or region in mind.
+travel_concierge         |   - Everytime after `poi_agent` is invoked, call `map_tool` with the key being `poi` to verify the latitude and longitudes, and to populate map_url and place_id information.
+travel_concierge         | - Avoid asking too many questions. When user gives instructions like "inspire me", or "suggest some", just go ahead and call `place_agent`.
+travel_concierge         | - As follow up, you may gather a few information from the user to future their vacation inspirations.
+travel_concierge         | - Once the user selects their destination, then you help them by providing granular insights by being their personal local travel guide
+travel_concierge         |
+travel_concierge         | - Here's the optimal flow:
+travel_concierge         |   - inspire user for a dream vacation
+travel_concierge         |   - show them interesting things to do for the selected location
+travel_concierge         |   - provide Google Maps links and place IDs for easy navigation
+travel_concierge         |
+travel_concierge         | - Your role is only to identify possible destinations and acitivites.
+travel_concierge         | - Do not attempt to assume the role of `place_agent` and `poi_agent`, use them instead.
+travel_concierge         | - Do not attempt to plan an itinerary for the user with start dates and details, leave that to the planning_agent.
+travel_concierge         | - Transfer the user to planning_agent once the user wants to:
+travel_concierge         |   - Enumerate a more detailed full itinerary,
+travel_concierge         |   - Looking for flights and hotels deals.
+travel_concierge         |
+travel_concierge         | When presenting POI suggestions to the user, make sure to include:
+travel_concierge         | - The place name and address
+travel_concierge         | - Ratings and highlights
+travel_concierge         | - Google Maps URL (map_url) for easy navigation
+travel_concierge         | - Google Place ID (place_id) for reference
+travel_concierge         |
+travel_concierge         | - Please use the context info below for any user preferences:
+travel_concierge         | Current user:
+travel_concierge         |   <user_profile>
+travel_concierge         |   {'passport_nationality': 'Vietnamese', 'seat_preference': 'window', 'food_preference': 'Japanese cuisine - Ramen, Sushi, Sashimi', 'allergies': [], 'likes': ['temples', 'beaches', 'mountains', 'museums', 'nightlife', 'hiking', 'hot springs', 'beautiful scenery'], 'dislikes': ['remote locations', 'dangerous areas', 'places unsuitable for families with small children'], 'price_sensitivity': ['mid-range'], 'home': {'event_type': 'home', 'address': '2-chōme-40-2 Harayama, Midori Ward, Saitama, 336-0931', 'local_prefer_mode': 'drive'}}
+travel_concierge         |   </user_profile>
+travel_concierge         |
+travel_concierge         | Current time: 2025-07-09 02:24:04.975136
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | You are an agent. Your internal name is "inspiration_agent".
+travel_concierge         |
+travel_concierge         |  The description about you is "A travel inspiration agent who inspire users, and discover their next vacations; Provide information about places, activities, interests,"
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | You have a list of other agents to transfer to:
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: root_agent
+travel_concierge         | Agent description: A Travel Conceirge using the services of multiple sub-agents
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: planning_agent
+travel_concierge         | Agent description: This agent helps with travel planning and itinerary creation
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: booking_agent
+travel_concierge         | Agent description: This agent handles flight and hotel bookings
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: pre_trip_agent
+travel_concierge         | Agent description: Given an itinerary, this agent keeps up to date and provides relevant travel information to the user before the trip.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: in_trip_agent
+travel_concierge         | Agent description: Provide information about what the users need as part of the tour.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: post_trip_agent
+travel_concierge         | Agent description: A follow up agent to learn from user's experience; In turn improves the user's future trips planning and in-trip experience.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | If you are the best to answer the question according to your description, you
+travel_concierge         | can answer it.
+travel_concierge         |
+travel_concierge         | If another agent is better for answering the question according to its
+travel_concierge         | description, call `transfer_to_agent` function to transfer the
+travel_concierge         | question to that agent. When transferring, do not generate any text other than
+travel_concierge         | the function call.
+travel_concierge         |
+travel_concierge         | Your parent agent is root_agent. If neither the other agents nor
+travel_concierge         | you are best for answering the question according to the descriptions, transfer
+travel_concierge         | to your parent agent. If you don't have parent agent, try answer by yourself.
+travel_concierge         |
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Contents:
+travel_concierge         | {"parts":[{"text":"xin chào"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] said: What can I help you with today?\n"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"gợi ý plan roadtrip từ Saitama tới Kamikochi"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] called tool `transfer_to_agent` with parameters: {'agent_name': 'inspiration_agent'}"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] `transfer_to_agent` tool returned result: {}"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Okay, I can help you with inspiration for a road trip from Saitama to Kamikochi. Since you like mountains and beautiful scenery, Kamikochi is an excellent choice!\n\nTo make sure I tailor the suggestions to your taste, can you confirm if you have any specific interests along the way? For example, are you interested in historical sites, onsen (hot springs), or perhaps some unique local cuisine?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"hãy phản hồi bằng tiếng việt"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Kamikochi là một lựa chọn tuyệt vời cho chuyến đi từ Saitama. Nơi đây nổi tiếng với núi non hùng vĩ và phong cảnh tuyệt đẹp, rất phù hợp với sở thích của bạn.\n\nĐể tôi có thể gợi ý những điểm dừng chân phù hợp nhất trên đường đi, bạn có muốn ghé thăm những địa điểm cụ thể nào không? Ví dụ như các di tích lịch sử, suối nước nóng onsen, hay thưởng thức ẩm thực địa phương độc đáo?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"yeah,tôi thích onsen và món ăn địa phương"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Vậy thì trên đường đi từ Saitama đến Kamikochi, chúng ta có thể khám phá một vài điểm dừng chân nổi tiếng với onsen và ẩm thực địa phương.\n\nĐể tôi gợi ý một vài điểm đến tiềm năng nhé:\n\n1.  **Kusatsu Onsen:** Một trong những khu onsen nổi tiếng nhất Nhật Bản, với nguồn nước nóng tự nhiên chất lượng cao và không khí thị trấn onsen truyền thống.\n2.  **Takayama:** Thị trấn cổ kính với kiến trúc nhà gỗ đặc trưng, nổi tiếng với món thịt bò Hida và chợ sáng địa phương.\n3.  **Shirakawa-go:** Ngôi làng cổ với những ngôi nhà mái tranh Gassho-zukuri độc đáo, được UNESCO công nhận là Di sản Thế giới.\n\nBạn thấy hứng thú với địa điểm nào nhất không? Hoặc bạn có muốn tôi gợi ý thêm các lựa chọn khác không?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"tôi thích Takayama"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Takayama là một lựa chọn tuyệt vời. Đây là một thị trấn cổ kính với rất nhiều điều thú vị để khám phá.\n\nBây giờ, để tôi gợi ý một vài hoạt động và điểm tham quan nổi bật ở Takayama nhé:\n\n"},{"function_call":{"args":{"request":"Takayama"},"name":"poi_agent"}}],"role":"model"}
+travel_concierge         | {"parts":[{"function_response":{"name":"poi_agent","response":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Takayama_old_town_streetscape_01.jpg/1280px-Takayama_old_town_streetscape_01.jpg","map_url":"","place_id":""},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1565","long":"137.2384","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Hida_Folk_Village_03.jpg/1280px-Hida_Folk_Village_03.jpg","map_url":"","place_id":""},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1434","long":"137.2507","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Takayama_Jinya_Gate.jpg/1280px-Takayama_Jinya_Gate.jpg","map_url":"","place_id":""},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://livejapan.com/en/in-gifu/in-takayama_hida/in-takayama/article-a1000044/img/inbound/article_1000044pic1.jpg","map_url":"","place_id":""},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1445","long":"137.2536","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://fastly.4sqi.net/img/general/600x600/24919007_3t5sZl-Cz4w2gUvD9W5e973VqEQk8xif3w5c7GkZ20c.jpg","map_url":"","place_id":""}]}}}],"role":"user"}
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Functions:
+travel_concierge         | transfer_to_agent: {'agent_name': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | place_agent: {'request': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | poi_agent: {'request': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | map_tool: {'key': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         |
+travel_concierge         | 2025-07-09 02:26:13,826 - INFO - google_llm.py:91 -
+travel_concierge         | LLM Request:
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | System Instruction:
+travel_concierge         |
+travel_concierge         | You are travel inspiration agent who help users find their next big dream vacation destinations.
+travel_concierge         | Your role and goal is to help the user identify a destination and a few activities at the destination the user is interested in.
+travel_concierge         |
+travel_concierge         | As part of that, user may ask you for general history or knowledge about a destination, in that scenario, answer briefly in the best of your ability, but focus on the goal by relating your answer back to destinations and activities the user may in turn like.
+travel_concierge         | - You will call the two agent tool `place_agent(inspiration query)` and `poi_agent(destination)` when appropriate:
+travel_concierge         |   - Use `place_agent` to recommend general vacation destinations given vague ideas, be it a city, a region, a country.
+travel_concierge         |   - Use `poi_agent` to provide points of interests and acitivities suggestions, once the user has a specific city or region in mind.
+travel_concierge         |   - Everytime after `poi_agent` is invoked, call `map_tool` with the key being `poi` to verify the latitude and longitudes, and to populate map_url and place_id information.
+travel_concierge         | - Avoid asking too many questions. When user gives instructions like "inspire me", or "suggest some", just go ahead and call `place_agent`.
+travel_concierge         | - As follow up, you may gather a few information from the user to future their vacation inspirations.
+travel_concierge         | - Once the user selects their destination, then you help them by providing granular insights by being their personal local travel guide
+travel_concierge         |
+travel_concierge         | - Here's the optimal flow:
+travel_concierge         |   - inspire user for a dream vacation
+travel_concierge         |   - show them interesting things to do for the selected location
+travel_concierge         |   - provide Google Maps links and place IDs for easy navigation
+travel_concierge         |
+travel_concierge         | - Your role is only to identify possible destinations and acitivites.
+travel_concierge         | - Do not attempt to assume the role of `place_agent` and `poi_agent`, use them instead.
+travel_concierge         | - Do not attempt to plan an itinerary for the user with start dates and details, leave that to the planning_agent.
+travel_concierge         | - Transfer the user to planning_agent once the user wants to:
+travel_concierge         |   - Enumerate a more detailed full itinerary,
+travel_concierge         |   - Looking for flights and hotels deals.
+travel_concierge         |
+travel_concierge         | When presenting POI suggestions to the user, make sure to include:
+travel_concierge         | - The place name and address
+travel_concierge         | - Ratings and highlights
+travel_concierge         | - Google Maps URL (map_url) for easy navigation
+travel_concierge         | - Google Place ID (place_id) for reference
+travel_concierge         |
+travel_concierge         | - Please use the context info below for any user preferences:
+travel_concierge         | Current user:
+travel_concierge         |   <user_profile>
+travel_concierge         |   {'passport_nationality': 'Vietnamese', 'seat_preference': 'window', 'food_preference': 'Japanese cuisine - Ramen, Sushi, Sashimi', 'allergies': [], 'likes': ['temples', 'beaches', 'mountains', 'museums', 'nightlife', 'hiking', 'hot springs', 'beautiful scenery'], 'dislikes': ['remote locations', 'dangerous areas', 'places unsuitable for families with small children'], 'price_sensitivity': ['mid-range'], 'home': {'event_type': 'home', 'address': '2-chōme-40-2 Harayama, Midori Ward, Saitama, 336-0931', 'local_prefer_mode': 'drive'}}
+travel_concierge         |   </user_profile>
+travel_concierge         |
+travel_concierge         | Current time: 2025-07-09 02:24:04.975136
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | You are an agent. Your internal name is "inspiration_agent".
+travel_concierge         |
+travel_concierge         |  The description about you is "A travel inspiration agent who inspire users, and discover their next vacations; Provide information about places, activities, interests,"
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | You have a list of other agents to transfer to:
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: root_agent
+travel_concierge         | Agent description: A Travel Conceirge using the services of multiple sub-agents
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: planning_agent
+travel_concierge         | Agent description: This agent helps with travel planning and itinerary creation
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: booking_agent
+travel_concierge         | Agent description: This agent handles flight and hotel bookings
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: pre_trip_agent
+travel_concierge         | Agent description: Given an itinerary, this agent keeps up to date and provides relevant travel information to the user before the trip.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: in_trip_agent
+travel_concierge         | Agent description: Provide information about what the users need as part of the tour.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: post_trip_agent
+travel_concierge         | Agent description: A follow up agent to learn from user's experience; In turn improves the user's future trips planning and in-trip experience.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | If you are the best to answer the question according to your description, you
+travel_concierge         | can answer it.
+travel_concierge         |
+travel_concierge         | If another agent is better for answering the question according to its
+travel_concierge         | description, call `transfer_to_agent` function to transfer the
+travel_concierge         | question to that agent. When transferring, do not generate any text other than
+travel_concierge         | the function call.
+travel_concierge         |
+travel_concierge         | Your parent agent is root_agent. If neither the other agents nor
+travel_concierge         | you are best for answering the question according to the descriptions, transfer
+travel_concierge         | to your parent agent. If you don't have parent agent, try answer by yourself.
+travel_concierge         |
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Contents:
+travel_concierge         | {"parts":[{"text":"xin chào"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] said: What can I help you with today?\n"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"gợi ý plan roadtrip từ Saitama tới Kamikochi"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] called tool `transfer_to_agent` with parameters: {'agent_name': 'inspiration_agent'}"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] `transfer_to_agent` tool returned result: {}"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Okay, I can help you with inspiration for a road trip from Saitama to Kamikochi. Since you like mountains and beautiful scenery, Kamikochi is an excellent choice!\n\nTo make sure I tailor the suggestions to your taste, can you confirm if you have any specific interests along the way? For example, are you interested in historical sites, onsen (hot springs), or perhaps some unique local cuisine?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"hãy phản hồi bằng tiếng việt"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Kamikochi là một lựa chọn tuyệt vời cho chuyến đi từ Saitama. Nơi đây nổi tiếng với núi non hùng vĩ và phong cảnh tuyệt đẹp, rất phù hợp với sở thích của bạn.\n\nĐể tôi có thể gợi ý những điểm dừng chân phù hợp nhất trên đường đi, bạn có muốn ghé thăm những địa điểm cụ thể nào không? Ví dụ như các di tích lịch sử, suối nước nóng onsen, hay thưởng thức ẩm thực địa phương độc đáo?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"yeah,tôi thích onsen và món ăn địa phương"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Vậy thì trên đường đi từ Saitama đến Kamikochi, chúng ta có thể khám phá một vài điểm dừng chân nổi tiếng với onsen và ẩm thực địa phương.\n\nĐể tôi gợi ý một vài điểm đến tiềm năng nhé:\n\n1.  **Kusatsu Onsen:** Một trong những khu onsen nổi tiếng nhất Nhật Bản, với nguồn nước nóng tự nhiên chất lượng cao và không khí thị trấn onsen truyền thống.\n2.  **Takayama:** Thị trấn cổ kính với kiến trúc nhà gỗ đặc trưng, nổi tiếng với món thịt bò Hida và chợ sáng địa phương.\n3.  **Shirakawa-go:** Ngôi làng cổ với những ngôi nhà mái tranh Gassho-zukuri độc đáo, được UNESCO công nhận là Di sản Thế giới.\n\nBạn thấy hứng thú với địa điểm nào nhất không? Hoặc bạn có muốn tôi gợi ý thêm các lựa chọn khác không?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"tôi thích Takayama"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Takayama là một lựa chọn tuyệt vời. Đây là một thị trấn cổ kính với rất nhiều điều thú vị để khám phá.\n\nBây giờ, để tôi gợi ý một vài hoạt động và điểm tham quan nổi bật ở Takayama nhé:\n\n"},{"function_call":{"args":{"request":"Takayama"},"name":"poi_agent"}}],"role":"model"}
+travel_concierge         | {"parts":[{"function_response":{"name":"poi_agent","response":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Takayama_old_town_streetscape_01.jpg/1280px-Takayama_old_town_streetscape_01.jpg","map_url":"","place_id":""},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1565","long":"137.2384","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Hida_Folk_Village_03.jpg/1280px-Hida_Folk_Village_03.jpg","map_url":"","place_id":""},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1434","long":"137.2507","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Takayama_Jinya_Gate.jpg/1280px-Takayama_Jinya_Gate.jpg","map_url":"","place_id":""},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://livejapan.com/en/in-gifu/in-takayama_hida/in-takayama/article-a1000044/img/inbound/article_1000044pic1.jpg","map_url":"","place_id":""},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1445","long":"137.2536","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://fastly.4sqi.net/img/general/600x600/24919007_3t5sZl-Cz4w2gUvD9W5e973VqEQk8xif3w5c7GkZ20c.jpg","map_url":"","place_id":""}]}}}],"role":"user"}
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Functions:
+travel_concierge         | transfer_to_agent: {'agent_name': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | place_agent: {'request': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | poi_agent: {'request': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | map_tool: {'key': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         |
+travel_concierge         | 2025-07-09 02:26:13,828 - INFO - models.py:7421 - AFC is enabled with max remote calls: 10.
+travel_concierge         | 2025-07-09 02:26:17,626 - INFO - _client.py:1740 - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent "HTTP/1.1 200 OK"
+travel_concierge         | 2025-07-09 02:26:17,627 - WARNING - types.py:5158 - Warning: there are non-text parts in the response: ['function_call'], returning concatenated text result from text parts. Check the full candidates.content.parts accessor to get the full model response.
+travel_concierge         | 2025-07-09 02:26:17,628 - INFO - google_llm.py:148 -
+travel_concierge         | LLM Response:
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Text:
+travel_concierge         | Dưới đây là một vài điểm tham quan và hoạt động nổi bật ở Takayama mà bạn có thể thích:
+travel_concierge         |
+travel_concierge         | *   **Phố cổ Takayama:** Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.
+travel_concierge         |     *   Địa chỉ: Takayama, Gifu Prefecture, Japan
+travel_concierge         |     *   Đánh giá: 4.5 sao
+travel_concierge         |     *   Điểm nổi bật: Kiến trúc truyền thống, mua sắm quà lưu niệm, thưởng thức rượu sake địa phương.
+travel_concierge         | *   **Làng dân gian Hida:** Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.
+travel_concierge         |     *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan
+travel_concierge         |     *   Đánh giá: 4.3 sao
+travel_concierge         |     *   Điểm nổi bật: Tìm hiểu về văn hóa và kiến trúc truyền thống của vùng Hida.
+travel_concierge         | *   **Takayama Jinya:** Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.
+travel_concierge         |     *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan
+travel_concierge         |     *   Đánh giá: 4.2 sao
+travel_concierge         |     *   Điểm nổi bật: Tìm hiểu về lịch sử và chính trị của Takayama thời Edo.
+travel_concierge         | *   **Higashiyama Walking Course:** Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.
+travel_concierge         |     *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan
+travel_concierge         |     *   Đánh giá: 4.0 sao
+travel_concierge         |     *   Điểm nổi bật: Tản bộ thư giãn, ngắm cảnh và khám phá các ngôi chùa, đền thờ.
+travel_concierge         | *   **Chợ sáng:** Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.
+travel_concierge         |     *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)
+travel_concierge         |     *   Đánh giá: 3.9 sao
+travel_concierge         |     *   Điểm nổi bật: Thưởng thức ẩm thực địa phương, mua sắm quà lưu niệm.
+travel_concierge         |
+travel_concierge         | Để thuận tiện cho bạn, tôi sẽ cung cấp thêm thông tin về vị trí địa lý của các địa điểm này.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Function calls:
+travel_concierge         | name: map_tool, args: {'key': 'poi_agent_response'}
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Raw response:
+travel_concierge         | {"sdk_http_response":{"headers":{"content-type":"application/json; charset=UTF-8","vary":"Origin, X-Origin, Referer","content-encoding":"gzip","date":"Wed, 09 Jul 2025 02:26:18 GMT","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=3723","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","transfer-encoding":"chunked"}},"candidates":[{"content":{"parts":[{"text":"Dưới đây là một vài điểm tham quan và hoạt động nổi bật ở Takayama mà bạn có thể thích:\n\n*   **Phố cổ Takayama:** Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.\n    *   Địa chỉ: Takayama, Gifu Prefecture, Japan\n    *   Đánh giá: 4.5 sao\n    *   Điểm nổi bật: Kiến trúc truyền thống, mua sắm quà lưu niệm, thưởng thức rượu sake địa phương.\n*   **Làng dân gian Hida:** Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.\n    *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan\n    *   Đánh giá: 4.3 sao\n    *   Điểm nổi bật: Tìm hiểu về văn hóa và kiến trúc truyền thống của vùng Hida.\n*   **Takayama Jinya:** Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.\n    *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan\n    *   Đánh giá: 4.2 sao\n    *   Điểm nổi bật: Tìm hiểu về lịch sử và chính trị của Takayama thời Edo.\n*   **Higashiyama Walking Course:** Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.\n    *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan\n    *   Đánh giá: 4.0 sao\n    *   Điểm nổi bật: Tản bộ thư giãn, ngắm cảnh và khám phá các ngôi chùa, đền thờ.\n*   **Chợ sáng:** Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.\n    *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)\n    *   Đánh giá: 3.9 sao\n    *   Điểm nổi bật: Thưởng thức ẩm thực địa phương, mua sắm quà lưu niệm.\n\nĐể thuận tiện cho bạn, tôi sẽ cung cấp thêm thông tin về vị trí địa lý của các địa điểm này.\n\n"},{"function_call":{"args":{"key":"poi_agent_response"},"name":"map_tool"}}],"role":"model"},"finish_reason":"STOP","avg_logprobs":-0.07255726139040759}],"model_version":"gemini-2.0-flash-exp","usage_metadata":{"candidates_token_count":548,"candidates_tokens_details":[{"modality":"TEXT","token_count":548}],"prompt_token_count":2415,"prompt_tokens_details":[{"modality":"TEXT","token_count":2415}],"total_token_count":2963},"automatic_function_calling_history":[]}
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         |
+travel_concierge         | 2025-07-09 02:26:17,628 - INFO - google_llm.py:148 -
+travel_concierge         | LLM Response:
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Text:
+travel_concierge         | Dưới đây là một vài điểm tham quan và hoạt động nổi bật ở Takayama mà bạn có thể thích:
+travel_concierge         |
+travel_concierge         | *   **Phố cổ Takayama:** Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.
+travel_concierge         |     *   Địa chỉ: Takayama, Gifu Prefecture, Japan
+travel_concierge         |     *   Đánh giá: 4.5 sao
+travel_concierge         |     *   Điểm nổi bật: Kiến trúc truyền thống, mua sắm quà lưu niệm, thưởng thức rượu sake địa phương.
+travel_concierge         | *   **Làng dân gian Hida:** Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.
+travel_concierge         |     *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan
+travel_concierge         |     *   Đánh giá: 4.3 sao
+travel_concierge         |     *   Điểm nổi bật: Tìm hiểu về văn hóa và kiến trúc truyền thống của vùng Hida.
+travel_concierge         | *   **Takayama Jinya:** Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.
+travel_concierge         |     *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan
+travel_concierge         |     *   Đánh giá: 4.2 sao
+travel_concierge         |     *   Điểm nổi bật: Tìm hiểu về lịch sử và chính trị của Takayama thời Edo.
+travel_concierge         | *   **Higashiyama Walking Course:** Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.
+travel_concierge         |     *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan
+travel_concierge         |     *   Đánh giá: 4.0 sao
+travel_concierge         |     *   Điểm nổi bật: Tản bộ thư giãn, ngắm cảnh và khám phá các ngôi chùa, đền thờ.
+travel_concierge         | *   **Chợ sáng:** Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.
+travel_concierge         |     *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)
+travel_concierge         |     *   Đánh giá: 3.9 sao
+travel_concierge         |     *   Điểm nổi bật: Thưởng thức ẩm thực địa phương, mua sắm quà lưu niệm.
+travel_concierge         |
+travel_concierge         | Để thuận tiện cho bạn, tôi sẽ cung cấp thêm thông tin về vị trí địa lý của các địa điểm này.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Function calls:
+travel_concierge         | name: map_tool, args: {'key': 'poi_agent_response'}
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Raw response:
+travel_concierge         | {"sdk_http_response":{"headers":{"content-type":"application/json; charset=UTF-8","vary":"Origin, X-Origin, Referer","content-encoding":"gzip","date":"Wed, 09 Jul 2025 02:26:18 GMT","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=3723","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","transfer-encoding":"chunked"}},"candidates":[{"content":{"parts":[{"text":"Dưới đây là một vài điểm tham quan và hoạt động nổi bật ở Takayama mà bạn có thể thích:\n\n*   **Phố cổ Takayama:** Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.\n    *   Địa chỉ: Takayama, Gifu Prefecture, Japan\n    *   Đánh giá: 4.5 sao\n    *   Điểm nổi bật: Kiến trúc truyền thống, mua sắm quà lưu niệm, thưởng thức rượu sake địa phương.\n*   **Làng dân gian Hida:** Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.\n    *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan\n    *   Đánh giá: 4.3 sao\n    *   Điểm nổi bật: Tìm hiểu về văn hóa và kiến trúc truyền thống của vùng Hida.\n*   **Takayama Jinya:** Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.\n    *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan\n    *   Đánh giá: 4.2 sao\n    *   Điểm nổi bật: Tìm hiểu về lịch sử và chính trị của Takayama thời Edo.\n*   **Higashiyama Walking Course:** Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.\n    *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan\n    *   Đánh giá: 4.0 sao\n    *   Điểm nổi bật: Tản bộ thư giãn, ngắm cảnh và khám phá các ngôi chùa, đền thờ.\n*   **Chợ sáng:** Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.\n    *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)\n    *   Đánh giá: 3.9 sao\n    *   Điểm nổi bật: Thưởng thức ẩm thực địa phương, mua sắm quà lưu niệm.\n\nĐể thuận tiện cho bạn, tôi sẽ cung cấp thêm thông tin về vị trí địa lý của các địa điểm này.\n\n"},{"function_call":{"args":{"key":"poi_agent_response"},"name":"map_tool"}}],"role":"model"},"finish_reason":"STOP","avg_logprobs":-0.07255726139040759}],"model_version":"gemini-2.0-flash-exp","usage_metadata":{"candidates_token_count":548,"candidates_tokens_details":[{"modality":"TEXT","token_count":548}],"prompt_token_count":2415,"prompt_tokens_details":[{"modality":"TEXT","token_count":2415}],"total_token_count":2963},"automatic_function_calling_history":[]}
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         |
+travel_concierge         | 2025-07-09 02:26:17,628 - INFO - fast_api.py:814 - Generated event in agent run streaming: {"content":{"parts":[{"text":"Dưới đây là một vài điểm tham quan và hoạt động nổi bật ở Takayama mà bạn có thể thích:\n\n*   **Phố cổ Takayama:** Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.\n    *   Địa chỉ: Takayama, Gifu Prefecture, Japan\n    *   Đánh giá: 4.5 sao\n    *   Điểm nổi bật: Kiến trúc truyền thống, mua sắm quà lưu niệm, thưởng thức rượu sake địa phương.\n*   **Làng dân gian Hida:** Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.\n    *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan\n    *   Đánh giá: 4.3 sao\n    *   Điểm nổi bật: Tìm hiểu về văn hóa và kiến trúc truyền thống của vùng Hida.\n*   **Takayama Jinya:** Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.\n    *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan\n    *   Đánh giá: 4.2 sao\n    *   Điểm nổi bật: Tìm hiểu về lịch sử và chính trị của Takayama thời Edo.\n*   **Higashiyama Walking Course:** Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.\n    *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan\n    *   Đánh giá: 4.0 sao\n    *   Điểm nổi bật: Tản bộ thư giãn, ngắm cảnh và khám phá các ngôi chùa, đền thờ.\n*   **Chợ sáng:** Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.\n    *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)\n    *   Đánh giá: 3.9 sao\n    *   Điểm nổi bật: Thưởng thức ẩm thực địa phương, mua sắm quà lưu niệm.\n\nĐể thuận tiện cho bạn, tôi sẽ cung cấp thêm thông tin về vị trí địa lý của các địa điểm này.\n\n"},{"functionCall":{"id":"adk-0a5f9421-582e-4000-9c81-88e52ae380c0","args":{"key":"poi_agent_response"},"name":"map_tool"}}],"role":"model"},"usageMetadata":{"candidatesTokenCount":548,"candidatesTokensDetails":[{"modality":"TEXT","tokenCount":548}],"promptTokenCount":2415,"promptTokensDetails":[{"modality":"TEXT","tokenCount":2415}],"totalTokenCount":2963},"invocationId":"e-d81298dc-dcc7-4689-98be-a7cabf825369","author":"inspiration_agent","actions":{"stateDelta":{},"artifactDelta":{},"requestedAuthConfigs":{}},"longRunningToolIds":[],"id":"9VkIbbgA","timestamp":1752027973.760083}
+travel_concierge         | 2025-07-09 02:26:17,628 - INFO - fast_api.py:814 - Generated event in agent run streaming: {"content":{"parts":[{"text":"Dưới đây là một vài điểm tham quan và hoạt động nổi bật ở Takayama mà bạn có thể thích:\n\n*   **Phố cổ Takayama:** Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.\n    *   Địa chỉ: Takayama, Gifu Prefecture, Japan\n    *   Đánh giá: 4.5 sao\n    *   Điểm nổi bật: Kiến trúc truyền thống, mua sắm quà lưu niệm, thưởng thức rượu sake địa phương.\n*   **Làng dân gian Hida:** Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.\n    *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan\n    *   Đánh giá: 4.3 sao\n    *   Điểm nổi bật: Tìm hiểu về văn hóa và kiến trúc truyền thống của vùng Hida.\n*   **Takayama Jinya:** Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.\n    *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan\n    *   Đánh giá: 4.2 sao\n    *   Điểm nổi bật: Tìm hiểu về lịch sử và chính trị của Takayama thời Edo.\n*   **Higashiyama Walking Course:** Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.\n    *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan\n    *   Đánh giá: 4.0 sao\n    *   Điểm nổi bật: Tản bộ thư giãn, ngắm cảnh và khám phá các ngôi chùa, đền thờ.\n*   **Chợ sáng:** Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.\n    *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)\n    *   Đánh giá: 3.9 sao\n    *   Điểm nổi bật: Thưởng thức ẩm thực địa phương, mua sắm quà lưu niệm.\n\nĐể thuận tiện cho bạn, tôi sẽ cung cấp thêm thông tin về vị trí địa lý của các địa điểm này.\n\n"},{"functionCall":{"id":"adk-0a5f9421-582e-4000-9c81-88e52ae380c0","args":{"key":"poi_agent_response"},"name":"map_tool"}}],"role":"model"},"usageMetadata":{"candidatesTokenCount":548,"candidatesTokensDetails":[{"modality":"TEXT","tokenCount":548}],"promptTokenCount":2415,"promptTokensDetails":[{"modality":"TEXT","tokenCount":2415}],"totalTokenCount":2963},"invocationId":"e-d81298dc-dcc7-4689-98be-a7cabf825369","author":"inspiration_agent","actions":{"stateDelta":{},"artifactDelta":{},"requestedAuthConfigs":{}},"longRunningToolIds":[],"id":"9VkIbbgA","timestamp":1752027973.760083}
+travel_concierge         | 2025-07-09 02:26:21,686 - INFO - fast_api.py:814 - Generated event in agent run streaming: {"content":{"parts":[{"functionResponse":{"id":"adk-0a5f9421-582e-4000-9c81-88e52ae380c0","name":"map_tool","response":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1430124","long":"137.259537","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpfk6aIxY-CeJ0Dk9KHji1Ql6JZCVeFTlXRFcCJDwAEivwjwMZQQG75ytbAtHh1Bh1ruimQW1sg_KyxTivD9tD3vDTpMehyj3WDMVuPgy2dmQgtGUV3BRSBZUJCgB4zc7t9U-c2cgTIP8CriyfGVTGN3U2yWiNhLlopMug_CzK-0KYYtGOfathOErp-SyqXyKtw3QOcFzF8LoXiTbgjG6Am5ZIJ6MGtx3HjKl7fsiBsTK1BzfnNxNtIOkjjkL8yglxxCBqC7_MUdxuOJAqLWhnlyPniMMw3_Xw7HYRTqMGC1iM3nF3vMC-KQ3B80gjkzfzBSHwvSBcWquTPFZ0F1_rCPueAw2JZr4tw-4IMe5kveaVOds3PHtAeRSA3N7Xq6-vFYpIYfO52Nyud3yfS4e3ZU6NULfDP9Ot15ERm6273U02QWz1YzE-edHfyrDCLVySWbrc-zTOT0cvHjTjX6HWUPcgTVV7gapMLVxxhL8dzhzIRrB4e6pm_mJwCpkrjKYWVh9vAYe0CrWX5686FGKHCom___LpaX8MD8_X3hgIsHvWtP_kChBdsd5lAjF_z5Gy6GWdnm&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJsTyzQIy7AmARLiOSzcZFfRs","place_id":"ChIJsTyzQIy7AmARLiOSzcZFfRs"},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1324902","long":"137.2350898","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogperIdEVMLLK6jd82jj0K---B5CRkDDlr4mizypC0FQolLGsKvFX2X5zyyofB8ikmEVWdIjvW0Iz_Gl_rzU-SYE43OluchwYVD-CXq3kjx11x5spYcK_1LRj0_RGh1NFt2HDyVW3tzi6P56g_7-bke9iT1LYVHjdya7uriAXBPcElQeXwv0wiaYqTsBZAcEryT5KN6Fsd23TEtGc_UyTBnbyVPFQupcn_sTDCG7Zxdg8nuK0jAvQct938k9WvgZ92A6N3fBEIAMwSOPB3AyG2JUjKLNq_NKZK59NwvcZh3FmuKuw03EKJeD3jX-BVnaORm6uBeGpBZSV48blxSuwele_W12ifmx2aKE9OijK34va9C0nE0dmcISfotuLhkGx_4ZCBfAhfyDbk0H57iX5vrM8X6s28UwSKHNL-l56yOyZj2_MlmsDZeJRj-cAWivOyHqa6kbOUl0Vai2JZeNntemXFDLlCG26tU_homP-Odcmqj3vzxKQJf4j0AyFMb_0q36oz6MLZg_tb2OR5V-rzDrSHvxiGy2vtuwX9oMxcnwoZNsJ4MfI-4SUvOzn0Ww75FeiZelH&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJmWTYrzm7AmARRPwmwmCypNY","place_id":"ChIJmWTYrzm7AmARRPwmwmCypNY"},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1396312","long":"137.2576045","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpfCC5biIENOvfNFpgbVGbJQh7jog_-umZmeac4ExHvbOxs75CxKZZwbrFQbySMQKtbei6P6RyYhZ8ELsc-ajR21jcXHKORFUICrdFEyCpSnii_JtQP7g6nAqO1XFgCePuOJ35L9scxcL-Z5ijiIZtmkgyRPrswr5uAiEuwyXJ6JMOWu3EPilBlWZdVkqVqnk102V7IBjSjAv4S-fEUQer5JG865KwdYGBoGZYheHEz5h2y8vMS4HTl4Q1BqmddLfb3jwjVf6qnKRqPMYSvQgENHuKVw4qEb9qxZ2pLO39yGEY_Qfbf_lc6F18dmZ5uJq7T8KEz4lt8aCHCOfEA0P-4phy1Djxv66jgfQ8cd-eIumvM3DkkLY1MxssXtAph0u8P2nJsRyaf-AH7jpIuFVJ-KxcIxfzOeY0t8_hX9N7vMTaHt34ZNaSe8wK6Ro5S_JmysH1crmVqAYPr--pFU_-XH4RYsXB0ofBrFcWvwtrf8dmfI&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmAR4ZH1chH39Zg","place_id":"ChIJj29EXtm6AmAR4ZH1chH39Zg"},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1449631","long":"137.2632852","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpf2tWvvju-63SfktYuPSL2FV3QwyPHgh-Aud1oQLf9LhplwOrWrES7fBDiM-OG5yq5AkoDWQkoJ06KSE4fQteiiD8HuJUQVMQRKNdzSudG0Vg7HLnR74BIxebHtv_L5dWO4p3vPeDmacvgNMLuwCmCfXwep_x03Wt06-nzz2qWprDJeId4zLislDanA-EPHjzbvEoo_2ZNM2kMg-6y5qGeXze3m8cfVQb02qhQBOYVim4FwWGseO9wVQZyq6NlEUy_95H6qLhzYgYBxhYvQtsUTlu_8q1pDWvUrKTJDlHG23iy6_l2JitNYVGj1hB88ucKDVZtao9jOEmVRZIeRh-BGw3G5-QME4TcrXjO6s8m4SCGWmf7_Ph5cRy5bpAsINCEVk1blQWrjf-bCQtAAtHENwlt4dHW25JohWlZIADL3ub24zkBnHgcL0wmmCd8edVYNH8xjFtG8miAEWEKEdU2-oxkReCMaTLvFq_vApfmy69OX8a9ewq8KDEuBVsrxrpRaOlR3yQU1JsL7GKf_2R_uGUe1hddFqT4TlMOVtct1J24Ul5acLbGxvwPRrMtFWM54Zjee2IgmQA&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJ99T-4q67AmAR-m13onTdQ_w","place_id":"ChIJ99T-4q67AmAR-m13onTdQ_w"},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1396447","long":"137.2582195","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpes1FL9BBOvmz1Il4KfJRsIsF5oEQitTuG2uhJebRi_Jytim4fc3gl66bplJvJ7pGZBPrtQGpbyj6LKsD2_ZlgzG5lKyO6x6qRiKXO9If1Y0OthwyR3fI1jw6Gv8DOiPGknvwq7LHCCR43XrSXgWo2Xv0RxR9Ddu6jPvDBLLbqTROTXJKbQSpg0NKGbWQwIuJMhrV7C8v8pFbsCgHhyqeqNJXIlGbN-Sut_b0B2jMDo7-ZIZtaVlmK6eA0-zPwsxNiVIVfEVRtmp7_PnQGVtcJPRyDFJNCgvTxuCpQhRjEsv_MrGM11-MSDcywF0YJ5ZdJnT0x2IUwcQQnqQpBHI8pFqNRPVW4Mf-_xWHUSS-0U84C8UjRNwlLLEFl5IsDV7Fi7crmhof1wKbEPg_HG82wYkIaOrWKwe-d4uE_I8lC_OpfoHxbT5EBn2Vk8qMvnuvHK4BiQKCPTZJMFhXGsKUmkY3Rl5mgn1m0KkHA5CPbXNgImIpJB3k6YjbHGQYxAIo3h1f9GIfx5-P5xGVYpZ8QySeHsjnU21L4kdjpz7g257nbdTjqIuP-DPWocE0Z02wmULRWTM3x7ig&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmARNsKdHGWF8I0","place_id":"ChIJj29EXtm6AmARNsKdHGWF8I0"}]}}}],"role":"user"},"invocationId":"e-d81298dc-dcc7-4689-98be-a7cabf825369","author":"inspiration_agent","actions":{"stateDelta":{},"artifactDelta":{},"requestedAuthConfigs":{}},"id":"uQX6Pnuq","timestamp":1752027981.68615}
+travel_concierge         | 2025-07-09 02:26:21,686 - INFO - fast_api.py:814 - Generated event in agent run streaming: {"content":{"parts":[{"functionResponse":{"id":"adk-0a5f9421-582e-4000-9c81-88e52ae380c0","name":"map_tool","response":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1430124","long":"137.259537","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpfk6aIxY-CeJ0Dk9KHji1Ql6JZCVeFTlXRFcCJDwAEivwjwMZQQG75ytbAtHh1Bh1ruimQW1sg_KyxTivD9tD3vDTpMehyj3WDMVuPgy2dmQgtGUV3BRSBZUJCgB4zc7t9U-c2cgTIP8CriyfGVTGN3U2yWiNhLlopMug_CzK-0KYYtGOfathOErp-SyqXyKtw3QOcFzF8LoXiTbgjG6Am5ZIJ6MGtx3HjKl7fsiBsTK1BzfnNxNtIOkjjkL8yglxxCBqC7_MUdxuOJAqLWhnlyPniMMw3_Xw7HYRTqMGC1iM3nF3vMC-KQ3B80gjkzfzBSHwvSBcWquTPFZ0F1_rCPueAw2JZr4tw-4IMe5kveaVOds3PHtAeRSA3N7Xq6-vFYpIYfO52Nyud3yfS4e3ZU6NULfDP9Ot15ERm6273U02QWz1YzE-edHfyrDCLVySWbrc-zTOT0cvHjTjX6HWUPcgTVV7gapMLVxxhL8dzhzIRrB4e6pm_mJwCpkrjKYWVh9vAYe0CrWX5686FGKHCom___LpaX8MD8_X3hgIsHvWtP_kChBdsd5lAjF_z5Gy6GWdnm&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJsTyzQIy7AmARLiOSzcZFfRs","place_id":"ChIJsTyzQIy7AmARLiOSzcZFfRs"},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1324902","long":"137.2350898","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogperIdEVMLLK6jd82jj0K---B5CRkDDlr4mizypC0FQolLGsKvFX2X5zyyofB8ikmEVWdIjvW0Iz_Gl_rzU-SYE43OluchwYVD-CXq3kjx11x5spYcK_1LRj0_RGh1NFt2HDyVW3tzi6P56g_7-bke9iT1LYVHjdya7uriAXBPcElQeXwv0wiaYqTsBZAcEryT5KN6Fsd23TEtGc_UyTBnbyVPFQupcn_sTDCG7Zxdg8nuK0jAvQct938k9WvgZ92A6N3fBEIAMwSOPB3AyG2JUjKLNq_NKZK59NwvcZh3FmuKuw03EKJeD3jX-BVnaORm6uBeGpBZSV48blxSuwele_W12ifmx2aKE9OijK34va9C0nE0dmcISfotuLhkGx_4ZCBfAhfyDbk0H57iX5vrM8X6s28UwSKHNL-l56yOyZj2_MlmsDZeJRj-cAWivOyHqa6kbOUl0Vai2JZeNntemXFDLlCG26tU_homP-Odcmqj3vzxKQJf4j0AyFMb_0q36oz6MLZg_tb2OR5V-rzDrSHvxiGy2vtuwX9oMxcnwoZNsJ4MfI-4SUvOzn0Ww75FeiZelH&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJmWTYrzm7AmARRPwmwmCypNY","place_id":"ChIJmWTYrzm7AmARRPwmwmCypNY"},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1396312","long":"137.2576045","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpfCC5biIENOvfNFpgbVGbJQh7jog_-umZmeac4ExHvbOxs75CxKZZwbrFQbySMQKtbei6P6RyYhZ8ELsc-ajR21jcXHKORFUICrdFEyCpSnii_JtQP7g6nAqO1XFgCePuOJ35L9scxcL-Z5ijiIZtmkgyRPrswr5uAiEuwyXJ6JMOWu3EPilBlWZdVkqVqnk102V7IBjSjAv4S-fEUQer5JG865KwdYGBoGZYheHEz5h2y8vMS4HTl4Q1BqmddLfb3jwjVf6qnKRqPMYSvQgENHuKVw4qEb9qxZ2pLO39yGEY_Qfbf_lc6F18dmZ5uJq7T8KEz4lt8aCHCOfEA0P-4phy1Djxv66jgfQ8cd-eIumvM3DkkLY1MxssXtAph0u8P2nJsRyaf-AH7jpIuFVJ-KxcIxfzOeY0t8_hX9N7vMTaHt34ZNaSe8wK6Ro5S_JmysH1crmVqAYPr--pFU_-XH4RYsXB0ofBrFcWvwtrf8dmfI&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmAR4ZH1chH39Zg","place_id":"ChIJj29EXtm6AmAR4ZH1chH39Zg"},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1449631","long":"137.2632852","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpf2tWvvju-63SfktYuPSL2FV3QwyPHgh-Aud1oQLf9LhplwOrWrES7fBDiM-OG5yq5AkoDWQkoJ06KSE4fQteiiD8HuJUQVMQRKNdzSudG0Vg7HLnR74BIxebHtv_L5dWO4p3vPeDmacvgNMLuwCmCfXwep_x03Wt06-nzz2qWprDJeId4zLislDanA-EPHjzbvEoo_2ZNM2kMg-6y5qGeXze3m8cfVQb02qhQBOYVim4FwWGseO9wVQZyq6NlEUy_95H6qLhzYgYBxhYvQtsUTlu_8q1pDWvUrKTJDlHG23iy6_l2JitNYVGj1hB88ucKDVZtao9jOEmVRZIeRh-BGw3G5-QME4TcrXjO6s8m4SCGWmf7_Ph5cRy5bpAsINCEVk1blQWrjf-bCQtAAtHENwlt4dHW25JohWlZIADL3ub24zkBnHgcL0wmmCd8edVYNH8xjFtG8miAEWEKEdU2-oxkReCMaTLvFq_vApfmy69OX8a9ewq8KDEuBVsrxrpRaOlR3yQU1JsL7GKf_2R_uGUe1hddFqT4TlMOVtct1J24Ul5acLbGxvwPRrMtFWM54Zjee2IgmQA&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJ99T-4q67AmAR-m13onTdQ_w","place_id":"ChIJ99T-4q67AmAR-m13onTdQ_w"},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1396447","long":"137.2582195","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpes1FL9BBOvmz1Il4KfJRsIsF5oEQitTuG2uhJebRi_Jytim4fc3gl66bplJvJ7pGZBPrtQGpbyj6LKsD2_ZlgzG5lKyO6x6qRiKXO9If1Y0OthwyR3fI1jw6Gv8DOiPGknvwq7LHCCR43XrSXgWo2Xv0RxR9Ddu6jPvDBLLbqTROTXJKbQSpg0NKGbWQwIuJMhrV7C8v8pFbsCgHhyqeqNJXIlGbN-Sut_b0B2jMDo7-ZIZtaVlmK6eA0-zPwsxNiVIVfEVRtmp7_PnQGVtcJPRyDFJNCgvTxuCpQhRjEsv_MrGM11-MSDcywF0YJ5ZdJnT0x2IUwcQQnqQpBHI8pFqNRPVW4Mf-_xWHUSS-0U84C8UjRNwlLLEFl5IsDV7Fi7crmhof1wKbEPg_HG82wYkIaOrWKwe-d4uE_I8lC_OpfoHxbT5EBn2Vk8qMvnuvHK4BiQKCPTZJMFhXGsKUmkY3Rl5mgn1m0KkHA5CPbXNgImIpJB3k6YjbHGQYxAIo3h1f9GIfx5-P5xGVYpZ8QySeHsjnU21L4kdjpz7g257nbdTjqIuP-DPWocE0Z02wmULRWTM3x7ig&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmARNsKdHGWF8I0","place_id":"ChIJj29EXtm6AmARNsKdHGWF8I0"}]}}}],"role":"user"},"invocationId":"e-d81298dc-dcc7-4689-98be-a7cabf825369","author":"inspiration_agent","actions":{"stateDelta":{},"artifactDelta":{},"requestedAuthConfigs":{}},"id":"uQX6Pnuq","timestamp":1752027981.68615}
+travel_concierge         | 2025-07-09 02:26:21,758 - INFO - google_llm.py:85 - Sending out request, model: gemini-2.0-flash-exp, backend: ml_dev, stream: False
+travel_concierge         | 2025-07-09 02:26:21,758 - INFO - google_llm.py:85 - Sending out request, model: gemini-2.0-flash-exp, backend: ml_dev, stream: False
+travel_concierge         | 2025-07-09 02:26:21,759 - INFO - google_llm.py:91 -
+travel_concierge         | LLM Request:
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | System Instruction:
+travel_concierge         |
+travel_concierge         | You are travel inspiration agent who help users find their next big dream vacation destinations.
+travel_concierge         | Your role and goal is to help the user identify a destination and a few activities at the destination the user is interested in.
+travel_concierge         |
+travel_concierge         | As part of that, user may ask you for general history or knowledge about a destination, in that scenario, answer briefly in the best of your ability, but focus on the goal by relating your answer back to destinations and activities the user may in turn like.
+travel_concierge         | - You will call the two agent tool `place_agent(inspiration query)` and `poi_agent(destination)` when appropriate:
+travel_concierge         |   - Use `place_agent` to recommend general vacation destinations given vague ideas, be it a city, a region, a country.
+travel_concierge         |   - Use `poi_agent` to provide points of interests and acitivities suggestions, once the user has a specific city or region in mind.
+travel_concierge         |   - Everytime after `poi_agent` is invoked, call `map_tool` with the key being `poi` to verify the latitude and longitudes, and to populate map_url and place_id information.
+travel_concierge         | - Avoid asking too many questions. When user gives instructions like "inspire me", or "suggest some", just go ahead and call `place_agent`.
+travel_concierge         | - As follow up, you may gather a few information from the user to future their vacation inspirations.
+travel_concierge         | - Once the user selects their destination, then you help them by providing granular insights by being their personal local travel guide
+travel_concierge         |
+travel_concierge         | - Here's the optimal flow:
+travel_concierge         |   - inspire user for a dream vacation
+travel_concierge         |   - show them interesting things to do for the selected location
+travel_concierge         |   - provide Google Maps links and place IDs for easy navigation
+travel_concierge         |
+travel_concierge         | - Your role is only to identify possible destinations and acitivites.
+travel_concierge         | - Do not attempt to assume the role of `place_agent` and `poi_agent`, use them instead.
+travel_concierge         | - Do not attempt to plan an itinerary for the user with start dates and details, leave that to the planning_agent.
+travel_concierge         | - Transfer the user to planning_agent once the user wants to:
+travel_concierge         |   - Enumerate a more detailed full itinerary,
+travel_concierge         |   - Looking for flights and hotels deals.
+travel_concierge         |
+travel_concierge         | When presenting POI suggestions to the user, make sure to include:
+travel_concierge         | - The place name and address
+travel_concierge         | - Ratings and highlights
+travel_concierge         | - Google Maps URL (map_url) for easy navigation
+travel_concierge         | - Google Place ID (place_id) for reference
+travel_concierge         |
+travel_concierge         | - Please use the context info below for any user preferences:
+travel_concierge         | Current user:
+travel_concierge         |   <user_profile>
+travel_concierge         |   {'passport_nationality': 'Vietnamese', 'seat_preference': 'window', 'food_preference': 'Japanese cuisine - Ramen, Sushi, Sashimi', 'allergies': [], 'likes': ['temples', 'beaches', 'mountains', 'museums', 'nightlife', 'hiking', 'hot springs', 'beautiful scenery'], 'dislikes': ['remote locations', 'dangerous areas', 'places unsuitable for families with small children'], 'price_sensitivity': ['mid-range'], 'home': {'event_type': 'home', 'address': '2-chōme-40-2 Harayama, Midori Ward, Saitama, 336-0931', 'local_prefer_mode': 'drive'}}
+travel_concierge         |   </user_profile>
+travel_concierge         |
+travel_concierge         | Current time: 2025-07-09 02:24:04.975136
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | You are an agent. Your internal name is "inspiration_agent".
+travel_concierge         |
+travel_concierge         |  The description about you is "A travel inspiration agent who inspire users, and discover their next vacations; Provide information about places, activities, interests,"
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | You have a list of other agents to transfer to:
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: root_agent
+travel_concierge         | Agent description: A Travel Conceirge using the services of multiple sub-agents
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: planning_agent
+travel_concierge         | Agent description: This agent helps with travel planning and itinerary creation
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: booking_agent
+travel_concierge         | Agent description: This agent handles flight and hotel bookings
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: pre_trip_agent
+travel_concierge         | Agent description: Given an itinerary, this agent keeps up to date and provides relevant travel information to the user before the trip.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: in_trip_agent
+travel_concierge         | Agent description: Provide information about what the users need as part of the tour.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: post_trip_agent
+travel_concierge         | Agent description: A follow up agent to learn from user's experience; In turn improves the user's future trips planning and in-trip experience.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | If you are the best to answer the question according to your description, you
+travel_concierge         | can answer it.
+travel_concierge         |
+travel_concierge         | If another agent is better for answering the question according to its
+travel_concierge         | description, call `transfer_to_agent` function to transfer the
+travel_concierge         | question to that agent. When transferring, do not generate any text other than
+travel_concierge         | the function call.
+travel_concierge         |
+travel_concierge         | Your parent agent is root_agent. If neither the other agents nor
+travel_concierge         | you are best for answering the question according to the descriptions, transfer
+travel_concierge         | to your parent agent. If you don't have parent agent, try answer by yourself.
+travel_concierge         |
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Contents:
+travel_concierge         | {"parts":[{"text":"xin chào"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] said: What can I help you with today?\n"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"gợi ý plan roadtrip từ Saitama tới Kamikochi"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] called tool `transfer_to_agent` with parameters: {'agent_name': 'inspiration_agent'}"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] `transfer_to_agent` tool returned result: {}"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Okay, I can help you with inspiration for a road trip from Saitama to Kamikochi. Since you like mountains and beautiful scenery, Kamikochi is an excellent choice!\n\nTo make sure I tailor the suggestions to your taste, can you confirm if you have any specific interests along the way? For example, are you interested in historical sites, onsen (hot springs), or perhaps some unique local cuisine?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"hãy phản hồi bằng tiếng việt"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Kamikochi là một lựa chọn tuyệt vời cho chuyến đi từ Saitama. Nơi đây nổi tiếng với núi non hùng vĩ và phong cảnh tuyệt đẹp, rất phù hợp với sở thích của bạn.\n\nĐể tôi có thể gợi ý những điểm dừng chân phù hợp nhất trên đường đi, bạn có muốn ghé thăm những địa điểm cụ thể nào không? Ví dụ như các di tích lịch sử, suối nước nóng onsen, hay thưởng thức ẩm thực địa phương độc đáo?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"yeah,tôi thích onsen và món ăn địa phương"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Vậy thì trên đường đi từ Saitama đến Kamikochi, chúng ta có thể khám phá một vài điểm dừng chân nổi tiếng với onsen và ẩm thực địa phương.\n\nĐể tôi gợi ý một vài điểm đến tiềm năng nhé:\n\n1.  **Kusatsu Onsen:** Một trong những khu onsen nổi tiếng nhất Nhật Bản, với nguồn nước nóng tự nhiên chất lượng cao và không khí thị trấn onsen truyền thống.\n2.  **Takayama:** Thị trấn cổ kính với kiến trúc nhà gỗ đặc trưng, nổi tiếng với món thịt bò Hida và chợ sáng địa phương.\n3.  **Shirakawa-go:** Ngôi làng cổ với những ngôi nhà mái tranh Gassho-zukuri độc đáo, được UNESCO công nhận là Di sản Thế giới.\n\nBạn thấy hứng thú với địa điểm nào nhất không? Hoặc bạn có muốn tôi gợi ý thêm các lựa chọn khác không?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"tôi thích Takayama"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Takayama là một lựa chọn tuyệt vời. Đây là một thị trấn cổ kính với rất nhiều điều thú vị để khám phá.\n\nBây giờ, để tôi gợi ý một vài hoạt động và điểm tham quan nổi bật ở Takayama nhé:\n\n"},{"function_call":{"args":{"request":"Takayama"},"name":"poi_agent"}}],"role":"model"}
+travel_concierge         | {"parts":[{"function_response":{"name":"poi_agent","response":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Takayama_old_town_streetscape_01.jpg/1280px-Takayama_old_town_streetscape_01.jpg","map_url":"","place_id":""},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1565","long":"137.2384","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Hida_Folk_Village_03.jpg/1280px-Hida_Folk_Village_03.jpg","map_url":"","place_id":""},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1434","long":"137.2507","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Takayama_Jinya_Gate.jpg/1280px-Takayama_Jinya_Gate.jpg","map_url":"","place_id":""},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://livejapan.com/en/in-gifu/in-takayama_hida/in-takayama/article-a1000044/img/inbound/article_1000044pic1.jpg","map_url":"","place_id":""},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1445","long":"137.2536","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://fastly.4sqi.net/img/general/600x600/24919007_3t5sZl-Cz4w2gUvD9W5e973VqEQk8xif3w5c7GkZ20c.jpg","map_url":"","place_id":""}]}}}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Dưới đây là một vài điểm tham quan và hoạt động nổi bật ở Takayama mà bạn có thể thích:\n\n*   **Phố cổ Takayama:** Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.\n    *   Địa chỉ: Takayama, Gifu Prefecture, Japan\n    *   Đánh giá: 4.5 sao\n    *   Điểm nổi bật: Kiến trúc truyền thống, mua sắm quà lưu niệm, thưởng thức rượu sake địa phương.\n*   **Làng dân gian Hida:** Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.\n    *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan\n    *   Đánh giá: 4.3 sao\n    *   Điểm nổi bật: Tìm hiểu về văn hóa và kiến trúc truyền thống của vùng Hida.\n*   **Takayama Jinya:** Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.\n    *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan\n    *   Đánh giá: 4.2 sao\n    *   Điểm nổi bật: Tìm hiểu về lịch sử và chính trị của Takayama thời Edo.\n*   **Higashiyama Walking Course:** Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.\n    *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan\n    *   Đánh giá: 4.0 sao\n    *   Điểm nổi bật: Tản bộ thư giãn, ngắm cảnh và khám phá các ngôi chùa, đền thờ.\n*   **Chợ sáng:** Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.\n    *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)\n    *   Đánh giá: 3.9 sao\n    *   Điểm nổi bật: Thưởng thức ẩm thực địa phương, mua sắm quà lưu niệm.\n\nĐể thuận tiện cho bạn, tôi sẽ cung cấp thêm thông tin về vị trí địa lý của các địa điểm này.\n\n"},{"function_call":{"args":{"key":"poi_agent_response"},"name":"map_tool"}}],"role":"model"}
+travel_concierge         | {"parts":[{"function_response":{"name":"map_tool","response":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1430124","long":"137.259537","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpfk6aIxY-CeJ0Dk9KHji1Ql6JZCVeFTlXRFcCJDwAEivwjwMZQQG75ytbAtHh1Bh1ruimQW1sg_KyxTivD9tD3vDTpMehyj3WDMVuPgy2dmQgtGUV3BRSBZUJCgB4zc7t9U-c2cgTIP8CriyfGVTGN3U2yWiNhLlopMug_CzK-0KYYtGOfathOErp-SyqXyKtw3QOcFzF8LoXiTbgjG6Am5ZIJ6MGtx3HjKl7fsiBsTK1BzfnNxNtIOkjjkL8yglxxCBqC7_MUdxuOJAqLWhnlyPniMMw3_Xw7HYRTqMGC1iM3nF3vMC-KQ3B80gjkzfzBSHwvSBcWquTPFZ0F1_rCPueAw2JZr4tw-4IMe5kveaVOds3PHtAeRSA3N7Xq6-vFYpIYfO52Nyud3yfS4e3ZU6NULfDP9Ot15ERm6273U02QWz1YzE-edHfyrDCLVySWbrc-zTOT0cvHjTjX6HWUPcgTVV7gapMLVxxhL8dzhzIRrB4e6pm_mJwCpkrjKYWVh9vAYe0CrWX5686FGKHCom___LpaX8MD8_X3hgIsHvWtP_kChBdsd5lAjF_z5Gy6GWdnm&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJsTyzQIy7AmARLiOSzcZFfRs","place_id":"ChIJsTyzQIy7AmARLiOSzcZFfRs"},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1324902","long":"137.2350898","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogperIdEVMLLK6jd82jj0K---B5CRkDDlr4mizypC0FQolLGsKvFX2X5zyyofB8ikmEVWdIjvW0Iz_Gl_rzU-SYE43OluchwYVD-CXq3kjx11x5spYcK_1LRj0_RGh1NFt2HDyVW3tzi6P56g_7-bke9iT1LYVHjdya7uriAXBPcElQeXwv0wiaYqTsBZAcEryT5KN6Fsd23TEtGc_UyTBnbyVPFQupcn_sTDCG7Zxdg8nuK0jAvQct938k9WvgZ92A6N3fBEIAMwSOPB3AyG2JUjKLNq_NKZK59NwvcZh3FmuKuw03EKJeD3jX-BVnaORm6uBeGpBZSV48blxSuwele_W12ifmx2aKE9OijK34va9C0nE0dmcISfotuLhkGx_4ZCBfAhfyDbk0H57iX5vrM8X6s28UwSKHNL-l56yOyZj2_MlmsDZeJRj-cAWivOyHqa6kbOUl0Vai2JZeNntemXFDLlCG26tU_homP-Odcmqj3vzxKQJf4j0AyFMb_0q36oz6MLZg_tb2OR5V-rzDrSHvxiGy2vtuwX9oMxcnwoZNsJ4MfI-4SUvOzn0Ww75FeiZelH&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJmWTYrzm7AmARRPwmwmCypNY","place_id":"ChIJmWTYrzm7AmARRPwmwmCypNY"},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1396312","long":"137.2576045","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpfCC5biIENOvfNFpgbVGbJQh7jog_-umZmeac4ExHvbOxs75CxKZZwbrFQbySMQKtbei6P6RyYhZ8ELsc-ajR21jcXHKORFUICrdFEyCpSnii_JtQP7g6nAqO1XFgCePuOJ35L9scxcL-Z5ijiIZtmkgyRPrswr5uAiEuwyXJ6JMOWu3EPilBlWZdVkqVqnk102V7IBjSjAv4S-fEUQer5JG865KwdYGBoGZYheHEz5h2y8vMS4HTl4Q1BqmddLfb3jwjVf6qnKRqPMYSvQgENHuKVw4qEb9qxZ2pLO39yGEY_Qfbf_lc6F18dmZ5uJq7T8KEz4lt8aCHCOfEA0P-4phy1Djxv66jgfQ8cd-eIumvM3DkkLY1MxssXtAph0u8P2nJsRyaf-AH7jpIuFVJ-KxcIxfzOeY0t8_hX9N7vMTaHt34ZNaSe8wK6Ro5S_JmysH1crmVqAYPr--pFU_-XH4RYsXB0ofBrFcWvwtrf8dmfI&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmAR4ZH1chH39Zg","place_id":"ChIJj29EXtm6AmAR4ZH1chH39Zg"},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1449631","long":"137.2632852","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpf2tWvvju-63SfktYuPSL2FV3QwyPHgh-Aud1oQLf9LhplwOrWrES7fBDiM-OG5yq5AkoDWQkoJ06KSE4fQteiiD8HuJUQVMQRKNdzSudG0Vg7HLnR74BIxebHtv_L5dWO4p3vPeDmacvgNMLuwCmCfXwep_x03Wt06-nzz2qWprDJeId4zLislDanA-EPHjzbvEoo_2ZNM2kMg-6y5qGeXze3m8cfVQb02qhQBOYVim4FwWGseO9wVQZyq6NlEUy_95H6qLhzYgYBxhYvQtsUTlu_8q1pDWvUrKTJDlHG23iy6_l2JitNYVGj1hB88ucKDVZtao9jOEmVRZIeRh-BGw3G5-QME4TcrXjO6s8m4SCGWmf7_Ph5cRy5bpAsINCEVk1blQWrjf-bCQtAAtHENwlt4dHW25JohWlZIADL3ub24zkBnHgcL0wmmCd8edVYNH8xjFtG8miAEWEKEdU2-oxkReCMaTLvFq_vApfmy69OX8a9ewq8KDEuBVsrxrpRaOlR3yQU1JsL7GKf_2R_uGUe1hddFqT4TlMOVtct1J24Ul5acLbGxvwPRrMtFWM54Zjee2IgmQA&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJ99T-4q67AmAR-m13onTdQ_w","place_id":"ChIJ99T-4q67AmAR-m13onTdQ_w"},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1396447","long":"137.2582195","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpes1FL9BBOvmz1Il4KfJRsIsF5oEQitTuG2uhJebRi_Jytim4fc3gl66bplJvJ7pGZBPrtQGpbyj6LKsD2_ZlgzG5lKyO6x6qRiKXO9If1Y0OthwyR3fI1jw6Gv8DOiPGknvwq7LHCCR43XrSXgWo2Xv0RxR9Ddu6jPvDBLLbqTROTXJKbQSpg0NKGbWQwIuJMhrV7C8v8pFbsCgHhyqeqNJXIlGbN-Sut_b0B2jMDo7-ZIZtaVlmK6eA0-zPwsxNiVIVfEVRtmp7_PnQGVtcJPRyDFJNCgvTxuCpQhRjEsv_MrGM11-MSDcywF0YJ5ZdJnT0x2IUwcQQnqQpBHI8pFqNRPVW4Mf-_xWHUSS-0U84C8UjRNwlLLEFl5IsDV7Fi7crmhof1wKbEPg_HG82wYkIaOrWKwe-d4uE_I8lC_OpfoHxbT5EBn2Vk8qMvnuvHK4BiQKCPTZJMFhXGsKUmkY3Rl5mgn1m0KkHA5CPbXNgImIpJB3k6YjbHGQYxAIo3h1f9GIfx5-P5xGVYpZ8QySeHsjnU21L4kdjpz7g257nbdTjqIuP-DPWocE0Z02wmULRWTM3x7ig&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmARNsKdHGWF8I0","place_id":"ChIJj29EXtm6AmARNsKdHGWF8I0"}]}}}],"role":"user"}
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Functions:
+travel_concierge         | transfer_to_agent: {'agent_name': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | place_agent: {'request': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | poi_agent: {'request': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | map_tool: {'key': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         |
+travel_concierge         | 2025-07-09 02:26:21,759 - INFO - google_llm.py:91 -
+travel_concierge         | LLM Request:
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | System Instruction:
+travel_concierge         |
+travel_concierge         | You are travel inspiration agent who help users find their next big dream vacation destinations.
+travel_concierge         | Your role and goal is to help the user identify a destination and a few activities at the destination the user is interested in.
+travel_concierge         |
+travel_concierge         | As part of that, user may ask you for general history or knowledge about a destination, in that scenario, answer briefly in the best of your ability, but focus on the goal by relating your answer back to destinations and activities the user may in turn like.
+travel_concierge         | - You will call the two agent tool `place_agent(inspiration query)` and `poi_agent(destination)` when appropriate:
+travel_concierge         |   - Use `place_agent` to recommend general vacation destinations given vague ideas, be it a city, a region, a country.
+travel_concierge         |   - Use `poi_agent` to provide points of interests and acitivities suggestions, once the user has a specific city or region in mind.
+travel_concierge         |   - Everytime after `poi_agent` is invoked, call `map_tool` with the key being `poi` to verify the latitude and longitudes, and to populate map_url and place_id information.
+travel_concierge         | - Avoid asking too many questions. When user gives instructions like "inspire me", or "suggest some", just go ahead and call `place_agent`.
+travel_concierge         | - As follow up, you may gather a few information from the user to future their vacation inspirations.
+travel_concierge         | - Once the user selects their destination, then you help them by providing granular insights by being their personal local travel guide
+travel_concierge         |
+travel_concierge         | - Here's the optimal flow:
+travel_concierge         |   - inspire user for a dream vacation
+travel_concierge         |   - show them interesting things to do for the selected location
+travel_concierge         |   - provide Google Maps links and place IDs for easy navigation
+travel_concierge         |
+travel_concierge         | - Your role is only to identify possible destinations and acitivites.
+travel_concierge         | - Do not attempt to assume the role of `place_agent` and `poi_agent`, use them instead.
+travel_concierge         | - Do not attempt to plan an itinerary for the user with start dates and details, leave that to the planning_agent.
+travel_concierge         | - Transfer the user to planning_agent once the user wants to:
+travel_concierge         |   - Enumerate a more detailed full itinerary,
+travel_concierge         |   - Looking for flights and hotels deals.
+travel_concierge         |
+travel_concierge         | When presenting POI suggestions to the user, make sure to include:
+travel_concierge         | - The place name and address
+travel_concierge         | - Ratings and highlights
+travel_concierge         | - Google Maps URL (map_url) for easy navigation
+travel_concierge         | - Google Place ID (place_id) for reference
+travel_concierge         |
+travel_concierge         | - Please use the context info below for any user preferences:
+travel_concierge         | Current user:
+travel_concierge         |   <user_profile>
+travel_concierge         |   {'passport_nationality': 'Vietnamese', 'seat_preference': 'window', 'food_preference': 'Japanese cuisine - Ramen, Sushi, Sashimi', 'allergies': [], 'likes': ['temples', 'beaches', 'mountains', 'museums', 'nightlife', 'hiking', 'hot springs', 'beautiful scenery'], 'dislikes': ['remote locations', 'dangerous areas', 'places unsuitable for families with small children'], 'price_sensitivity': ['mid-range'], 'home': {'event_type': 'home', 'address': '2-chōme-40-2 Harayama, Midori Ward, Saitama, 336-0931', 'local_prefer_mode': 'drive'}}
+travel_concierge         |   </user_profile>
+travel_concierge         |
+travel_concierge         | Current time: 2025-07-09 02:24:04.975136
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | You are an agent. Your internal name is "inspiration_agent".
+travel_concierge         |
+travel_concierge         |  The description about you is "A travel inspiration agent who inspire users, and discover their next vacations; Provide information about places, activities, interests,"
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | You have a list of other agents to transfer to:
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: root_agent
+travel_concierge         | Agent description: A Travel Conceirge using the services of multiple sub-agents
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: planning_agent
+travel_concierge         | Agent description: This agent helps with travel planning and itinerary creation
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: booking_agent
+travel_concierge         | Agent description: This agent handles flight and hotel bookings
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: pre_trip_agent
+travel_concierge         | Agent description: Given an itinerary, this agent keeps up to date and provides relevant travel information to the user before the trip.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: in_trip_agent
+travel_concierge         | Agent description: Provide information about what the users need as part of the tour.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | Agent name: post_trip_agent
+travel_concierge         | Agent description: A follow up agent to learn from user's experience; In turn improves the user's future trips planning and in-trip experience.
+travel_concierge         |
+travel_concierge         |
+travel_concierge         | If you are the best to answer the question according to your description, you
+travel_concierge         | can answer it.
+travel_concierge         |
+travel_concierge         | If another agent is better for answering the question according to its
+travel_concierge         | description, call `transfer_to_agent` function to transfer the
+travel_concierge         | question to that agent. When transferring, do not generate any text other than
+travel_concierge         | the function call.
+travel_concierge         |
+travel_concierge         | Your parent agent is root_agent. If neither the other agents nor
+travel_concierge         | you are best for answering the question according to the descriptions, transfer
+travel_concierge         | to your parent agent. If you don't have parent agent, try answer by yourself.
+travel_concierge         |
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Contents:
+travel_concierge         | {"parts":[{"text":"xin chào"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] said: What can I help you with today?\n"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"gợi ý plan roadtrip từ Saitama tới Kamikochi"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] called tool `transfer_to_agent` with parameters: {'agent_name': 'inspiration_agent'}"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"For context:"},{"text":"[root_agent] `transfer_to_agent` tool returned result: {}"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Okay, I can help you with inspiration for a road trip from Saitama to Kamikochi. Since you like mountains and beautiful scenery, Kamikochi is an excellent choice!\n\nTo make sure I tailor the suggestions to your taste, can you confirm if you have any specific interests along the way? For example, are you interested in historical sites, onsen (hot springs), or perhaps some unique local cuisine?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"hãy phản hồi bằng tiếng việt"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Kamikochi là một lựa chọn tuyệt vời cho chuyến đi từ Saitama. Nơi đây nổi tiếng với núi non hùng vĩ và phong cảnh tuyệt đẹp, rất phù hợp với sở thích của bạn.\n\nĐể tôi có thể gợi ý những điểm dừng chân phù hợp nhất trên đường đi, bạn có muốn ghé thăm những địa điểm cụ thể nào không? Ví dụ như các di tích lịch sử, suối nước nóng onsen, hay thưởng thức ẩm thực địa phương độc đáo?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"yeah,tôi thích onsen và món ăn địa phương"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Vậy thì trên đường đi từ Saitama đến Kamikochi, chúng ta có thể khám phá một vài điểm dừng chân nổi tiếng với onsen và ẩm thực địa phương.\n\nĐể tôi gợi ý một vài điểm đến tiềm năng nhé:\n\n1.  **Kusatsu Onsen:** Một trong những khu onsen nổi tiếng nhất Nhật Bản, với nguồn nước nóng tự nhiên chất lượng cao và không khí thị trấn onsen truyền thống.\n2.  **Takayama:** Thị trấn cổ kính với kiến trúc nhà gỗ đặc trưng, nổi tiếng với món thịt bò Hida và chợ sáng địa phương.\n3.  **Shirakawa-go:** Ngôi làng cổ với những ngôi nhà mái tranh Gassho-zukuri độc đáo, được UNESCO công nhận là Di sản Thế giới.\n\nBạn thấy hứng thú với địa điểm nào nhất không? Hoặc bạn có muốn tôi gợi ý thêm các lựa chọn khác không?\n"}],"role":"model"}
+travel_concierge         | {"parts":[{"text":"tôi thích Takayama"}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Tuyệt vời! Takayama là một lựa chọn tuyệt vời. Đây là một thị trấn cổ kính với rất nhiều điều thú vị để khám phá.\n\nBây giờ, để tôi gợi ý một vài hoạt động và điểm tham quan nổi bật ở Takayama nhé:\n\n"},{"function_call":{"args":{"request":"Takayama"},"name":"poi_agent"}}],"role":"model"}
+travel_concierge         | {"parts":[{"function_response":{"name":"poi_agent","response":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Takayama_old_town_streetscape_01.jpg/1280px-Takayama_old_town_streetscape_01.jpg","map_url":"","place_id":""},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1565","long":"137.2384","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Hida_Folk_Village_03.jpg/1280px-Hida_Folk_Village_03.jpg","map_url":"","place_id":""},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1434","long":"137.2507","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Takayama_Jinya_Gate.jpg/1280px-Takayama_Jinya_Gate.jpg","map_url":"","place_id":""},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1445","long":"137.2536","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://livejapan.com/en/in-gifu/in-takayama_hida/in-takayama/article-a1000044/img/inbound/article_1000044pic1.jpg","map_url":"","place_id":""},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1445","long":"137.2536","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://fastly.4sqi.net/img/general/600x600/24919007_3t5sZl-Cz4w2gUvD9W5e973VqEQk8xif3w5c7GkZ20c.jpg","map_url":"","place_id":""}]}}}],"role":"user"}
+travel_concierge         | {"parts":[{"text":"Dưới đây là một vài điểm tham quan và hoạt động nổi bật ở Takayama mà bạn có thể thích:\n\n*   **Phố cổ Takayama:** Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.\n    *   Địa chỉ: Takayama, Gifu Prefecture, Japan\n    *   Đánh giá: 4.5 sao\n    *   Điểm nổi bật: Kiến trúc truyền thống, mua sắm quà lưu niệm, thưởng thức rượu sake địa phương.\n*   **Làng dân gian Hida:** Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.\n    *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan\n    *   Đánh giá: 4.3 sao\n    *   Điểm nổi bật: Tìm hiểu về văn hóa và kiến trúc truyền thống của vùng Hida.\n*   **Takayama Jinya:** Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.\n    *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan\n    *   Đánh giá: 4.2 sao\n    *   Điểm nổi bật: Tìm hiểu về lịch sử và chính trị của Takayama thời Edo.\n*   **Higashiyama Walking Course:** Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.\n    *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan\n    *   Đánh giá: 4.0 sao\n    *   Điểm nổi bật: Tản bộ thư giãn, ngắm cảnh và khám phá các ngôi chùa, đền thờ.\n*   **Chợ sáng:** Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.\n    *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)\n    *   Đánh giá: 3.9 sao\n    *   Điểm nổi bật: Thưởng thức ẩm thực địa phương, mua sắm quà lưu niệm.\n\nĐể thuận tiện cho bạn, tôi sẽ cung cấp thêm thông tin về vị trí địa lý của các địa điểm này.\n\n"},{"function_call":{"args":{"key":"poi_agent_response"},"name":"map_tool"}}],"role":"model"}
+travel_concierge         | {"parts":[{"function_response":{"name":"map_tool","response":{"places":[{"place_name":"Takayama Old Town","address":"Takayama, Gifu Prefecture, Japan","lat":"36.1430124","long":"137.259537","review_ratings":"4.5","highlights":"Preserved Edo-era streets with traditional houses, shops, and sake breweries.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpfk6aIxY-CeJ0Dk9KHji1Ql6JZCVeFTlXRFcCJDwAEivwjwMZQQG75ytbAtHh1Bh1ruimQW1sg_KyxTivD9tD3vDTpMehyj3WDMVuPgy2dmQgtGUV3BRSBZUJCgB4zc7t9U-c2cgTIP8CriyfGVTGN3U2yWiNhLlopMug_CzK-0KYYtGOfathOErp-SyqXyKtw3QOcFzF8LoXiTbgjG6Am5ZIJ6MGtx3HjKl7fsiBsTK1BzfnNxNtIOkjjkL8yglxxCBqC7_MUdxuOJAqLWhnlyPniMMw3_Xw7HYRTqMGC1iM3nF3vMC-KQ3B80gjkzfzBSHwvSBcWquTPFZ0F1_rCPueAw2JZr4tw-4IMe5kveaVOds3PHtAeRSA3N7Xq6-vFYpIYfO52Nyud3yfS4e3ZU6NULfDP9Ot15ERm6273U02QWz1YzE-edHfyrDCLVySWbrc-zTOT0cvHjTjX6HWUPcgTVV7gapMLVxxhL8dzhzIRrB4e6pm_mJwCpkrjKYWVh9vAYe0CrWX5686FGKHCom___LpaX8MD8_X3hgIsHvWtP_kChBdsd5lAjF_z5Gy6GWdnm&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJsTyzQIy7AmARLiOSzcZFfRs","place_id":"ChIJsTyzQIy7AmARLiOSzcZFfRs"},{"place_name":"Hida Folk Village","address":"1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan","lat":"36.1324902","long":"137.2350898","review_ratings":"4.3","highlights":"Open-air museum showcasing traditional farmhouses and buildings from the Hida region.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogperIdEVMLLK6jd82jj0K---B5CRkDDlr4mizypC0FQolLGsKvFX2X5zyyofB8ikmEVWdIjvW0Iz_Gl_rzU-SYE43OluchwYVD-CXq3kjx11x5spYcK_1LRj0_RGh1NFt2HDyVW3tzi6P56g_7-bke9iT1LYVHjdya7uriAXBPcElQeXwv0wiaYqTsBZAcEryT5KN6Fsd23TEtGc_UyTBnbyVPFQupcn_sTDCG7Zxdg8nuK0jAvQct938k9WvgZ92A6N3fBEIAMwSOPB3AyG2JUjKLNq_NKZK59NwvcZh3FmuKuw03EKJeD3jX-BVnaORm6uBeGpBZSV48blxSuwele_W12ifmx2aKE9OijK34va9C0nE0dmcISfotuLhkGx_4ZCBfAhfyDbk0H57iX5vrM8X6s28UwSKHNL-l56yOyZj2_MlmsDZeJRj-cAWivOyHqa6kbOUl0Vai2JZeNntemXFDLlCG26tU_homP-Odcmqj3vzxKQJf4j0AyFMb_0q36oz6MLZg_tb2OR5V-rzDrSHvxiGy2vtuwX9oMxcnwoZNsJ4MfI-4SUvOzn0Ww75FeiZelH&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJmWTYrzm7AmARRPwmwmCypNY","place_id":"ChIJmWTYrzm7AmARRPwmwmCypNY"},{"place_name":"Takayama Jinya","address":"1-5 Yaemachi, Takayama, Gifu 506-0035, Japan","lat":"36.1396312","long":"137.2576045","review_ratings":"4.2","highlights":"Former government building dating back to the Edo period, now a museum.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpfCC5biIENOvfNFpgbVGbJQh7jog_-umZmeac4ExHvbOxs75CxKZZwbrFQbySMQKtbei6P6RyYhZ8ELsc-ajR21jcXHKORFUICrdFEyCpSnii_JtQP7g6nAqO1XFgCePuOJ35L9scxcL-Z5ijiIZtmkgyRPrswr5uAiEuwyXJ6JMOWu3EPilBlWZdVkqVqnk102V7IBjSjAv4S-fEUQer5JG865KwdYGBoGZYheHEz5h2y8vMS4HTl4Q1BqmddLfb3jwjVf6qnKRqPMYSvQgENHuKVw4qEb9qxZ2pLO39yGEY_Qfbf_lc6F18dmZ5uJq7T8KEz4lt8aCHCOfEA0P-4phy1Djxv66jgfQ8cd-eIumvM3DkkLY1MxssXtAph0u8P2nJsRyaf-AH7jpIuFVJ-KxcIxfzOeY0t8_hX9N7vMTaHt34ZNaSe8wK6Ro5S_JmysH1crmVqAYPr--pFU_-XH4RYsXB0ofBrFcWvwtrf8dmfI&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmAR4ZH1chH39Zg","place_id":"ChIJj29EXtm6AmAR4ZH1chH39Zg"},{"place_name":"Higashiyama Walking Course","address":"Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan","lat":"36.1449631","long":"137.2632852","review_ratings":"4.0","highlights":"A scenic walking path through a collection of temples and shrines.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpf2tWvvju-63SfktYuPSL2FV3QwyPHgh-Aud1oQLf9LhplwOrWrES7fBDiM-OG5yq5AkoDWQkoJ06KSE4fQteiiD8HuJUQVMQRKNdzSudG0Vg7HLnR74BIxebHtv_L5dWO4p3vPeDmacvgNMLuwCmCfXwep_x03Wt06-nzz2qWprDJeId4zLislDanA-EPHjzbvEoo_2ZNM2kMg-6y5qGeXze3m8cfVQb02qhQBOYVim4FwWGseO9wVQZyq6NlEUy_95H6qLhzYgYBxhYvQtsUTlu_8q1pDWvUrKTJDlHG23iy6_l2JitNYVGj1hB88ucKDVZtao9jOEmVRZIeRh-BGw3G5-QME4TcrXjO6s8m4SCGWmf7_Ph5cRy5bpAsINCEVk1blQWrjf-bCQtAAtHENwlt4dHW25JohWlZIADL3ub24zkBnHgcL0wmmCd8edVYNH8xjFtG8miAEWEKEdU2-oxkReCMaTLvFq_vApfmy69OX8a9ewq8KDEuBVsrxrpRaOlR3yQU1JsL7GKf_2R_uGUe1hddFqT4TlMOVtct1J24Ul5acLbGxvwPRrMtFWM54Zjee2IgmQA&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJ99T-4q67AmAR-m13onTdQ_w","place_id":"ChIJ99T-4q67AmAR-m13onTdQ_w"},{"place_name":"Morning Market","address":"Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)","lat":"36.1396447","long":"137.2582195","review_ratings":"3.9","highlights":"Lively markets selling local produce, crafts, and snacks.","image_url":"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpes1FL9BBOvmz1Il4KfJRsIsF5oEQitTuG2uhJebRi_Jytim4fc3gl66bplJvJ7pGZBPrtQGpbyj6LKsD2_ZlgzG5lKyO6x6qRiKXO9If1Y0OthwyR3fI1jw6Gv8DOiPGknvwq7LHCCR43XrSXgWo2Xv0RxR9Ddu6jPvDBLLbqTROTXJKbQSpg0NKGbWQwIuJMhrV7C8v8pFbsCgHhyqeqNJXIlGbN-Sut_b0B2jMDo7-ZIZtaVlmK6eA0-zPwsxNiVIVfEVRtmp7_PnQGVtcJPRyDFJNCgvTxuCpQhRjEsv_MrGM11-MSDcywF0YJ5ZdJnT0x2IUwcQQnqQpBHI8pFqNRPVW4Mf-_xWHUSS-0U84C8UjRNwlLLEFl5IsDV7Fi7crmhof1wKbEPg_HG82wYkIaOrWKwe-d4uE_I8lC_OpfoHxbT5EBn2Vk8qMvnuvHK4BiQKCPTZJMFhXGsKUmkY3Rl5mgn1m0KkHA5CPbXNgImIpJB3k6YjbHGQYxAIo3h1f9GIfx5-P5xGVYpZ8QySeHsjnU21L4kdjpz7g257nbdTjqIuP-DPWocE0Z02wmULRWTM3x7ig&key=AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg","map_url":"https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmARNsKdHGWF8I0","place_id":"ChIJj29EXtm6AmARNsKdHGWF8I0"}]}}}],"role":"user"}
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Functions:
+travel_concierge         | transfer_to_agent: {'agent_name': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | place_agent: {'request': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | poi_agent: {'request': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | map_tool: {'key': {'type': <Type.STRING: 'STRING'>}} -> None
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         |
+travel_concierge         | 2025-07-09 02:26:21,761 - INFO - models.py:7421 - AFC is enabled with max remote calls: 10.
+travel_concierge         | 2025-07-09 02:26:27,472 - INFO - _client.py:1740 - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent "HTTP/1.1 200 OK"
+travel_concierge         | 2025-07-09 02:26:27,474 - INFO - google_llm.py:148 -
+travel_concierge         | LLM Response:
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Text:
+travel_concierge         | Tuyệt vời! Dưới đây là thông tin chi tiết hơn về các địa điểm du lịch nổi tiếng ở Takayama, bao gồm cả liên kết đến Google Maps và ID địa điểm để bạn dễ dàng tra cứu:
+travel_concierge         |
+travel_concierge         | *   **Phố cổ Takayama**
+travel_concierge         |     *   Địa chỉ: Takayama, Gifu Prefecture, Japan
+travel_concierge         |     *   Đánh giá: 4.5 sao
+travel_concierge         |     *   Điểm nổi bật: Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.
+travel_concierge         |     *   Google Maps URL: [https://www.google.com/maps/place/?q=place\_id:ChIJsTyzQIy7AmARLiOSzcZFfRs](https://www.google.com/maps/place/?q=place_id:ChIJsTyzQIy7AmARLiOSzcZFfRs)
+travel_concierge         |     *   Google Place ID: ChIJsTyzQIy7AmARLiOSzcZFfRs
+travel_concierge         | *   **Làng dân gian Hida**
+travel_concierge         |     *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan
+travel_concierge         |     *   Đánh giá: 4.3 sao
+travel_concierge         |     *   Điểm nổi bật: Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.
+travel_concierge         |     *   Google Maps URL: [https://www.google.com/maps/place/?q=place\_id:ChIJmWTYrzm7AmARRPwmwmCypNY](https://www.google.com/maps/place/?q=place_id:ChIJmWTYrzm7AmARRPwmwmCypNY)
+travel_concierge         |     *   Google Place ID: ChIJmWTYrzm7AmARRPwmwmCypNY
+travel_concierge         | *   **Takayama Jinya**
+travel_concierge         |     *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan
+travel_concierge         |     *   Đánh giá: 4.2 sao
+travel_concierge         |     *   Điểm nổi bật: Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.
+travel_concierge         |     *   Google Maps URL: [https://www.google.com/maps/place/?q=place\_id:ChIJj29EXtm6AmAR4ZH1chH39Zg](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmAR4ZH1chH39Zg)
+travel_concierge         |     *   Google Place ID: ChIJj29EXtm6AmAR4ZH1chH39Zg
+travel_concierge         | *   **Higashiyama Walking Course**
+travel_concierge         |     *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan
+travel_concierge         |     *   Đánh giá: 4.0 sao
+travel_concierge         |     *   Điểm nổi bật: Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.
+travel_concierge         |     *   Google Maps URL: [https://www.google.com/maps/place/?q=place\_id:ChIJ99T-4q67AmAR-m13onTdQ\_w](https://www.google.com/maps/place/?q=place_id:ChIJ99T-4q67AmAR-m13onTdQ_w)
+travel_concierge         |     *   Google Place ID: ChIJ99T-4q67AmAR-m13onTdQ_w
+travel_concierge         | *   **Chợ sáng**
+travel_concierge         |     *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)
+travel_concierge         |     *   Đánh giá: 3.9 sao
+travel_concierge         |     *   Điểm nổi bật: Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.
+travel_concierge         |     *   Google Maps URL: [https://www.google.com/maps/place/?q=place\_id:ChIJj29EXtm6AmARNsKdHGWF8I0](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmARNsKdHGWF8I0)
+travel_concierge         |     *   Google Place ID: ChIJj29EXtm6AmARNsKdHGWF8I0
+travel_concierge         |
+travel_concierge         | Bạn có muốn tìm hiểu thêm về bất kỳ địa điểm nào trong số này không? Hoặc bạn muốn tôi gợi ý thêm những điểm dừng chân khác trên đường đến Kamikochi không?
+travel_concierge         |
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Function calls:
+travel_concierge         |
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Raw response:
+travel_concierge         | {"sdk_http_response":{"headers":{"content-type":"application/json; charset=UTF-8","vary":"Origin, X-Origin, Referer","content-encoding":"gzip","date":"Wed, 09 Jul 2025 02:26:28 GMT","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=5621","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","transfer-encoding":"chunked"}},"candidates":[{"content":{"parts":[{"text":"Tuyệt vời! Dưới đây là thông tin chi tiết hơn về các địa điểm du lịch nổi tiếng ở Takayama, bao gồm cả liên kết đến Google Maps và ID địa điểm để bạn dễ dàng tra cứu:\n\n*   **Phố cổ Takayama**\n    *   Địa chỉ: Takayama, Gifu Prefecture, Japan\n    *   Đánh giá: 4.5 sao\n    *   Điểm nổi bật: Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJsTyzQIy7AmARLiOSzcZFfRs](https://www.google.com/maps/place/?q=place_id:ChIJsTyzQIy7AmARLiOSzcZFfRs)\n    *   Google Place ID: ChIJsTyzQIy7AmARLiOSzcZFfRs\n*   **Làng dân gian Hida**\n    *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan\n    *   Đánh giá: 4.3 sao\n    *   Điểm nổi bật: Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJmWTYrzm7AmARRPwmwmCypNY](https://www.google.com/maps/place/?q=place_id:ChIJmWTYrzm7AmARRPwmwmCypNY)\n    *   Google Place ID: ChIJmWTYrzm7AmARRPwmwmCypNY\n*   **Takayama Jinya**\n    *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan\n    *   Đánh giá: 4.2 sao\n    *   Điểm nổi bật: Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJj29EXtm6AmAR4ZH1chH39Zg](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmAR4ZH1chH39Zg)\n    *   Google Place ID: ChIJj29EXtm6AmAR4ZH1chH39Zg\n*   **Higashiyama Walking Course**\n    *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan\n    *   Đánh giá: 4.0 sao\n    *   Điểm nổi bật: Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJ99T-4q67AmAR-m13onTdQ\\_w](https://www.google.com/maps/place/?q=place_id:ChIJ99T-4q67AmAR-m13onTdQ_w)\n    *   Google Place ID: ChIJ99T-4q67AmAR-m13onTdQ_w\n*   **Chợ sáng**\n    *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)\n    *   Đánh giá: 3.9 sao\n    *   Điểm nổi bật: Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJj29EXtm6AmARNsKdHGWF8I0](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmARNsKdHGWF8I0)\n    *   Google Place ID: ChIJj29EXtm6AmARNsKdHGWF8I0\n\nBạn có muốn tìm hiểu thêm về bất kỳ địa điểm nào trong số này không? Hoặc bạn muốn tôi gợi ý thêm những điểm dừng chân khác trên đường đến Kamikochi không?\n"}],"role":"model"},"finish_reason":"STOP","avg_logprobs":-0.022611100573264188}],"model_version":"gemini-2.0-flash-exp","usage_metadata":{"candidates_token_count":1021,"candidates_tokens_details":[{"modality":"TEXT","token_count":1021}],"prompt_token_count":5843,"prompt_tokens_details":[{"modality":"TEXT","token_count":5843}],"total_token_count":6864},"automatic_function_calling_history":[]}
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         |
+travel_concierge         | 2025-07-09 02:26:27,474 - INFO - google_llm.py:148 -
+travel_concierge         | LLM Response:
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Text:
+travel_concierge         | Tuyệt vời! Dưới đây là thông tin chi tiết hơn về các địa điểm du lịch nổi tiếng ở Takayama, bao gồm cả liên kết đến Google Maps và ID địa điểm để bạn dễ dàng tra cứu:
+travel_concierge         |
+travel_concierge         | *   **Phố cổ Takayama**
+travel_concierge         |     *   Địa chỉ: Takayama, Gifu Prefecture, Japan
+travel_concierge         |     *   Đánh giá: 4.5 sao
+travel_concierge         |     *   Điểm nổi bật: Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.
+travel_concierge         |     *   Google Maps URL: [https://www.google.com/maps/place/?q=place\_id:ChIJsTyzQIy7AmARLiOSzcZFfRs](https://www.google.com/maps/place/?q=place_id:ChIJsTyzQIy7AmARLiOSzcZFfRs)
+travel_concierge         |     *   Google Place ID: ChIJsTyzQIy7AmARLiOSzcZFfRs
+travel_concierge         | *   **Làng dân gian Hida**
+travel_concierge         |     *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan
+travel_concierge         |     *   Đánh giá: 4.3 sao
+travel_concierge         |     *   Điểm nổi bật: Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.
+travel_concierge         |     *   Google Maps URL: [https://www.google.com/maps/place/?q=place\_id:ChIJmWTYrzm7AmARRPwmwmCypNY](https://www.google.com/maps/place/?q=place_id:ChIJmWTYrzm7AmARRPwmwmCypNY)
+travel_concierge         |     *   Google Place ID: ChIJmWTYrzm7AmARRPwmwmCypNY
+travel_concierge         | *   **Takayama Jinya**
+travel_concierge         |     *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan
+travel_concierge         |     *   Đánh giá: 4.2 sao
+travel_concierge         |     *   Điểm nổi bật: Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.
+travel_concierge         |     *   Google Maps URL: [https://www.google.com/maps/place/?q=place\_id:ChIJj29EXtm6AmAR4ZH1chH39Zg](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmAR4ZH1chH39Zg)
+travel_concierge         |     *   Google Place ID: ChIJj29EXtm6AmAR4ZH1chH39Zg
+travel_concierge         | *   **Higashiyama Walking Course**
+travel_concierge         |     *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan
+travel_concierge         |     *   Đánh giá: 4.0 sao
+travel_concierge         |     *   Điểm nổi bật: Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.
+travel_concierge         |     *   Google Maps URL: [https://www.google.com/maps/place/?q=place\_id:ChIJ99T-4q67AmAR-m13onTdQ\_w](https://www.google.com/maps/place/?q=place_id:ChIJ99T-4q67AmAR-m13onTdQ_w)
+travel_concierge         |     *   Google Place ID: ChIJ99T-4q67AmAR-m13onTdQ_w
+travel_concierge         | *   **Chợ sáng**
+travel_concierge         |     *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)
+travel_concierge         |     *   Đánh giá: 3.9 sao
+travel_concierge         |     *   Điểm nổi bật: Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.
+travel_concierge         |     *   Google Maps URL: [https://www.google.com/maps/place/?q=place\_id:ChIJj29EXtm6AmARNsKdHGWF8I0](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmARNsKdHGWF8I0)
+travel_concierge         |     *   Google Place ID: ChIJj29EXtm6AmARNsKdHGWF8I0
+travel_concierge         |
+travel_concierge         | Bạn có muốn tìm hiểu thêm về bất kỳ địa điểm nào trong số này không? Hoặc bạn muốn tôi gợi ý thêm những điểm dừng chân khác trên đường đến Kamikochi không?
+travel_concierge         |
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Function calls:
+travel_concierge         |
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         | Raw response:
+travel_concierge         | {"sdk_http_response":{"headers":{"content-type":"application/json; charset=UTF-8","vary":"Origin, X-Origin, Referer","content-encoding":"gzip","date":"Wed, 09 Jul 2025 02:26:28 GMT","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=5621","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","transfer-encoding":"chunked"}},"candidates":[{"content":{"parts":[{"text":"Tuyệt vời! Dưới đây là thông tin chi tiết hơn về các địa điểm du lịch nổi tiếng ở Takayama, bao gồm cả liên kết đến Google Maps và ID địa điểm để bạn dễ dàng tra cứu:\n\n*   **Phố cổ Takayama**\n    *   Địa chỉ: Takayama, Gifu Prefecture, Japan\n    *   Đánh giá: 4.5 sao\n    *   Điểm nổi bật: Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJsTyzQIy7AmARLiOSzcZFfRs](https://www.google.com/maps/place/?q=place_id:ChIJsTyzQIy7AmARLiOSzcZFfRs)\n    *   Google Place ID: ChIJsTyzQIy7AmARLiOSzcZFfRs\n*   **Làng dân gian Hida**\n    *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan\n    *   Đánh giá: 4.3 sao\n    *   Điểm nổi bật: Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJmWTYrzm7AmARRPwmwmCypNY](https://www.google.com/maps/place/?q=place_id:ChIJmWTYrzm7AmARRPwmwmCypNY)\n    *   Google Place ID: ChIJmWTYrzm7AmARRPwmwmCypNY\n*   **Takayama Jinya**\n    *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan\n    *   Đánh giá: 4.2 sao\n    *   Điểm nổi bật: Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJj29EXtm6AmAR4ZH1chH39Zg](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmAR4ZH1chH39Zg)\n    *   Google Place ID: ChIJj29EXtm6AmAR4ZH1chH39Zg\n*   **Higashiyama Walking Course**\n    *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan\n    *   Đánh giá: 4.0 sao\n    *   Điểm nổi bật: Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJ99T-4q67AmAR-m13onTdQ\\_w](https://www.google.com/maps/place/?q=place_id:ChIJ99T-4q67AmAR-m13onTdQ_w)\n    *   Google Place ID: ChIJ99T-4q67AmAR-m13onTdQ_w\n*   **Chợ sáng**\n    *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)\n    *   Đánh giá: 3.9 sao\n    *   Điểm nổi bật: Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJj29EXtm6AmARNsKdHGWF8I0](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmARNsKdHGWF8I0)\n    *   Google Place ID: ChIJj29EXtm6AmARNsKdHGWF8I0\n\nBạn có muốn tìm hiểu thêm về bất kỳ địa điểm nào trong số này không? Hoặc bạn muốn tôi gợi ý thêm những điểm dừng chân khác trên đường đến Kamikochi không?\n"}],"role":"model"},"finish_reason":"STOP","avg_logprobs":-0.022611100573264188}],"model_version":"gemini-2.0-flash-exp","usage_metadata":{"candidates_token_count":1021,"candidates_tokens_details":[{"modality":"TEXT","token_count":1021}],"prompt_token_count":5843,"prompt_tokens_details":[{"modality":"TEXT","token_count":5843}],"total_token_count":6864},"automatic_function_calling_history":[]}
+travel_concierge         | -----------------------------------------------------------
+travel_concierge         |
+travel_concierge         | 2025-07-09 02:26:27,475 - INFO - fast_api.py:814 - Generated event in agent run streaming: {"content":{"parts":[{"text":"Tuyệt vời! Dưới đây là thông tin chi tiết hơn về các địa điểm du lịch nổi tiếng ở Takayama, bao gồm cả liên kết đến Google Maps và ID địa điểm để bạn dễ dàng tra cứu:\n\n*   **Phố cổ Takayama**\n    *   Địa chỉ: Takayama, Gifu Prefecture, Japan\n    *   Đánh giá: 4.5 sao\n    *   Điểm nổi bật: Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJsTyzQIy7AmARLiOSzcZFfRs](https://www.google.com/maps/place/?q=place_id:ChIJsTyzQIy7AmARLiOSzcZFfRs)\n    *   Google Place ID: ChIJsTyzQIy7AmARLiOSzcZFfRs\n*   **Làng dân gian Hida**\n    *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan\n    *   Đánh giá: 4.3 sao\n    *   Điểm nổi bật: Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJmWTYrzm7AmARRPwmwmCypNY](https://www.google.com/maps/place/?q=place_id:ChIJmWTYrzm7AmARRPwmwmCypNY)\n    *   Google Place ID: ChIJmWTYrzm7AmARRPwmwmCypNY\n*   **Takayama Jinya**\n    *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan\n    *   Đánh giá: 4.2 sao\n    *   Điểm nổi bật: Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJj29EXtm6AmAR4ZH1chH39Zg](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmAR4ZH1chH39Zg)\n    *   Google Place ID: ChIJj29EXtm6AmAR4ZH1chH39Zg\n*   **Higashiyama Walking Course**\n    *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan\n    *   Đánh giá: 4.0 sao\n    *   Điểm nổi bật: Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJ99T-4q67AmAR-m13onTdQ\\_w](https://www.google.com/maps/place/?q=place_id:ChIJ99T-4q67AmAR-m13onTdQ_w)\n    *   Google Place ID: ChIJ99T-4q67AmAR-m13onTdQ_w\n*   **Chợ sáng**\n    *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)\n    *   Đánh giá: 3.9 sao\n    *   Điểm nổi bật: Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJj29EXtm6AmARNsKdHGWF8I0](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmARNsKdHGWF8I0)\n    *   Google Place ID: ChIJj29EXtm6AmARNsKdHGWF8I0\n\nBạn có muốn tìm hiểu thêm về bất kỳ địa điểm nào trong số này không? Hoặc bạn muốn tôi gợi ý thêm những điểm dừng chân khác trên đường đến Kamikochi không?\n"}],"role":"model"},"usageMetadata":{"candidatesTokenCount":1021,"candidatesTokensDetails":[{"modality":"TEXT","tokenCount":1021}],"promptTokenCount":5843,"promptTokensDetails":[{"modality":"TEXT","tokenCount":5843}],"totalTokenCount":6864},"invocationId":"e-d81298dc-dcc7-4689-98be-a7cabf825369","author":"inspiration_agent","actions":{"stateDelta":{},"artifactDelta":{},"requestedAuthConfigs":{}},"id":"0rdcAMAz","timestamp":1752027981.690366}
+travel_concierge         | 2025-07-09 02:26:27,475 - INFO - fast_api.py:814 - Generated event in agent run streaming: {"content":{"parts":[{"text":"Tuyệt vời! Dưới đây là thông tin chi tiết hơn về các địa điểm du lịch nổi tiếng ở Takayama, bao gồm cả liên kết đến Google Maps và ID địa điểm để bạn dễ dàng tra cứu:\n\n*   **Phố cổ Takayama**\n    *   Địa chỉ: Takayama, Gifu Prefecture, Japan\n    *   Đánh giá: 4.5 sao\n    *   Điểm nổi bật: Khu phố cổ được bảo tồn với những ngôi nhà truyền thống, cửa hàng và xưởng sản xuất rượu sake từ thời Edo.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJsTyzQIy7AmARLiOSzcZFfRs](https://www.google.com/maps/place/?q=place_id:ChIJsTyzQIy7AmARLiOSzcZFfRs)\n    *   Google Place ID: ChIJsTyzQIy7AmARLiOSzcZFfRs\n*   **Làng dân gian Hida**\n    *   Địa chỉ: 1-590 Kamiokamotomachi, Takayama, Gifu 506-0055, Japan\n    *   Đánh giá: 4.3 sao\n    *   Điểm nổi bật: Bảo tàng ngoài trời trưng bày những ngôi nhà nông thôn và các công trình kiến trúc truyền thống từ vùng Hida.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJmWTYrzm7AmARRPwmwmCypNY](https://www.google.com/maps/place/?q=place_id:ChIJmWTYrzm7AmARRPwmwmCypNY)\n    *   Google Place ID: ChIJmWTYrzm7AmARRPwmwmCypNY\n*   **Takayama Jinya**\n    *   Địa chỉ: 1-5 Yaemachi, Takayama, Gifu 506-0035, Japan\n    *   Đánh giá: 4.2 sao\n    *   Điểm nổi bật: Tòa nhà chính phủ cũ có từ thời Edo, hiện nay là một bảo tàng.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJj29EXtm6AmAR4ZH1chH39Zg](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmAR4ZH1chH39Zg)\n    *   Google Place ID: ChIJj29EXtm6AmAR4ZH1chH39Zg\n*   **Higashiyama Walking Course**\n    *   Địa chỉ: Various temples and shrines east of Takayama Old Town, Takayama, Gifu, Japan\n    *   Đánh giá: 4.0 sao\n    *   Điểm nổi bật: Một con đường đi bộ đẹp như tranh vẽ qua một loạt các ngôi chùa và đền thờ.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJ99T-4q67AmAR-m13onTdQ\\_w](https://www.google.com/maps/place/?q=place_id:ChIJ99T-4q67AmAR-m13onTdQ_w)\n    *   Google Place ID: ChIJ99T-4q67AmAR-m13onTdQ_w\n*   **Chợ sáng**\n    *   Địa chỉ: Various locations in Takayama, Gifu, Japan (Miyagawa and Jinya-mae)\n    *   Đánh giá: 3.9 sao\n    *   Điểm nổi bật: Các khu chợ sôi động bày bán nông sản địa phương, đồ thủ công mỹ nghệ và đồ ăn nhẹ.\n    *   Google Maps URL: [https://www.google.com/maps/place/?q=place\\_id:ChIJj29EXtm6AmARNsKdHGWF8I0](https://www.google.com/maps/place/?q=place_id:ChIJj29EXtm6AmARNsKdHGWF8I0)\n    *   Google Place ID: ChIJj29EXtm6AmARNsKdHGWF8I0\n\nBạn có muốn tìm hiểu thêm về bất kỳ địa điểm nào trong số này không? Hoặc bạn muốn tôi gợi ý thêm những điểm dừng chân khác trên đường đến Kamikochi không?\n"}],"role":"model"},"usageMetadata":{"candidatesTokenCount":1021,"candidatesTokensDetails":[{"modality":"TEXT","tokenCount":1021}],"promptTokenCount":5843,"promptTokensDetails":[{"modality":"TEXT","tokenCount":5843}],"totalTokenCount":6864},"invocationId":"e-d81298dc-dcc7-4689-98be-a7cabf825369","author":"inspiration_agent","actions":{"stateDelta":{},"artifactDelta":{},"requestedAuthConfigs":{}},"id":"0rdcAMAz","timestamp":1752027981.690366}
+travel_concierge_redis   | 1:M 09 Jul 2025 02:27:59.011 * 100 changes in 300 seconds. Saving...
+travel_concierge_redis   | 1:M 09 Jul 2025 02:27:59.012 * Background saving started by pid 21
+travel_concierge_redis   | 21:C 09 Jul 2025 02:27:59.017 * DB saved on disk
+travel_concierge_redis   | 21:C 09 Jul 2025 02:27:59.018 * Fork CoW for RDB: current 0 MB, peak 0 MB, average 0 MB
+travel_concierge_redis   | 1:M 09 Jul 2025 02:27:59.113 * Background saving terminated with success
