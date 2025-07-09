@@ -515,26 +515,6 @@ class _AIChatScreenState extends State<AIChatScreen> {
           // Action Buttons
           Row(
             children: [
-              // Debug Button (temporary)
-              GestureDetector(
-                onTap: _debugPrintState,
-                child: Container(
-                  width: 40.h,
-                  height: 40.h,
-                  decoration: BoxDecoration(
-                    color: Colors.orange,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.bug_report,
-                    color: appTheme.whiteCustom,
-                    size: 20.h,
-                  ),
-                ),
-              ),
-
-              SizedBox(width: 8.h),
-
               // Map Navigation Button (only show if locations detected)
               if (_detectedLocations.isNotEmpty)
                 GestureDetector(
