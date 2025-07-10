@@ -34,6 +34,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
   bool _isLoading = false;
   bool _useGlobalSession = true;
   String? _initialQuery;
+  bool _autoSend = false;
+  bool _hasAutoSent = false;
 
   // Detected data from AI responses
   List<PlaceSearchResult> _detectedLocations = [];
@@ -43,6 +45,37 @@ class _AIChatScreenState extends State<AIChatScreen> {
   void initState() {
     super.initState();
     _initializeChat();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      if (args['autoSend'] == true &&
+          !_hasAutoSent &&
+          args['initialQuery'] != null &&
+          (args['initialQuery'] as String).isNotEmpty) {
+        _hasAutoSent = true;
+        _sendMessage(args['initialQuery'] as String);
+      }
+    }
+    if (_messages.isEmpty) {
+      if (args != null && args['conversationHistory'] != null) {
+        if (mounted) {
+          setState(() {
+            _messages = List<ChatMessage>.from(args['conversationHistory']);
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _messages = [..._globalChatService.conversationHistory];
+          });
+        }
+      }
+    }
   }
 
   @override

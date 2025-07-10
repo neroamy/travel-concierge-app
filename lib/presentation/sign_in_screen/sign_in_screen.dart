@@ -108,12 +108,17 @@ class _SignInScreenState extends State<SignInScreen> {
               _buildSocialDivider(),
               SizedBox(height: 24.h),
               _buildSocialButtons(),
-              SizedBox(height: 364.h),
-              _buildLoginButton(),
-              SizedBox(height: 40.h),
+              // Đã di chuyển nút Login xuống bottomNavigationBar, loại bỏ khỏi đây
+              // SizedBox(height: 364.h),
+              // _buildLoginButton(),
+              // SizedBox(height: 40.h),
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.fromLTRB(24.h, 0, 24.h, 24.h),
+        child: _buildLoginButton(),
       ),
     );
   }

@@ -292,11 +292,16 @@ class _PlanViewScreenState extends State<PlanViewScreen> {
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 24.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(
-          _days.length,
-          (index) => _buildDayTab(_days[index]),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(
+            _days.length,
+            (index) => Padding(
+              padding: EdgeInsets.only(right: 16.h),
+              child: _buildDayTab(_days[index]),
+            ),
+          ),
         ),
       ),
     );
