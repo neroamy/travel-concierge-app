@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_export.dart';
+import '../../core/utils/suggest_label_constants.dart';
 import '../../widgets/custom_image_view.dart';
 import '../../widgets/floating_chat_button.dart';
 import '../../widgets/safe_avatar_image.dart';
@@ -256,8 +257,8 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                         children: [
                           _buildHeaderSection(),
                           _buildSearchSection(),
+                          _buildSuggestionLabelGrid(),
                           _buildHorizontalLocationSection(),
-                          _buildGridLocationSection(),
                           SizedBox(height: 100.h),
                         ],
                       ),
@@ -370,115 +371,151 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
 
   Widget _buildSearchSection() {
     return Padding(
-      padding: EdgeInsets.only(left: 24.h, right: 24.h, top: 24.h),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              height: 50.h,
-              decoration: BoxDecoration(
-                color: appTheme.whiteCustom,
-                borderRadius: BorderRadius.circular(25.h),
-                border: Border.all(color: appTheme.colorFFE9E9),
+      padding: EdgeInsets.only(left: 24.h, right: 24.h, top: 12.h), // giảm top
+      child: Container(
+        decoration: BoxDecoration(
+          color: appTheme.whiteCustom,
+          borderRadius: BorderRadius.circular(16.h),
+          border: Border.all(color: appTheme.colorFFE9E9),
+        ),
+        child: Column(
+          children: [
+            // Text area
+            Padding(
+              padding:
+                  EdgeInsets.only(left: 8.h, right: 8.h, top: 6.h, bottom: 2.h),
+              child: TextField(
+                controller: _searchController,
+                minLines: 1,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: "How can I help you?",
+                  hintStyle: TextStyle(
+                    color: Colors.grey[600], // match suggestion label color
+                    fontSize: 16, // adjust if needed for consistency
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                      vertical: 10.h, horizontal: 8.h), // giảm vertical
+                ),
+                onChanged: (value) {
+                  setState(() {});
+                },
               ),
+            ),
+            // Toolbar buttons giữ nguyên
+            Padding(
+              padding:
+                  EdgeInsets.only(left: 4.h, right: 4.h, bottom: 4.h, top: 2.h),
               child: Row(
                 children: [
-                  SizedBox(width: 16.h),
-                  Icon(
-                    Icons.search,
-                    color: Colors.grey,
-                    size: 24.h,
+                  IconButton(
+                    icon: Icon(Icons.add_a_photo_outlined,
+                        color: appTheme.colorFF0373),
+                    onPressed: () async {
+                      // TODO: Hiển thị bottom sheet chọn: "Chụp ảnh" hoặc "Chọn từ thư viện"
+                    },
                   ),
-                  SizedBox(width: 12.h),
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: "Search destinations, places, activities...",
-                        hintStyle: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 16,
-                          fontFamily: 'Poppins',
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 15.h),
-                      ),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontFamily: 'Poppins',
-                        color: Colors.black,
-                      ),
-                      textInputAction: TextInputAction.search,
-                      onSubmitted: _onSearchSubmitted,
-                      onTap: () {
-                        // Navigate to AI Chat Screen with global session when tapped
-                        print('🚀 Navigating to AI Chat from search field tap');
+                  IconButton(
+                    icon: Icon(Icons.mic, color: appTheme.colorFF0373),
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRoutes.voiceChatScreen);
+                    },
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.send, color: appTheme.colorFF0373),
+                    onPressed: () {
+                      final query = _searchController.text.trim();
+                      if (query.isNotEmpty) {
                         Navigator.pushNamed(
                           context,
                           AppRoutes.aiChatScreen,
                           arguments: {
+                            'initialQuery': query,
                             'useGlobalSession': true,
                             'conversationHistory':
                                 _globalChatService.conversationHistory,
                           },
                         );
-                      },
-                      onChanged: (value) {
-                        // Debug: Print when text changes
-                        print('Text changed: $value');
-                        setState(() {}); // Update UI for clear button
-                      },
-                    ),
+                      }
+                    },
                   ),
-                  if (_searchController.text.isNotEmpty)
-                    GestureDetector(
-                      onTap: () {
-                        print('Clear button tapped!');
-                        _searchController.clear();
-                        setState(() {});
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8.h),
-                        child: Icon(
-                          Icons.clear,
-                          size: 20.h,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuggestionLabelGrid() {
+    final labels = SuggestLabelConstants.suggestLabels;
+    final isScrollable = labels.length > 4;
+    return Padding(
+      padding: EdgeInsets.only(
+          left: 24.h,
+          right: 24.h,
+          top: 0,
+          bottom: 0), // giảm top/bottom để giảm space với chat box
+      child: SizedBox(
+        height: 2 * 64.h +
+            24.h, // 2 rows, each 64.h tall + 1 mainAxisSpacing (fix clipping)
+        child: GridView.builder(
+          physics: isScrollable
+              ? const BouncingScrollPhysics()
+              : const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 12.h,
+            crossAxisSpacing: 12.h,
+            childAspectRatio: 2.8,
           ),
-          SizedBox(width: 12.h),
-          // Search Button
-          GestureDetector(
-            onTap: () {
-              print('Search button tapped! Query: ${_searchController.text}');
-              final query = _searchController.text.trim();
-              if (query.isNotEmpty) {
-                _onSearchSubmitted(query);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter search text')),
+          itemCount:
+              isScrollable ? labels.length : 4, // always show 4, scroll if more
+          itemBuilder: (context, index) {
+            final label = labels[index];
+            return GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.aiChatScreen,
+                  arguments: {
+                    'initialQuery': label,
+                    'useGlobalSession': true,
+                    'conversationHistory':
+                        _globalChatService.conversationHistory,
+                    'autoSend': true,
+                  },
                 );
-              }
-            },
-            child: Container(
-              width: 52.h,
-              height: 52.h,
-              decoration: BoxDecoration(
-                color: appTheme.colorFF0373,
-                borderRadius: BorderRadius.circular(26.h),
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: 6.h, vertical: 8.h), // giảm padding
+                decoration: BoxDecoration(
+                  color: Colors.transparent, // bỏ background xám
+                  borderRadius: BorderRadius.circular(14.h),
+                  border: Border.all(color: appTheme.colorFFE9E9, width: 1.2),
+                ),
+                child: Center(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      height: 1.22,
+                      color: Colors.grey[600], // màu xám giống bottom menu
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ),
-              child: Icon(
-                Icons.search,
-                color: Colors.white,
-                size: 24.h,
-              ),
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
