@@ -73,25 +73,27 @@ class AuthService {
       print('📡 Login response body: ${response.body}');
 
       final responseData = jsonDecode(response.body);
-      final loginResponse = LoginResponse.fromJson(responseData);
-
-      if (response.statusCode == 200 && loginResponse.success) {
+      if (response.statusCode == 200 &&
+          responseData['user'] != null &&
+          responseData['user']['user_profile_uuid'] != null) {
+        final loginResponse = LoginResponse.fromJson(responseData);
+        if (loginResponse.user == null ||
+            loginResponse.user!.userProfileUuid.isEmpty) {
+          throw Exception('user_profile_uuid missing in login response');
+        }
         // Store authentication data
         await _storeAuthData(loginResponse);
-
         // Sync with ProfileService
         await _syncWithProfileService();
-
         // Sync with GlobalChatService
         await _syncWithGlobalChatService();
-
         print('✅ Login successful for user: ${_currentUser?.username}');
         return loginResponse;
       } else {
-        print('❌ Login failed: ${loginResponse.message}');
+        print('❌ Login failed: user_profile_uuid missing');
         return LoginResponse(
           success: false,
-          message: loginResponse.message ?? 'Login failed. Please try again.',
+          message: 'Login failed: user_profile_uuid missing in response.',
         );
       }
     } catch (e) {

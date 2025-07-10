@@ -52,16 +52,16 @@ class ProfileService {
   /// Update user profile
   Future<ProfileApiResponse> updateProfile(ProfileUpdateRequest request) async {
     try {
-      // Use correct endpoint as per API spec
-      final profileId = _currentProfile?.id;
-      if (profileId == null || profileId.isEmpty) {
+      final authService = AuthService();
+      final user = authService.currentUser;
+      if (user == null || user.userProfileUuid.isEmpty) {
         return ProfileApiResponse(
           success: false,
-          message: 'Profile ID is missing. Cannot update profile.',
+          message: 'user_profile_uuid missing. Cannot update profile.',
         );
       }
-      final url = '${ApiConfig.baseUrl}/user_manager/profile/$profileId/update';
-      final authService = AuthService();
+      final url =
+          '${ApiConfig.baseUrl}/user_manager/profile/${user.userProfileUuid}/update/';
       final response = await http.put(
         Uri.parse(url),
         headers: authService.getAuthHeaders(),
@@ -190,23 +190,22 @@ class ProfileService {
   /// Fetch profile from API
   Future<bool> _fetchProfileFromAPI() async {
     try {
-      final url = '${ApiConfig.baseUrl}/profile';
       final authService = AuthService();
-
+      final user = authService.currentUser;
+      if (user == null || user.userProfileUuid.isEmpty) {
+        throw Exception('user_profile_uuid missing. Cannot fetch profile.');
+      }
+      final url =
+          '${ApiConfig.baseUrl}/user_manager/profile/${user.userProfileUuid}';
       final response = await http.get(
         Uri.parse(url),
         headers: authService.getAuthHeaders(),
       );
-
-      print('📡 Fetch profile response status: ${response.statusCode}');
-
       if (response.statusCode == 200) {
-        final apiResponse =
-            ProfileApiResponse.fromJson(jsonDecode(response.body));
-        if (apiResponse.success && apiResponse.data != null) {
-          _currentProfile = apiResponse.data!;
-          return true;
-        }
+        final profileData = jsonDecode(response.body)['data'];
+        _currentProfile = UserProfile.fromJson(profileData);
+        await _saveProfileToStorage();
+        return true;
       }
       return false;
     } catch (e) {

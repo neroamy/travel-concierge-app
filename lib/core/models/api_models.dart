@@ -1625,6 +1625,7 @@ class UserData {
   final String? avatarUrl;
   final String? address;
   final List<String>? interests;
+  final String userProfileUuid; // Add this line
 
   UserData({
     required this.id,
@@ -1634,6 +1635,7 @@ class UserData {
     this.avatarUrl,
     this.address,
     this.interests,
+    required this.userProfileUuid, // Add this line
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) {
@@ -1647,6 +1649,7 @@ class UserData {
       interests: json['interests'] != null
           ? List<String>.from(json['interests'])
           : null,
+      userProfileUuid: json['user_profile_uuid'] ?? '', // Add this line
     );
   }
 
@@ -1659,6 +1662,7 @@ class UserData {
       'avatar_url': avatarUrl,
       'address': address,
       'interests': interests,
+      'user_profile_uuid': userProfileUuid, // Add this line
     };
   }
 }

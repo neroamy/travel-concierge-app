@@ -91,6 +91,12 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         _homeAddressController.text = profile.homeAddress ?? '';
         _localPreferModeController.text = profile.localPreferMode ?? '';
       });
+    } else {
+      // Show error if profile is missing
+      if (mounted) {
+        _showErrorMessage(
+            'Không thể tải thông tin hồ sơ. Vui lòng đăng nhập lại.');
+      }
     }
   }
 
