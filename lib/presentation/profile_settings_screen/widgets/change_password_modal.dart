@@ -58,94 +58,96 @@ class _ChangePasswordModalState extends State<ChangePasswordModal> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.all(24.h),
-        decoration: BoxDecoration(
-          color: appTheme.whiteCustom,
-          borderRadius: BorderRadius.circular(16.h),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            _buildHeader(),
-            SizedBox(height: 24.h),
+      child: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.all(24.h),
+          decoration: BoxDecoration(
+            color: appTheme.whiteCustom,
+            borderRadius: BorderRadius.circular(16.h),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              _buildHeader(),
+              SizedBox(height: 24.h),
 
-            // Form
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  // Current Password
-                  _buildPasswordField(
-                    controller: _currentPasswordController,
-                    label: 'Current Password',
-                    hintText: 'Enter your current password',
-                    isVisible: _isCurrentPasswordVisible,
-                    onVisibilityToggle: () => setState(() {
-                      _isCurrentPasswordVisible = !_isCurrentPasswordVisible;
-                    }),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Current password is required';
-                      }
-                      return null;
-                    },
-                  ),
+              // Form
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    // Current Password
+                    _buildPasswordField(
+                      controller: _currentPasswordController,
+                      label: 'Current Password',
+                      hintText: 'Enter your current password',
+                      isVisible: _isCurrentPasswordVisible,
+                      onVisibilityToggle: () => setState(() {
+                        _isCurrentPasswordVisible = !_isCurrentPasswordVisible;
+                      }),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Current password is required';
+                        }
+                        return null;
+                      },
+                    ),
 
-                  SizedBox(height: 16.h),
+                    SizedBox(height: 16.h),
 
-                  // New Password
-                  _buildPasswordField(
-                    controller: _newPasswordController,
-                    label: 'New Password',
-                    hintText: 'Enter your new password',
-                    isVisible: _isNewPasswordVisible,
-                    onVisibilityToggle: () => setState(() {
-                      _isNewPasswordVisible = !_isNewPasswordVisible;
-                    }),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'New password is required';
-                      }
-                      if (value.length < 8) {
-                        return 'Password must be at least 8 characters';
-                      }
-                      return null;
-                    },
-                  ),
+                    // New Password
+                    _buildPasswordField(
+                      controller: _newPasswordController,
+                      label: 'New Password',
+                      hintText: 'Enter your new password',
+                      isVisible: _isNewPasswordVisible,
+                      onVisibilityToggle: () => setState(() {
+                        _isNewPasswordVisible = !_isNewPasswordVisible;
+                      }),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'New password is required';
+                        }
+                        if (value.length < 8) {
+                          return 'Password must be at least 8 characters';
+                        }
+                        return null;
+                      },
+                    ),
 
-                  SizedBox(height: 16.h),
+                    SizedBox(height: 16.h),
 
-                  // Confirm Password
-                  _buildPasswordField(
-                    controller: _confirmPasswordController,
-                    label: 'Confirm Password',
-                    hintText: 'Confirm your new password',
-                    isVisible: _isConfirmPasswordVisible,
-                    onVisibilityToggle: () => setState(() {
-                      _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                    }),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please confirm your password';
-                      }
-                      if (value != _newPasswordController.text) {
-                        return 'Passwords do not match';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
+                    // Confirm Password
+                    _buildPasswordField(
+                      controller: _confirmPasswordController,
+                      label: 'Confirm Password',
+                      hintText: 'Confirm your new password',
+                      isVisible: _isConfirmPasswordVisible,
+                      onVisibilityToggle: () => setState(() {
+                        _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                      }),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please confirm your password';
+                        }
+                        if (value != _newPasswordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            SizedBox(height: 32.h),
+              SizedBox(height: 32.h),
 
-            // Buttons
-            _buildButtons(),
-          ],
+              // Buttons
+              _buildButtons(),
+            ],
+          ),
         ),
       ),
     );
@@ -298,7 +300,7 @@ class _ChangePasswordModalState extends State<ChangePasswordModal> {
                         ),
                       )
                     : Text(
-                        'Change Password',
+                        'Update',
                         style: TextStyle(
                           fontSize: 16.fSize,
                           fontWeight: FontWeight.w600,

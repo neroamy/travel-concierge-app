@@ -31,7 +31,7 @@ class ProfileService {
       }
 
       // If no local profile, try to fetch from API
-      final success = await _fetchProfileFromAPI();
+      final success = await fetchProfileFromAPI();
       if (success) {
         await _saveProfileToStorage();
         print('✅ Profile fetched from API: ${_currentProfile!.username}');
@@ -92,9 +92,15 @@ class ProfileService {
   Future<ProfileApiResponse> changePassword(
       PasswordChangeRequest request) async {
     try {
-      final url = '${ApiConfig.baseUrl}/profile/change-password';
       final authService = AuthService();
-
+      final user = authService.currentUser;
+      if (user == null || user.id.isEmpty) {
+        return ProfileApiResponse(
+          success: false,
+          message: 'user_uuid missing. Cannot change password.',
+        );
+      }
+      final url = '${ApiConfig.baseUrl}/auth/${user.id}/change-password/';
       final response = await http.put(
         Uri.parse(url),
         headers: authService.getAuthHeaders(),
@@ -188,7 +194,7 @@ class ProfileService {
   }
 
   /// Fetch profile from API
-  Future<bool> _fetchProfileFromAPI() async {
+  Future<bool> fetchProfileFromAPI() async {
     try {
       final authService = AuthService();
       final user = authService.currentUser;
@@ -197,10 +203,15 @@ class ProfileService {
       }
       final url =
           '${ApiConfig.baseUrl}/user_manager/profile/${user.userProfileUuid}';
+      final headers = authService.getAuthHeaders();
+      print('🌐 [GET] Fetching user profile: URL = $url');
+      print('🌐 [GET] Headers: $headers');
       final response = await http.get(
         Uri.parse(url),
-        headers: authService.getAuthHeaders(),
+        headers: headers,
       );
+      print('🌐 [GET] Response status: ${response.statusCode}');
+      print('🌐 [GET] Response body: ${response.body}');
       if (response.statusCode == 200) {
         final profileData = jsonDecode(response.body)['data'];
         _currentProfile = UserProfile.fromJson(profileData);

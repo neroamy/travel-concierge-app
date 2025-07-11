@@ -25,9 +25,11 @@ class _LocationTargetingScreenWithMapsState
   final TravelConciergeService _travelService = TravelConciergeService();
 
   // Map and location data
+  LatLng? _userPosition; // nullable, only set if user location is available
   LatLng _currentPosition =
       const LatLng(37.7749, -122.4194); // San Francisco default
   Set<Marker> _markers = {};
+  Set<Polyline> _polylines = {}; // <-- add this
   List<PlaceSearchResult> _searchResults = [];
   List<LocationCardModel> _locationCards = [];
   bool _isLoading = false;
@@ -75,12 +77,17 @@ class _LocationTargetingScreenWithMapsState
       Position? position = await GoogleMapsService.getCurrentLocation();
       if (position != null) {
         setState(() {
-          _currentPosition = LatLng(position.latitude, position.longitude);
+          _userPosition = LatLng(position.latitude, position.longitude);
+          _currentPosition = _userPosition!;
         });
         _moveCamera(_currentPosition);
+        _updateRoutePolyline();
+      } else {
+        _updateRoutePolyline();
       }
     } catch (e) {
       debugPrint('Error initializing location: $e');
+      _updateRoutePolyline();
     }
   }
 
@@ -116,11 +123,92 @@ class _LocationTargetingScreenWithMapsState
       _locationCards = cards;
       _markers = newMarkers;
     });
-
+    _updateRoutePolyline();
     // Move camera to first result
     if (results.isNotEmpty) {
       _moveCamera(LatLng(results.first.latitude, results.first.longitude));
     }
+  }
+
+  void _updateRoutePolyline() async {
+    List<LatLng> points = [];
+    LatLng? origin = _userPosition;
+    if (_searchResults.isEmpty) {
+      setState(() {
+        _polylines = {};
+      });
+      return;
+    }
+    if (origin == null) {
+      origin =
+          LatLng(_searchResults.first.latitude, _searchResults.first.longitude);
+    }
+    // Make the route a loop: destination is the first waypoint
+    LatLng destination =
+        LatLng(_searchResults.first.latitude, _searchResults.first.longitude);
+    List<LatLng> waypoints = [];
+    if (_searchResults.length > 2) {
+      waypoints = _searchResults
+          .sublist(1)
+          .map((p) => LatLng(p.latitude, p.longitude))
+          .toList();
+    }
+    try {
+      final routePoints = await GoogleMapsService.getTurnByTurnRoute(
+        origin: origin,
+        destination: destination,
+        waypoints: waypoints,
+      );
+      debugPrint('Route points count: \'${routePoints.length}\'');
+      if (routePoints.isNotEmpty) {
+        setState(() {
+          _polylines = {
+            Polyline(
+              polylineId: const PolylineId('route'),
+              color: Colors.blue,
+              width: 5,
+              points: routePoints,
+            ),
+          };
+        });
+        await _fitMapToPolylineAndMarkers(routePoints);
+      } else {
+        debugPrint('No route points returned from Directions API.');
+        setState(() {
+          _polylines = {};
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching turn-by-turn route: $e');
+      setState(() {
+        _polylines = {};
+      });
+    }
+  }
+
+  Future<void> _fitMapToPolylineAndMarkers(List<LatLng> routePoints) async {
+    if (routePoints.isEmpty && _markers.isEmpty) return;
+    LatLngBounds bounds;
+    List<LatLng> allPoints = [
+      ...routePoints,
+      ..._markers.map((m) => m.position),
+    ];
+    double minLat = allPoints.first.latitude;
+    double maxLat = allPoints.first.latitude;
+    double minLng = allPoints.first.longitude;
+    double maxLng = allPoints.first.longitude;
+    for (final p in allPoints) {
+      if (p.latitude < minLat) minLat = p.latitude;
+      if (p.latitude > maxLat) maxLat = p.latitude;
+      if (p.longitude < minLng) minLng = p.longitude;
+      if (p.longitude > maxLng) maxLng = p.longitude;
+    }
+    bounds = LatLngBounds(
+      southwest: LatLng(minLat, minLng),
+      northeast: LatLng(maxLat, maxLng),
+    );
+    final controller = await _mapController.future;
+    controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 60));
   }
 
   /// Perform search using AI API
@@ -260,6 +348,7 @@ class _LocationTargetingScreenWithMapsState
         zoom: 14.0,
       ),
       markers: _markers,
+      polylines: _polylines, // <-- add this
       myLocationEnabled: true,
       myLocationButtonEnabled: false,
       zoomControlsEnabled: false,
@@ -412,9 +501,11 @@ class _LocationTargetingScreenWithMapsState
           if (position != null) {
             final currentPos = LatLng(position.latitude, position.longitude);
             setState(() {
+              _userPosition = currentPos;
               _currentPosition = currentPos;
             });
             _moveCamera(currentPos);
+            _updateRoutePolyline();
           }
         } catch (e) {
           _showSnackBarSafe('Could not get current location');

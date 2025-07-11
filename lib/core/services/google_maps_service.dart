@@ -3,11 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
+import 'api_config.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 /// Service class for Google Maps integration
 class GoogleMapsService {
-  static const String _apiKey =
-      'AIzaSyAnAfeTxjw6pDrhHVylU3n8fjpRtqdJIaQ'; // Replace with actual API key
   static const String _placesBaseUrl =
       'https://maps.googleapis.com/maps/api/place';
   static const String _geocodingBaseUrl =
@@ -90,7 +91,7 @@ class GoogleMapsService {
     try {
       final String url = '$_placesBaseUrl/textsearch/json'
           '?query=$query'
-          '&key=$_apiKey';
+          '&key=${ApiConfig.googleMapsApiKey}';
 
       if (kDebugMode) {
         print('Making request to: $url');
@@ -197,7 +198,7 @@ class GoogleMapsService {
       final String url = '$_placesBaseUrl/details/json'
           '?place_id=$placeId'
           '&fields=name,formatted_address,geometry,photos,rating,price_level'
-          '&key=$_apiKey';
+          '&key=${ApiConfig.googleMapsApiKey}';
 
       final response = await http.get(Uri.parse(url));
 
@@ -236,7 +237,7 @@ class GoogleMapsService {
       final String url = '$_placesBaseUrl/autocomplete/json'
           '?input=$input'
           '&types=establishment'
-          '&key=$_apiKey';
+          '&key=${ApiConfig.googleMapsApiKey}';
 
       if (kDebugMode) {
         print('Making autocomplete request to: $url');
@@ -323,6 +324,43 @@ class GoogleMapsService {
     ];
 
     return suggestions;
+  }
+
+  /// Get turn-by-turn route polyline points from Google Directions API
+  static Future<List<LatLng>> getTurnByTurnRoute({
+    required LatLng origin,
+    required LatLng destination,
+    List<LatLng>? waypoints,
+  }) async {
+    final String baseUrl =
+        'https://maps.googleapis.com/maps/api/directions/json';
+    final String originStr = '${origin.latitude},${origin.longitude}';
+    final String destinationStr =
+        '${destination.latitude},${destination.longitude}';
+    String waypointsStr = '';
+    if (waypoints != null && waypoints.isNotEmpty) {
+      waypointsStr = '&waypoints=' +
+          waypoints.map((w) => '${w.latitude},${w.longitude}').join('|');
+    }
+    final String url =
+        '$baseUrl?origin=$originStr&destination=$destinationStr$waypointsStr&key=${ApiConfig.googleMapsApiKey}';
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['status'] == 'OK') {
+        final routes = data['routes'] as List?;
+        if (routes != null && routes.isNotEmpty) {
+          final overviewPolyline = routes[0]['overview_polyline']['points'];
+          PolylinePoints polylinePoints = PolylinePoints();
+          List<PointLatLng> result =
+              polylinePoints.decodePolyline(overviewPolyline);
+          return result.map((p) => LatLng(p.latitude, p.longitude)).toList();
+        }
+      }
+      throw Exception('Directions API error: ${data['status']}');
+    } else {
+      throw Exception('HTTP error: ${response.statusCode}');
+    }
   }
 }
 

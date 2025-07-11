@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../widgets/floating_chat_button.dart';
+import '../travel_exploration_screen/widgets/shared_bottom_nav_bar.dart';
 
 class PlanViewScreen extends StatefulWidget {
   const PlanViewScreen({super.key});
@@ -184,7 +185,7 @@ class _PlanViewScreenState extends State<PlanViewScreen> {
           const FloatingChatButton(),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavBar(),
+      bottomNavigationBar: SharedBottomNavBar(selectedIndex: 2),
     );
   }
 
@@ -515,92 +516,6 @@ class _PlanViewScreenState extends State<PlanViewScreen> {
                   ),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Bottom navigation bar with Guide tab active
-  Widget _buildBottomNavBar() {
-    final List<BottomNavItemModel> navItems = [
-      BottomNavItemModel(
-        icon: Icons.home,
-        label: "Home",
-        isSelected: false,
-        onTap: _navigateToHome,
-      ),
-      BottomNavItemModel(
-        icon: Icons.account_balance_wallet_outlined,
-        label: "Wallet",
-        isSelected: false,
-        onTap: () {}, // Not implemented yet
-      ),
-      BottomNavItemModel(
-        icon: Icons.book_outlined,
-        label: "Guide",
-        isSelected: true, // Guide tab is active in this screen
-        onTap: () {}, // Current screen
-      ),
-      BottomNavItemModel(
-        icon: Icons.bar_chart,
-        label: "Chart",
-        isSelected: false,
-        onTap: () {}, // Not implemented yet
-      ),
-    ];
-
-    return Container(
-      height: 100.h,
-      decoration: BoxDecoration(
-        color: appTheme.whiteCustom,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24.h),
-          topRight: Radius.circular(24.h),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10.h,
-            offset: Offset(0, -2.h),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(
-          navItems.length,
-          (index) => _buildNavItem(navItems[index]),
-        ),
-      ),
-    );
-  }
-
-  /// Individual navigation item
-  Widget _buildNavItem(BottomNavItemModel item) {
-    return GestureDetector(
-      onTap: item.onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            item.icon,
-            size: 24.h,
-            color: item.isSelected
-                ? const Color(0xFF0373F3)
-                : const Color(0xFFBCBCBC),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            item.label,
-            style: TextStyle(
-              fontSize: 12.fSize,
-              fontWeight: FontWeight.w400,
-              color: item.isSelected
-                  ? const Color(0xFF0373F3)
-                  : const Color(0xFFBCBCBC),
-              fontFamily: 'Poppins',
             ),
           ),
         ],

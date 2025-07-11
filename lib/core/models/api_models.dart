@@ -1511,8 +1511,6 @@ class ProfileUpdateRequest {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {
-      'username': username,
-      'email': email,
       'address': address,
       'interests': interests,
     };
@@ -1568,10 +1566,14 @@ class ProfileApiResponse {
   });
 
   factory ProfileApiResponse.fromJson(Map<String, dynamic> json) {
+    // Xử lý success theo chuẩn backend: status==0 là thành công
+    final bool isSuccess = (json['success'] ?? false) || (json['status'] == 0);
     return ProfileApiResponse(
-      success: json['success'] ?? false,
-      message: json['message'] ?? '',
-      data: json['data'] != null ? UserProfile.fromJson(json['data']) : null,
+      success: isSuccess,
+      message: json['message'] ?? json['msg'] ?? '',
+      data: json['data'] != null && json['data'] is Map<String, dynamic>
+          ? UserProfile.fromJson(json['data'])
+          : null,
     );
   }
 }
@@ -1639,8 +1641,12 @@ class UserData {
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) {
+    // Xử lý cho cả trường hợp id hoặc user_uuid đều có thể là id
+    final id = json['id'] ?? json['user_uuid'] ?? '';
+    // user_profile_uuid có thể nằm trong json
+    final userProfileUuid = json['user_profile_uuid'] ?? '';
     return UserData(
-      id: json['id'] ?? '',
+      id: id,
       username: json['username'] ?? '',
       email: json['email'] ?? '',
       fullName: json['full_name'],
@@ -1649,7 +1655,7 @@ class UserData {
       interests: json['interests'] != null
           ? List<String>.from(json['interests'])
           : null,
-      userProfileUuid: json['user_profile_uuid'] ?? '', // Add this line
+      userProfileUuid: userProfileUuid,
     );
   }
 

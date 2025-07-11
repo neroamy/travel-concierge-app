@@ -14,7 +14,14 @@ class BottomNavItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(height: 20.h),
-        CustomImageView(imagePath: item.icon, height: 28.h, width: 28.h),
+        if (item.icon is IconData)
+          Icon(item.icon,
+              size: 28.h,
+              color: (item.isSelected ?? false)
+                  ? const Color(0xFF0373F3)
+                  : appTheme.colorFFBCBC)
+        else
+          CustomImageView(imagePath: item.icon, height: 28.h, width: 28.h),
         SizedBox(height: 4.h),
         Text(
           item.label ?? '',

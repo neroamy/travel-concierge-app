@@ -27,6 +27,10 @@ class ApiConfig {
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 60);
 
+  // Google Maps API Key
+  static const String googleMapsApiKey =
+      'AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg';
+
   // Build full session URL (for chat service)
   static String getSessionUrl(String userId, String sessionId) {
     return '$chatBaseUrl$sessionEndpoint/$userId/sessions/$sessionId';

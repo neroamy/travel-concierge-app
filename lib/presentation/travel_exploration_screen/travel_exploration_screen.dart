@@ -634,27 +634,27 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
     );
   }
 
-  Widget _buildBottomNavBar() {
+  Widget _buildBottomNavBar({int selectedIndex = 0, Function(int)? onTap}) {
     List<BottomNavItemModel> items = [
       BottomNavItemModel(
         icon: ImageConstant.imgGroup125,
         label: "Home",
-        isSelected: true,
+        isSelected: selectedIndex == 0,
       ),
       BottomNavItemModel(
         icon: ImageConstant.imgGroup120,
         label: "Wallet",
-        isSelected: false,
+        isSelected: selectedIndex == 1,
       ),
       BottomNavItemModel(
         icon: ImageConstant.imgGroup123,
         label: "Guide",
-        isSelected: false,
+        isSelected: selectedIndex == 2,
       ),
       BottomNavItemModel(
-        icon: ImageConstant.imgGroup140,
-        label: "Chart",
-        isSelected: false,
+        icon: Icons.settings, // Use built-in settings icon
+        label: "Setting",
+        isSelected: selectedIndex == 3,
       ),
     ];
 
@@ -678,7 +678,26 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(
           items.length,
-          (index) => BottomNavItem(item: items[index]),
+          (index) => GestureDetector(
+            onTap: () {
+              if (onTap != null) {
+                onTap(index);
+              } else {
+                // Default navigation logic
+                if (index == 0) {
+                  Navigator.pushNamed(
+                      context, AppRoutes.travelExplorationScreen);
+                } else if (index == 1) {
+                  // Wallet: Not implemented
+                } else if (index == 2) {
+                  // Guide: Not implemented
+                } else if (index == 3) {
+                  Navigator.pushNamed(context, AppRoutes.profileSettingsScreen);
+                }
+              }
+            },
+            child: BottomNavItem(item: items[index]),
+          ),
         ),
       ),
     );
@@ -920,9 +939,8 @@ class LocationCategoryModel {
 }
 
 class BottomNavItemModel {
-  String? icon;
-  String? label;
-  bool? isSelected;
-
+  final dynamic icon; // Accepts String (asset path) or IconData
+  final String? label;
+  final bool? isSelected;
   BottomNavItemModel({this.icon, this.label, this.isSelected});
 }

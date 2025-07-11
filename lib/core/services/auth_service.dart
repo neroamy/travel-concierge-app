@@ -73,10 +73,19 @@ class AuthService {
       print('📡 Login response body: ${response.body}');
 
       final responseData = jsonDecode(response.body);
+      // Sửa lại để lấy đúng dữ liệu user từ response['data']['user'] và token từ response['data']['token']
+      final data = responseData['data'];
+      final userJson = data != null ? data['user'] : null;
+      final token = data != null ? data['token'] : null;
       if (response.statusCode == 200 &&
-          responseData['user'] != null &&
-          responseData['user']['user_profile_uuid'] != null) {
-        final loginResponse = LoginResponse.fromJson(responseData);
+          userJson != null &&
+          userJson['user_profile_uuid'] != null) {
+        final loginResponse = LoginResponse(
+          success: true,
+          message: responseData['msg'] ?? '',
+          user: UserData.fromJson(userJson),
+          token: token,
+        );
         if (loginResponse.user == null ||
             loginResponse.user!.userProfileUuid.isEmpty) {
           throw Exception('user_profile_uuid missing in login response');
@@ -90,10 +99,13 @@ class AuthService {
         print('✅ Login successful for user: ${_currentUser?.username}');
         return loginResponse;
       } else {
-        print('❌ Login failed: user_profile_uuid missing');
+        // Lấy thông báo lỗi từ msg nếu có
+        final errorMsg = responseData['msg'] ??
+            'Login failed: user_profile_uuid missing in response.';
+        print('❌ Login failed: $errorMsg');
         return LoginResponse(
           success: false,
-          message: 'Login failed: user_profile_uuid missing in response.',
+          message: errorMsg,
         );
       }
     } catch (e) {

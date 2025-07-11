@@ -72,6 +72,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   /// Load user profile data
   void _loadProfile() async {
+    // Luôn fetch dữ liệu mới nhất từ API
+    bool apiSuccess = await _profileService.fetchProfileFromAPI();
     final profile = _profileService.currentProfile;
     if (profile != null && mounted) {
       setState(() {
@@ -146,6 +148,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           ? null
           : _localPreferModeController.text.trim(),
     );
+    print(
+        '📝 Profile update request: ${request.toJson()}'); // Log dữ liệu gửi đi
 
     try {
       final response = await _profileService.updateProfile(request);
@@ -165,8 +169,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         // Show error message
         _showErrorMessage(response.message);
       }
-    } catch (e) {
-      print('❌ Error saving profile: $e');
+    } catch (e, stack) {
+      print('❌ Error saving profile: ${e.toString()}');
+      print('❌ Stacktrace: ${stack.toString()}'); // Log stacktrace khi có lỗi
 
       if (!mounted) return;
 
@@ -387,6 +392,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                           }
                           return null;
                         },
+                        enabled: false,
                       ),
 
                       SizedBox(height: 24.h),
@@ -407,6 +413,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                           }
                           return null;
                         },
+                        enabled: false,
                       ),
 
                       SizedBox(height: 24.h),
@@ -640,6 +647,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
     String? Function(String?)? validator,
+    bool enabled = true,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -679,6 +687,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                   keyboardType: keyboardType,
                   maxLines: maxLines,
                   validator: validator,
+                  enabled: enabled,
                   style: TextStyle(
                     fontSize: 16.fSize,
                     color: appTheme.blackCustom,

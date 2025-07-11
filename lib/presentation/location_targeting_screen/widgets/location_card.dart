@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/app_export.dart';
 import '../../../widgets/custom_image_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Model class for location cards with new format
 class LocationCardModel {
@@ -193,16 +194,27 @@ class LocationCard extends StatelessWidget {
         ),
         SizedBox(width: 4.h),
         Expanded(
-          child: Text(
-            location.address,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 11.fSize,
-              fontWeight: FontWeight.w400,
-              fontFamily: 'Poppins',
-              color: Colors.grey[600],
-              height: 1.2,
+          child: GestureDetector(
+            onTap: () async {
+              final encoded = Uri.encodeComponent(location.address);
+              final url =
+                  'https://www.google.com/maps/search/?api=1&query=$encoded';
+              if (await canLaunch(url)) {
+                await launch(url);
+              }
+            },
+            child: Text(
+              location.address,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11.fSize,
+                fontWeight: FontWeight.w400,
+                fontFamily: 'Poppins',
+                color: Colors.blue, // Keep blue for clickable
+                // Remove underline
+                height: 1.2,
+              ),
             ),
           ),
         ),
