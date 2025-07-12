@@ -7,6 +7,7 @@ import '../models/api_models.dart';
 import 'api_config.dart';
 import 'profile_service.dart';
 import 'global_chat_service.dart';
+import 'plan_storage_service.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
@@ -215,6 +216,16 @@ class AuthService {
       // Clear GlobalChatService session
       final globalChatService = GlobalChatService();
       await globalChatService.clearSession();
+
+      // Clear local plan nếu chưa lưu DB
+      final planStorage = PlanStorageService();
+      final isSaved = await planStorage.isPlanSaved();
+      if (!isSaved) {
+        await planStorage.clearCurrentPlan();
+        print('🗑️ Local plan cleared on logout (not saved to DB)');
+      } else {
+        print('✅ Plan already saved to DB, no need to clear local');
+      }
 
       print('✅ Logout completed');
     } catch (e) {

@@ -3,6 +3,36 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/api_models.dart';
 import 'api_config.dart';
+import 'auth_service.dart';
+
+class PlanSummaryModel {
+  final String planUuid;
+  final String title;
+  final String destination;
+  final DateTime createdAt;
+  final String? imageUrl;
+  final Map<String, dynamic> rawData;
+
+  PlanSummaryModel({
+    required this.planUuid,
+    required this.title,
+    required this.destination,
+    required this.createdAt,
+    this.imageUrl,
+    required this.rawData,
+  });
+
+  factory PlanSummaryModel.fromJson(Map<String, dynamic> json) {
+    return PlanSummaryModel(
+      planUuid: json['plan_uuid'],
+      title: json['title'] ?? '',
+      destination: json['destination'] ?? '',
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+      imageUrl: json['url_image'], // có thể null
+      rawData: json,
+    );
+  }
+}
 
 class TravelConciergeService {
   static final TravelConciergeService _instance =
@@ -217,6 +247,155 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
     }
   }
 
+  /// Gọi API tạo plan mới cho user
+  Future<(bool, String)> createPlan(List<ItineraryDayModel> itinerary) async {
+    try {
+      final authService = AuthService();
+      final user = authService.currentUser;
+      if (user == null || user.id.isEmpty) {
+        print(
+            '[TravelConciergeService] User not logged in or missing user_uuid');
+        return (false, 'User not logged in');
+      }
+      // Tự động lấy destination từ activity đầu tiên
+      String destination = '';
+      if (itinerary.isNotEmpty && itinerary[0].activities.isNotEmpty) {
+        destination = itinerary[0].activities[0].title;
+      }
+      final title = 'Trip to $destination';
+      final url = '${ApiConfig.baseUrl}/user_manager/plan/${user.id}/create/';
+      final planData = {
+        'title': title,
+        'destination': destination,
+        'itinerary': itinerary
+            .map((day) => {
+                  'day_number': day.dayNumber,
+                  'date': day.date.toIso8601String(),
+                  'display_date': day.displayDate,
+                  'activities': day.activities
+                      .map((activity) => {
+                            'time_slot': activity.timeSlot,
+                            'title': activity.title,
+                            'description': activity.description,
+                            'weather_icon': activity.weatherIcon,
+                            'is_active': activity.isActive,
+                          })
+                      .toList(),
+                })
+            .toList(),
+        'metadata': {
+          'created_at': DateTime.now().toIso8601String(),
+          'days_count': itinerary.length,
+        },
+      };
+      print('[TravelConciergeService] Create Plan API call:');
+      print('  URL: $url');
+      print('  Payload: ${planData.toString()}');
+      final response = await http.post(
+        Uri.parse(url),
+        headers: authService.getAuthHeaders(),
+        body: jsonEncode(planData),
+      );
+      print('  Status code: ${response.statusCode}');
+      print('  Response body: ${response.body}');
+      final body = jsonDecode(response.body);
+      final message = body['message']?.toString() ?? 'Unknown error';
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          body['success'] == true) {
+        return (true, message);
+      } else {
+        return (false, message);
+      }
+    } catch (e) {
+      print('[TravelConciergeService] Error creating plan: $e');
+      return (false, 'Error: $e');
+    }
+  }
+
+  /// Gọi API update plan
+  Future<(bool, String)> updatePlan(
+      String planUuid, List<ItineraryDayModel> itinerary) async {
+    try {
+      final authService = AuthService();
+      final user = authService.currentUser;
+      if (user == null || planUuid.isEmpty) {
+        print(
+            '[TravelConciergeService] User not logged in hoặc thiếu planUuid');
+        return (false, 'User not logged in hoặc thiếu planUuid');
+      }
+      String destination = '';
+      if (itinerary.isNotEmpty && itinerary[0].activities.isNotEmpty) {
+        destination = itinerary[0].activities[0].title;
+      }
+      final title = 'Trip to $destination';
+      final url = '${ApiConfig.baseUrl}/user_manager/plan/$planUuid/update/';
+      final planData = {
+        'title': title,
+        'destination': destination,
+        'itinerary': itinerary
+            .map((day) => {
+                  'day_number': day.dayNumber,
+                  'date': day.date.toIso8601String(),
+                  'display_date': day.displayDate,
+                  'activities': day.activities
+                      .map((activity) => {
+                            'time_slot': activity.timeSlot,
+                            'title': activity.title,
+                            'description': activity.description,
+                            'weather_icon': activity.weatherIcon,
+                            'is_active': activity.isActive,
+                          })
+                      .toList(),
+                })
+            .toList(),
+        'metadata': {
+          'created_at': DateTime.now().toIso8601String(),
+          'days_count': itinerary.length,
+        },
+      };
+      print('[TravelConciergeService] Update Plan API call:');
+      print('  URL: $url');
+      print('  Payload: ${planData.toString()}');
+      final response = await http.put(
+        Uri.parse(url),
+        headers: authService.getAuthHeaders(),
+        body: jsonEncode(planData),
+      );
+      print('  Status code: ${response.statusCode}');
+      print('  Response body: ${response.body}');
+      final body = jsonDecode(response.body);
+      final message = body['message']?.toString() ?? 'Unknown error';
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          body['success'] == true) {
+        return (true, message);
+      } else {
+        return (false, message);
+      }
+    } catch (e) {
+      print('[TravelConciergeService] Error updating plan: $e');
+      return (false, 'Error: $e');
+    }
+  }
+
+  /// Xóa plan theo planUuid
+  Future<bool> deletePlan(String planUuid) async {
+    try {
+      final url = '${ApiConfig.baseUrl}/user_manager/plan/$planUuid/delete/';
+      print('[TravelConciergeService] Delete plan: $url');
+      final response =
+          await http.delete(Uri.parse(url), headers: ApiConfig.jsonHeaders);
+      print('  Status code: ${response.statusCode}');
+      print('  Response body: ${response.body}');
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('[TravelConciergeService] Error deletePlan: $e');
+      return false;
+    }
+  }
+
   /// Handle Server-Sent Events response
   Stream<SearchResult> _handleSSEResponse(
       http.StreamedResponse response) async* {
@@ -320,4 +499,28 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
         'sessionId': _sessionId,
         'userId': _userId,
       };
+
+  /// Lấy danh sách plan của user
+  Future<List<PlanSummaryModel>> getUserPlans(String userUuid) async {
+    try {
+      final url = '${ApiConfig.baseUrl}/user_manager/plan/$userUuid/list/';
+      print('[TravelConciergeService] Get user plans: $url');
+      final response =
+          await http.get(Uri.parse(url), headers: ApiConfig.jsonHeaders);
+      print('  Status code: ${response.statusCode}');
+      print('  Response body: ${response.body}');
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body['success'] == true && body['data'] is List) {
+          return (body['data'] as List)
+              .map((e) => PlanSummaryModel.fromJson(e))
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print('[TravelConciergeService] Error getUserPlans: $e');
+      return [];
+    }
+  }
 }

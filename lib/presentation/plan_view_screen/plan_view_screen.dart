@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../widgets/floating_chat_button.dart';
 import '../travel_exploration_screen/widgets/shared_bottom_nav_bar.dart';
+import '../../core/services/plan_storage_service.dart';
+import '../../core/services/travel_concierge_service.dart';
 
 class PlanViewScreen extends StatefulWidget {
   const PlanViewScreen({super.key});
@@ -32,10 +34,20 @@ class _PlanViewScreenState extends State<PlanViewScreen> {
   // AI itinerary data
   List<ItineraryDayModel>? _aiItinerary;
 
+  final PlanStorageService _planStorageService = PlanStorageService();
+  final TravelConciergeService _travelConciergeService =
+      TravelConciergeService();
+  bool _isSaving = false;
+  bool _isSaved = false;
+  String? _planUuid;
+
   @override
   void initState() {
     super.initState();
     _initializeWithArguments();
+    _autoSavePlan();
+    _loadLocalPlanIfNeeded();
+    _loadPlanUuid();
   }
 
   /// Initialize with arguments from navigation
@@ -163,6 +175,39 @@ class _PlanViewScreenState extends State<PlanViewScreen> {
     }
   }
 
+  Future<void> _autoSavePlan() async {
+    if (_aiItinerary != null) {
+      await _planStorageService.saveCurrentPlan(_aiItinerary!);
+    }
+  }
+
+  Future<void> _loadLocalPlanIfNeeded() async {
+    if (_aiItinerary == null) {
+      final localPlan = await _planStorageService.getCurrentPlan();
+      if (localPlan != null && mounted) {
+        setState(() {
+          _aiItinerary = localPlan;
+          _days = localPlan
+              .map((day) => DayModel(
+                    day: day.dayNumber,
+                    date: day.displayDate,
+                  ))
+              .toList();
+          _selectedDay = _days.isNotEmpty ? _days.first.day : 1;
+          _loadActivitiesForSelectedDay();
+        });
+      }
+    }
+  }
+
+  Future<void> _loadPlanUuid() async {
+    final uuid = await _planStorageService.getPlanUuid();
+    setState(() {
+      _planUuid = uuid;
+      _isSaved = uuid != null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -183,6 +228,11 @@ class _PlanViewScreenState extends State<PlanViewScreen> {
           ),
           // Floating Chat Button
           const FloatingChatButton(),
+          if (_isSaving)
+            Container(
+              color: Colors.black.withOpacity(0.2),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
         ],
       ),
       bottomNavigationBar: SharedBottomNavBar(selectedIndex: 2),
@@ -215,15 +265,23 @@ class _PlanViewScreenState extends State<PlanViewScreen> {
               fontFamily: 'Poppins',
             ),
           ),
-          // Action icon (appears to be a calendar or export icon)
-          GestureDetector(
-            onTap: _onActionTap,
-            child: Icon(
-              Icons.calendar_month_outlined,
-              size: 24.h,
-              color: appTheme.blackCustom,
-            ),
-          ),
+          // Save Plan button (icon)
+          _isSaved
+              ? Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.green, size: 24.h),
+                    SizedBox(width: 4),
+                    Text('Đã lưu',
+                        style: TextStyle(
+                            color: Colors.green, fontWeight: FontWeight.w600)),
+                  ],
+                )
+              : IconButton(
+                  icon: const Icon(Icons.save_alt),
+                  color: appTheme.blackCustom,
+                  tooltip: 'Save Plan',
+                  onPressed: _isSaving ? null : _onSavePlanPressed,
+                ),
         ],
       ),
     );
@@ -563,6 +621,93 @@ class _PlanViewScreenState extends State<PlanViewScreen> {
 
   void _navigateToHome() {
     Navigator.pushNamed(context, AppRoutes.travelExplorationScreen);
+  }
+
+  Future<void> _onSavePlanPressed() async {
+    if (_aiItinerary == null) return;
+    print('[PlanView] Save Plan button pressed.');
+    print('[PlanView] Itinerary data:');
+    for (var day in _aiItinerary!) {
+      print('  Day ${day.dayNumber} - ${day.displayDate}:');
+      for (var act in day.activities) {
+        print('    - ${act.timeSlot}: ${act.title}');
+      }
+    }
+    setState(() {
+      _isSaving = true;
+    });
+    if (_planUuid == null) {
+      print('[PlanView] Calling TravelConciergeService.createPlan...');
+      final (success, message) =
+          await _travelConciergeService.createPlan(_aiItinerary!);
+      print('[PlanView] Save result: ${success ? 'SUCCESS' : 'FAIL'}');
+      print('[PlanView] API message: $message');
+      setState(() {
+        _isSaving = false;
+      });
+      if (success) {
+        // Lấy plan_uuid từ response body nếu có
+        final uuid =
+            RegExp(r'plan_uuid[":\s]*([\w-]+)').firstMatch(message)?.group(1);
+        if (uuid != null) {
+          await _planStorageService.setPlanUuid(uuid);
+          setState(() {
+            _planUuid = uuid;
+            _isSaved = true;
+          });
+        } else {
+          await _loadPlanUuid();
+        }
+        print('[PlanView] Marking plan as saved.');
+        await _planStorageService.markPlanAsSaved();
+        if (mounted) {
+          print('[PlanView] Show success snackbar.');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        }
+      } else {
+        print('[PlanView] Save failed. Show error snackbar.');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        }
+      }
+    } else {
+      print('[PlanView] Calling TravelConciergeService.updatePlan...');
+      final (success, message) =
+          await _travelConciergeService.updatePlan(_planUuid!, _aiItinerary!);
+      print('[PlanView] Update result: ${success ? 'SUCCESS' : 'FAIL'}');
+      print('[PlanView] API message: $message');
+      setState(() {
+        _isSaving = false;
+        _isSaved = success;
+      });
+      if (success) {
+        await _planStorageService.markPlanAsSaved();
+        await _planStorageService.saveCurrentPlan(_aiItinerary!,
+            planUuid: _planUuid);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Update plan thành công!')),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        }
+      }
+    }
+  }
+
+  // Dummy API call, sẽ thay bằng call thật khi có API
+  Future<bool> _savePlanToServer(List<ItineraryDayModel> itinerary) async {
+    await Future.delayed(const Duration(seconds: 2));
+    // TODO: Gọi API thật ở đây
+    return true; // giả lập thành công
   }
 }
 

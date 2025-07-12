@@ -8,6 +8,9 @@ import '../../widgets/safe_avatar_image.dart';
 import './widgets/bottom_nav_item.dart';
 import './widgets/location_category_card.dart';
 import './widgets/travel_destination_card.dart';
+import '../../core/services/plan_storage_service.dart';
+import '../../core/services/travel_concierge_service.dart';
+import '../../core/services/auth_service.dart';
 
 class TravelExplorationScreen extends StatefulWidget {
   const TravelExplorationScreen({super.key});
@@ -22,6 +25,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
   final TravelConciergeService _travelService = TravelConciergeService();
   final GlobalChatService _globalChatService = GlobalChatService();
   final ProfileService _profileService = ProfileService();
+  final PlanStorageService _planStorageService = PlanStorageService();
 
   bool _sessionInitialized = false;
 
@@ -29,18 +33,29 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
   bool _hasMapData = false;
   bool _hasPlanData = false;
 
+  List<PlanSummaryModel> _userPlans = [];
+  bool _isLoadingPlans = false;
+
   @override
   void initState() {
     super.initState();
     _initializeSession();
     _initializeProfile();
     _checkDataAvailability();
+    _checkPlanDraftAvailability();
+    _fetchUserPlans();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _checkPlanDraftAvailability();
   }
 
   Future<void> _initializeSession() async {
@@ -77,12 +92,38 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
 
   /// Check if map and plan data are available
   void _checkDataAvailability() {
-    // For now, we'll set these to false since we don't have persistent data
-    // In a real app, you would check against a data service or local storage
     setState(() {
       _hasMapData = false; // TODO: Check actual map data availability
-      _hasPlanData = false; // TODO: Check actual plan data availability
+      // _hasPlanData sẽ được cập nhật bởi _checkPlanDraftAvailability
     });
+  }
+
+  Future<void> _checkPlanDraftAvailability() async {
+    final plan = await _planStorageService.getCurrentPlan();
+    final planUuid = await _planStorageService.getPlanUuid();
+    setState(() {
+      _hasPlanData = plan != null || (planUuid != null && planUuid.isNotEmpty);
+    });
+  }
+
+  Future<void> _fetchUserPlans() async {
+    setState(() {
+      _isLoadingPlans = true;
+    });
+    final authService = AuthService();
+    final user = authService.currentUser;
+    if (user != null && user.id.isNotEmpty) {
+      final plans = await _travelService.getUserPlans(user.id);
+      setState(() {
+        _userPlans = plans;
+        _isLoadingPlans = false;
+      });
+    } else {
+      setState(() {
+        _userPlans = [];
+        _isLoadingPlans = false;
+      });
+    }
   }
 
   void _onSearchSubmitted(String query) {
@@ -259,6 +300,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                           _buildSearchSection(),
                           _buildSuggestionLabelGrid(),
                           _buildHorizontalLocationSection(),
+                          _buildUserPlansSection(),
                           SizedBox(height: 100.h),
                         ],
                       ),
@@ -634,6 +676,204 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
     );
   }
 
+  Widget _buildUserPlansSection() {
+    if (_isLoadingPlans) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 24.h),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_userPlans.isEmpty) {
+      return SizedBox();
+    }
+    final plansToShow = _userPlans.take(5).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: 24.h, right: 24.h, top: 32.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Your Plans",
+                style: TextStyleHelper.instance.title18SemiBold,
+              ),
+              TextButton(
+                onPressed: () {
+                  // TODO: Navigate to full plan list screen
+                },
+                child: Text('View More'),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 16.h),
+        SizedBox(
+          height: 138.h,
+          child: ListView.separated(
+            padding: EdgeInsets.symmetric(horizontal: 24.h),
+            scrollDirection: Axis.horizontal,
+            itemCount: plansToShow.length,
+            separatorBuilder: (context, index) => SizedBox(width: 20.h),
+            itemBuilder: (context, index) {
+              final plan = plansToShow[index];
+              return _buildPlanCard(plan);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlanCard(PlanSummaryModel plan) {
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(
+              context,
+              AppRoutes.planViewScreen,
+              arguments: {
+                'plan_uuid': plan.planUuid,
+                'plan_data': plan.rawData,
+              },
+            );
+          },
+          child: Container(
+            width: 230.h,
+            height: 138.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15.h),
+              color: appTheme.grey200,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Default image (replace with plan.imageUrl if available)
+                Image.asset(
+                  'assets/images/img_rectangle_462.png',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
+                // Gradient overlay
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        appTheme.transparentCustom,
+                        appTheme.blackCustom.withAlpha(179),
+                      ],
+                    ),
+                  ),
+                ),
+                // Content
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Padding(
+                    padding: EdgeInsets.all(16.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          plan.title,
+                          style: TextStyleHelper.instance.title22RegularAndika,
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          plan.destination,
+                          style: TextStyleHelper.instance.body12.copyWith(
+                            color: appTheme.whiteCustom,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          'Created: ${plan.createdAt.toLocal().toString().split(' ')[0]}',
+                          style: TextStyleHelper.instance.body12.copyWith(
+                            color: appTheme.whiteCustom,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Icon yêu thích (hardcode)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child:
+                      Icon(Icons.favorite, color: Colors.redAccent, size: 24),
+                ),
+                // Rating (hardcode 4 sao)
+                Positioned(
+                  left: 16,
+                  bottom: 16,
+                  child: Row(
+                    children: List.generate(4,
+                        (i) => Icon(Icons.star, color: Colors.amber, size: 16)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Icon xóa (thùng rác)
+        Positioned(
+          top: 8,
+          left: 8,
+          child: GestureDetector(
+            onTap: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: Text('Xóa plan'),
+                  content: Text('Bạn có chắc chắn muốn xóa plan này?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: Text('Hủy'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: Text('Xóa'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm == true) {
+                final success = await _travelService.deletePlan(plan.planUuid);
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Đã xóa plan thành công!')),
+                  );
+                  await _fetchUserPlans();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Xóa plan thất bại!')),
+                  );
+                }
+              }
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.8),
+                shape: BoxShape.circle,
+              ),
+              padding: EdgeInsets.all(4),
+              child: Icon(Icons.delete, color: Colors.red, size: 20),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildBottomNavBar({int selectedIndex = 0, Function(int)? onTap}) {
     List<BottomNavItemModel> items = [
       BottomNavItemModel(
@@ -642,8 +882,8 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
         isSelected: selectedIndex == 0,
       ),
       BottomNavItemModel(
-        icon: ImageConstant.imgGroup120,
-        label: "Wallet",
+        icon: Icons.list_alt, // đổi thành icon Plan List
+        label: "Plan List",
         isSelected: selectedIndex == 1,
       ),
       BottomNavItemModel(
@@ -688,7 +928,8 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                   Navigator.pushNamed(
                       context, AppRoutes.travelExplorationScreen);
                 } else if (index == 1) {
-                  // Wallet: Not implemented
+                  // Plan List
+                  Navigator.pushNamed(context, AppRoutes.planListScreen);
                 } else if (index == 2) {
                   // Guide: Not implemented
                 } else if (index == 3) {
