@@ -50,4 +50,9 @@ class ApiConfig {
   static String getHealthCheckUrl() {
     return '$baseUrl/health';
   }
+
+  static String getExtractorUrl() {
+    // Cập nhật endpoint này cho đúng server extractor thực tế
+    return '$chatBaseUrl/extract_itinerary';
+  }
 }

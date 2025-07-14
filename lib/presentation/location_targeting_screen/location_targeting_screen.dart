@@ -447,10 +447,10 @@ class _LocationTargetingScreenState extends State<LocationTargetingScreen> {
 
   /// Navigate to itinerary screen when location is selected
   void _navigateToLocationDetails(LocationCardModel location) {
-    // Navigate to itinerary screen as specified in requirements
+    // Navigate to plan view screen as specified in requirements
     Navigator.pushNamed(
       context,
-      AppRoutes.itineraryScreen,
+      AppRoutes.planViewScreen,
       arguments: {
         'selectedLocation': location.title,
         'locationImage': location.image,

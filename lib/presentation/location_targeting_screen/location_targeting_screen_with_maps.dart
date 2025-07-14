@@ -223,7 +223,7 @@ class _LocationTargetingScreenWithMapsState
       await for (final result in _travelService.searchTravel(query)) {
         if (result.author != 'system' && result.author != 'user') {
           // This is the AI response with place data
-          final places = ResponseParser.parseAIResponse(result.text);
+          final places = await ResponseParser.parseAIResponse(result.text);
           searchResults.addAll(places);
           break; // Take the first AI response
         }

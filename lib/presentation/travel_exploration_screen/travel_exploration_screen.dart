@@ -11,6 +11,7 @@ import './widgets/travel_destination_card.dart';
 import '../../core/services/plan_storage_service.dart';
 import '../../core/services/travel_concierge_service.dart';
 import '../../core/services/auth_service.dart';
+import './widgets/shared_bottom_nav_bar.dart';
 
 class TravelExplorationScreen extends StatefulWidget {
   const TravelExplorationScreen({super.key});
@@ -176,7 +177,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
         if (result.author != 'system' && result.author != 'user') {
           // This is the AI response with place data
           print('🎯 Processing AI response...');
-          final places = ResponseParser.parseAIResponse(result.text);
+          final places = await ResponseParser.parseAIResponse(result.text);
           print('✅ Parsed ${places.length} places from response');
 
           for (int i = 0; i < places.length; i++) {
@@ -315,7 +316,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
       ),
       floatingActionButton: _buildQuickActionsButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      bottomNavigationBar: _buildBottomNavBar(),
+      bottomNavigationBar: SharedBottomNavBar(selectedIndex: 0),
     );
   }
 
@@ -803,144 +804,11 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                     ),
                   ),
                 ),
-                // Icon yêu thích (hardcode)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child:
-                      Icon(Icons.favorite, color: Colors.redAccent, size: 24),
-                ),
-                // Rating (hardcode 4 sao)
-                Positioned(
-                  left: 16,
-                  bottom: 16,
-                  child: Row(
-                    children: List.generate(4,
-                        (i) => Icon(Icons.star, color: Colors.amber, size: 16)),
-                  ),
-                ),
               ],
             ),
           ),
         ),
-        // Icon xóa (thùng rác)
-        Positioned(
-          top: 8,
-          left: 8,
-          child: GestureDetector(
-            onTap: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: Text('Xóa plan'),
-                  content: Text('Bạn có chắc chắn muốn xóa plan này?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      child: Text('Hủy'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: Text('Xóa'),
-                    ),
-                  ],
-                ),
-              );
-              if (confirm == true) {
-                final success = await _travelService.deletePlan(plan.planUuid);
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Đã xóa plan thành công!')),
-                  );
-                  await _fetchUserPlans();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Xóa plan thất bại!')),
-                  );
-                }
-              }
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.8),
-                shape: BoxShape.circle,
-              ),
-              padding: EdgeInsets.all(4),
-              child: Icon(Icons.delete, color: Colors.red, size: 20),
-            ),
-          ),
-        ),
       ],
-    );
-  }
-
-  Widget _buildBottomNavBar({int selectedIndex = 0, Function(int)? onTap}) {
-    List<BottomNavItemModel> items = [
-      BottomNavItemModel(
-        icon: ImageConstant.imgGroup125,
-        label: "Home",
-        isSelected: selectedIndex == 0,
-      ),
-      BottomNavItemModel(
-        icon: Icons.list_alt, // đổi thành icon Plan List
-        label: "Plan List",
-        isSelected: selectedIndex == 1,
-      ),
-      BottomNavItemModel(
-        icon: ImageConstant.imgGroup123,
-        label: "Guide",
-        isSelected: selectedIndex == 2,
-      ),
-      BottomNavItemModel(
-        icon: Icons.settings, // Use built-in settings icon
-        label: "Setting",
-        isSelected: selectedIndex == 3,
-      ),
-    ];
-
-    return Container(
-      height: 100.h,
-      decoration: BoxDecoration(
-        color: appTheme.whiteCustom,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24.h),
-          topRight: Radius.circular(24.h),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: appTheme.blackCustom.withAlpha(13),
-            blurRadius: 10.h,
-            offset: Offset(0, -5.h),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(
-          items.length,
-          (index) => GestureDetector(
-            onTap: () {
-              if (onTap != null) {
-                onTap(index);
-              } else {
-                // Default navigation logic
-                if (index == 0) {
-                  Navigator.pushNamed(
-                      context, AppRoutes.travelExplorationScreen);
-                } else if (index == 1) {
-                  // Plan List
-                  Navigator.pushNamed(context, AppRoutes.planListScreen);
-                } else if (index == 2) {
-                  // Guide: Not implemented
-                } else if (index == 3) {
-                  Navigator.pushNamed(context, AppRoutes.profileSettingsScreen);
-                }
-              }
-            },
-            child: BottomNavItem(item: items[index]),
-          ),
-        ),
-      ),
     );
   }
 
@@ -1177,11 +1045,4 @@ class LocationCategoryModel {
     this.image,
     this.isFullWidth = false,
   });
-}
-
-class BottomNavItemModel {
-  final dynamic icon; // Accepts String (asset path) or IconData
-  final String? label;
-  final bool? isSelected;
-  BottomNavItemModel({this.icon, this.label, this.isSelected});
 }

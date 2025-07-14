@@ -1,4 +1,7 @@
 import 'dart:math';
+import 'dart:convert'; // Added for jsonDecode
+import '../../core/services/travel_concierge_service.dart';
+import '../utils/logger.dart';
 
 /// Message payload structure
 class MessagePayload {
@@ -374,12 +377,13 @@ class PlaceSearchResult {
 /// Parser for AI response text
 class ResponseParser {
   /// Parse AI response text and extract place information
-  static List<PlaceSearchResult> parseAIResponse(String responseText) {
+  static Future<List<PlaceSearchResult>> parseAIResponse(
+      String responseText) async {
     final List<PlaceSearchResult> places = [];
 
-    print('🔄 Starting to parse AI response...');
-    print('📝 Response text length: ${responseText.length}');
-    print(
+    await Logger.log('🔄 Starting to parse AI response...');
+    await Logger.log('📝 Response text length: ${responseText.length}');
+    await Logger.log(
         '📝 Response preview: ${responseText.substring(0, responseText.length > 500 ? 500 : responseText.length)}...');
 
     try {
@@ -387,42 +391,44 @@ class ResponseParser {
       final patterns = RegExp(r'\d+\.\s*\*\*([^*]+)\*\*');
       final matches = patterns.allMatches(responseText);
 
-      print('🔍 Found ${matches.length} potential place matches with pattern');
+      await Logger.log(
+          '🔍 Found ${matches.length} potential place matches with pattern');
 
       for (final match in matches) {
         try {
-          print('🎯 Processing match: ${match.group(0)}');
-          final placeInfo = _extractPlaceInfo(responseText, match);
+          await Logger.log('🎯 Processing match: ${match.group(0)}');
+          final placeInfo = await _extractPlaceInfo(responseText, match);
           if (placeInfo != null) {
             places.add(placeInfo);
-            print('✅ Successfully parsed place: ${placeInfo.title}');
+            await Logger.log('✅ Successfully parsed place: ${placeInfo.title}');
           } else {
-            print('❌ Failed to extract place info from match');
+            await Logger.log('❌ Failed to extract place info from match');
           }
         } catch (e) {
-          print('Error parsing place info: $e');
+          await Logger.log('Error parsing place info: $e');
           // Skip this place if parsing fails
           continue;
         }
       }
 
-      print('🏁 Parsing completed. Total places found: ${places.length}');
+      await Logger.log(
+          '🏁 Parsing completed. Total places found: ${places.length}');
     } catch (e) {
-      print('Error parsing AI response: $e');
+      await Logger.log('Error parsing AI response: $e');
     }
 
     return places;
   }
 
   /// Extract individual place information from text
-  static PlaceSearchResult? _extractPlaceInfo(
-      String text, RegExpMatch titleMatch) {
+  static Future<PlaceSearchResult?> _extractPlaceInfo(
+      String text, RegExpMatch titleMatch) async {
     try {
       final title = titleMatch.group(1)?.trim() ?? '';
-      print('📋 Extracting info for title: "$title"');
+      await Logger.log('📋 Extracting info for title: "$title"');
 
       if (title.isEmpty) {
-        print('❌ Empty title, skipping');
+        await Logger.log('❌ Empty title, skipping');
         return null;
       }
 
@@ -434,32 +440,33 @@ class ResponseParser {
           nextMatch != null ? titleMatch.end + nextMatch.start : text.length;
 
       final section = text.substring(startIndex, endIndex);
-      print('📄 Section text: "$section"');
+      await Logger.log('📄 Section text: "$section"');
 
       // Extract address (handle both formats: "Address:" and "*   Address:")
       final addressMatch =
           RegExp(r'[*\s]*Address:\s*([^\n]+)').firstMatch(section);
       final address = addressMatch?.group(1)?.trim() ?? '';
-      print('🏠 Address: "$address" (match: ${addressMatch?.group(0)})');
+      await Logger.log(
+          '🏠 Address: "$address" (match: ${addressMatch?.group(0)})');
 
       // Extract highlights (handle both formats: "Highlights:" and "*   Highlights:")
       final highlightsMatch =
           RegExp(r'[*\s]*Highlights:\s*([^\n]+)').firstMatch(section);
       final highlights = highlightsMatch?.group(1)?.trim() ?? '';
-      print(
+      await Logger.log(
           '✨ Highlights: "$highlights" (match: ${highlightsMatch?.group(0)})');
 
       // Extract rating (handle both formats: "Rating:" and "*   Rating:")
       final ratingMatch =
           RegExp(r'[*\s]*Rating:\s*([\d.]+)').firstMatch(section);
       final rating = double.tryParse(ratingMatch?.group(1) ?? '') ?? 0.0;
-      print('⭐ Rating: $rating (match: ${ratingMatch?.group(0)})');
+      await Logger.log('⭐ Rating: $rating (match: ${ratingMatch?.group(0)})');
 
       // Extract Google Maps URL and coordinates (optional in current format)
       final urlMatch = RegExp(r'[*\s]*Google Maps URL:\s*(https://[^\n]+)')
           .firstMatch(section);
       final googleMapsUrl = urlMatch?.group(1)?.trim() ?? '';
-      print('🗺️ Google Maps URL: "$googleMapsUrl"');
+      await Logger.log('🗺️ Google Maps URL: "$googleMapsUrl"');
 
       // Extract lat/lng from URL if available
       double latitude = 0.0;
@@ -470,30 +477,31 @@ class ResponseParser {
             RegExp(r'query=([\d.-]+),([\d.-]+)').firstMatch(googleMapsUrl);
         latitude = double.tryParse(coordMatch?.group(1) ?? '') ?? 0.0;
         longitude = double.tryParse(coordMatch?.group(2) ?? '') ?? 0.0;
-        print('📍 Coordinates from URL: $latitude, $longitude');
+        await Logger.log('📍 Coordinates from URL: $latitude, $longitude');
       } else {
         // TODO: Use geocoding service to get coordinates from address
         // For now, generate approximate coordinates for Japan region
         latitude = 35.6762 + (title.hashCode % 100) * 0.001; // Tokyo area base
         longitude = 139.6503 + (address.hashCode % 100) * 0.001;
-        print('📍 Generated approximate coordinates: $latitude, $longitude');
+        await Logger.log(
+            '📍 Generated approximate coordinates: $latitude, $longitude');
       }
 
       // Extract place ID if available
       final placeIdMatch =
           RegExp(r'[*\s]*query_place_id=([^&\n\s]+)').firstMatch(section);
       final placeId = placeIdMatch?.group(1)?.trim();
-      print('🆔 Place ID: "$placeId"');
+      await Logger.log('🆔 Place ID: "$placeId"');
 
       // Validate required fields (coordinates are now optional)
       if (title.isEmpty || address.isEmpty) {
-        print('❌ Missing required fields for place: $title');
-        print('   Title empty: ${title.isEmpty}');
-        print('   Address empty: ${address.isEmpty}');
+        await Logger.log('❌ Missing required fields for place: $title');
+        await Logger.log('   Title empty: ${title.isEmpty}');
+        await Logger.log('   Address empty: ${address.isEmpty}');
         return null;
       }
 
-      print('✅ Successfully extracted place info for: $title');
+      await Logger.log('✅ Successfully extracted place info for: $title');
 
       return PlaceSearchResult(
         title: title,
@@ -507,45 +515,47 @@ class ResponseParser {
         imageUrl: null,
       );
     } catch (e) {
-      print('Error extracting place info: $e');
+      await Logger.log('Error extracting place info: $e');
       return null;
     }
   }
 
   /// Extract location results from response
-  static List<PlaceSearchResult> extractLocationResults(String response) {
-    if (AIResponseAnalyzer.hasLocationListPattern(response)) {
-      return ResponseParser.parseAIResponse(response);
+  static Future<List<PlaceSearchResult>> extractLocationResults(
+      String response) async {
+    if (await AIResponseAnalyzer.hasLocationListPattern(response)) {
+      return await ResponseParser.parseAIResponse(response);
     }
     return [];
   }
 
   /// Extract location results from function responses (new API format)
-  static List<PlaceSearchResult> extractLocationResultsFromFunctions(
-      List<Map<String, dynamic>> functionResponses) {
+  static Future<List<PlaceSearchResult>> extractLocationResultsFromFunctions(
+      List<Map<String, dynamic>> functionResponses) async {
     final List<PlaceSearchResult> places = [];
 
-    print('🔍 Processing ${functionResponses.length} function responses...');
+    await Logger.log(
+        '🔍 Processing ${functionResponses.length} function responses...');
 
     for (final functionResponse in functionResponses) {
       try {
         final String? functionName = functionResponse['name'];
-        print('🔧 Processing function: $functionName');
+        await Logger.log('🔧 Processing function: $functionName');
 
         if (functionName == 'map_tool' || functionName == 'poi_agent') {
           final dynamic response = functionResponse['response'];
           if (response is Map<String, dynamic>) {
             final dynamic placesData = response['places'];
             if (placesData is List) {
-              print(
+              await Logger.log(
                   '📍 Found ${placesData.length} places in $functionName response');
 
               for (final placeData in placesData) {
                 if (placeData is Map<String, dynamic>) {
-                  final place = _parseMapToolPlace(placeData);
+                  final place = await _parseMapToolPlace(placeData);
                   if (place != null) {
                     places.add(place);
-                    print('✅ Parsed place: ${place.title}');
+                    await Logger.log('✅ Parsed place: ${place.title}');
                   }
                 }
               }
@@ -553,16 +563,18 @@ class ResponseParser {
           }
         }
       } catch (e) {
-        print('❌ Error processing function response: $e');
+        await Logger.log('❌ Error processing function response: $e');
       }
     }
 
-    print('🏁 Total places extracted from functions: ${places.length}');
+    await Logger.log(
+        '🏁 Total places extracted from functions: ${places.length}');
     return places;
   }
 
   /// Parse individual place from map_tool response
-  static PlaceSearchResult? _parseMapToolPlace(Map<String, dynamic> placeData) {
+  static Future<PlaceSearchResult?> _parseMapToolPlace(
+      Map<String, dynamic> placeData) async {
     try {
       final String placeName = placeData['place_name'] ?? '';
       final String address = placeData['address'] ?? '';
@@ -579,24 +591,24 @@ class ResponseParser {
       final double latitude = double.tryParse(latStr) ?? 0.0;
       final double longitude = double.tryParse(longStr) ?? 0.0;
 
-      print('📋 Parsing place:');
-      print('   - Name: $placeName');
-      print('   - Address: $address');
-      print('   - Rating: $rating');
-      print('   - Coordinates: $latitude, $longitude');
-      print('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
-      print('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
+      await Logger.log('📋 Parsing place:');
+      await Logger.log('   - Name: $placeName');
+      await Logger.log('   - Address: $address');
+      await Logger.log('   - Rating: $rating');
+      await Logger.log('   - Coordinates: $latitude, $longitude');
+      await Logger.log('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
+      await Logger.log('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
 
       // Generate Google Maps URL only if not provided
       String finalMapUrl = mapUrl;
       if (finalMapUrl.isEmpty && latitude != 0.0 && longitude != 0.0) {
         finalMapUrl = 'https://www.google.com/maps?q=$latitude,$longitude';
-        print('🔗 Generated Google Maps URL: $finalMapUrl');
+        await Logger.log('🔗 Generated Google Maps URL: $finalMapUrl');
       }
 
       // Validate required fields
       if (placeName.isEmpty || address.isEmpty) {
-        print('❌ Missing required fields for place');
+        await Logger.log('❌ Missing required fields for place');
         return null;
       }
 
@@ -612,14 +624,14 @@ class ResponseParser {
         imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
       );
     } catch (e) {
-      print('❌ Error parsing map tool place: $e');
+      await Logger.log('❌ Error parsing map tool place: $e');
       return null;
     }
   }
 
   /// Parse individual place from poi_agent response
-  static PlaceSearchResult? _parsePoiAgentPlace(
-      Map<String, dynamic> placeData) {
+  static Future<PlaceSearchResult?> _parsePoiAgentPlace(
+      Map<String, dynamic> placeData) async {
     try {
       final String placeName = placeData['place_name'] ?? '';
       final String address = placeData['address'] ?? '';
@@ -636,17 +648,17 @@ class ResponseParser {
       final double latitude = double.tryParse(latStr) ?? 0.0;
       final double longitude = double.tryParse(longStr) ?? 0.0;
 
-      print('📋 Parsing poi_agent place:');
-      print('   - Name: $placeName');
-      print('   - Address: $address');
-      print('   - Rating: $rating');
-      print('   - Coordinates: $latitude, $longitude');
-      print('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
-      print('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
+      await Logger.log('📋 Parsing poi_agent place:');
+      await Logger.log('   - Name: $placeName');
+      await Logger.log('   - Address: $address');
+      await Logger.log('   - Rating: $rating');
+      await Logger.log('   - Coordinates: $latitude, $longitude');
+      await Logger.log('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
+      await Logger.log('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
 
       // Validate required fields
       if (placeName.isEmpty || address.isEmpty) {
-        print('❌ Missing required fields for place');
+        await Logger.log('❌ Missing required fields for place');
         return null;
       }
 
@@ -664,7 +676,7 @@ class ResponseParser {
         imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
       );
     } catch (e) {
-      print('❌ Error parsing poi_agent place: $e');
+      await Logger.log('❌ Error parsing poi_agent place: $e');
       return null;
     }
   }
@@ -674,6 +686,24 @@ class ResponseParser {
       double lat, double lng, String placeName) {
     final encodedPlaceName = Uri.encodeComponent(placeName);
     return 'https://maps.google.com/maps?q=$lat,$lng&query=$encodedPlaceName';
+  }
+
+  /// Extract all Google Maps URLs from response text
+  static Future<List<String>> extractMapUrls(String response) async {
+    final List<String> urls = [];
+    try {
+      final urlPattern = RegExp(r'https://(maps|www\.google)\\.com[^\s]+');
+      final matches = urlPattern.allMatches(response);
+      for (final match in matches) {
+        final url = match.group(0);
+        if (url != null && url.isNotEmpty) {
+          urls.add(url);
+        }
+      }
+    } catch (e) {
+      await Logger.log('❌ Error extracting map URLs: $e');
+    }
+    return urls;
   }
 }
 
@@ -726,14 +756,16 @@ class ChatMessage {
 /// Analyzer for AI response types and content
 class AIResponseAnalyzer {
   /// Analyze response type to determine handling
-  static AIResponseType analyzeResponse(String response) {
+  static Future<AIResponseType> analyzeResponse(String response) async {
     // Check for itinerary patterns
-    if (hasItineraryPattern(response)) {
+    final bool hasItinerary = await hasItineraryPattern(response);
+    if (hasItinerary) {
       return AIResponseType.itinerary;
     }
 
     // Check for location list patterns
-    if (hasLocationListPattern(response)) {
+    final bool hasLocationList = await hasLocationListPattern(response);
+    if (hasLocationList) {
       return AIResponseType.locationList;
     }
 
@@ -746,31 +778,32 @@ class AIResponseAnalyzer {
   }
 
   /// Analyze response with function responses included
-  static AIResponseType analyzeResponseWithFunctions(
-      String response, List<Map<String, dynamic>> functionResponses) {
+  static Future<AIResponseType> analyzeResponseWithFunctions(
+      String response, List<Map<String, dynamic>> functionResponses) async {
     // Check if function responses contain location data
     if (functionResponses.any((fr) => fr['name'] == 'map_tool')) {
       return AIResponseType.locationList;
     }
 
     // Check for itinerary in text response
-    if (hasItineraryPattern(response)) {
+    final bool hasItinerary = await hasItineraryPattern(response);
+    if (hasItinerary) {
       return AIResponseType.itinerary;
     }
 
     // Fallback to text analysis
-    return analyzeResponse(response);
+    return await analyzeResponse(response);
   }
 
   /// Check if response contains itinerary format
-  static bool hasItineraryPattern(String text) {
-    print('🔍 Checking itinerary pattern in text...');
+  static Future<bool> hasItineraryPattern(String text) async {
+    await Logger.log('🔍 Checking itinerary pattern in text...');
 
     // Multiple indicators for itinerary
     final hasDayPattern = text.contains(RegExp(r'\*\*Day \d+[^:]*:\*\*')) ||
         text.contains(RegExp(r'\*\*Day \d+ \([\d-]+\):\*\*')) ||
         text.contains(RegExp(r'\*\*Day \d+:[^*]*\*\*'));
-    print('   - Has day pattern: $hasDayPattern');
+    await Logger.log('   - Has day pattern: $hasDayPattern');
 
     final hasTimeSlots = text.toLowerCase().contains('morning:') ||
         text.toLowerCase().contains('afternoon:') ||
@@ -780,10 +813,10 @@ class AIResponseAnalyzer {
         text.toLowerCase().contains('tối:') ||
         text.toLowerCase().contains('am:') ||
         text.toLowerCase().contains('pm:');
-    print('   - Has time slots: $hasTimeSlots');
+    await Logger.log('   - Has time slots: $hasTimeSlots');
 
     final hasMultipleDays = RegExp(r'\*\*Day \d+').allMatches(text).length >= 2;
-    print('   - Has multiple days: $hasMultipleDays');
+    await Logger.log('   - Has multiple days: $hasMultipleDays');
 
     // Alternative patterns for itinerary
     final hasAlternativeDayPattern = text.contains(RegExp(r'Day \d+')) &&
@@ -792,46 +825,47 @@ class AIResponseAnalyzer {
             text.contains('evening') ||
             text.contains('am') ||
             text.contains('pm'));
-    print('   - Has alternative day pattern: $hasAlternativeDayPattern');
+    await Logger.log(
+        '   - Has alternative day pattern: $hasAlternativeDayPattern');
 
     final result = (hasDayPattern && hasTimeSlots && hasMultipleDays) ||
         hasAlternativeDayPattern;
-    print('   - Final itinerary pattern result: $result');
+    await Logger.log('   - Final itinerary pattern result: $result');
 
     return result;
   }
 
   /// Check if response contains location list format
-  static bool hasLocationListPattern(String text) {
-    print('🔍 Checking location list pattern in text...');
+  static Future<bool> hasLocationListPattern(String text) async {
+    await Logger.log('🔍 Checking location list pattern in text...');
 
     // Multiple indicators for location list
     final hasNumberedList = text.contains(RegExp(r'\d+\.\s*\*\*[^*]+\*\*'));
-    print('   - Has numbered list: $hasNumberedList');
+    await Logger.log('   - Has numbered list: $hasNumberedList');
 
     final hasAddress = text.toLowerCase().contains('address:') ||
         text.toLowerCase().contains('địa chỉ:');
-    print('   - Has address: $hasAddress');
+    await Logger.log('   - Has address: $hasAddress');
 
     final hasRating = text.toLowerCase().contains('rating:') ||
         text.toLowerCase().contains('đánh giá:');
-    print('   - Has rating: $hasRating');
+    await Logger.log('   - Has rating: $hasRating');
 
     final hasMultipleEntries =
         RegExp(r'\d+\.\s*\*\*[^*]+\*\*').allMatches(text).length >= 2;
-    print('   - Has multiple entries: $hasMultipleEntries');
+    await Logger.log('   - Has multiple entries: $hasMultipleEntries');
 
     // Alternative patterns for location list
     final hasAlternativePattern = text.contains(RegExp(r'\d+\.\s*[A-Za-z]')) &&
         (text.contains('address') ||
             text.contains('rating') ||
             text.contains('địa chỉ'));
-    print('   - Has alternative pattern: $hasAlternativePattern');
+    await Logger.log('   - Has alternative pattern: $hasAlternativePattern');
 
     final result =
         (hasNumberedList && hasAddress && hasRating && hasMultipleEntries) ||
             hasAlternativePattern;
-    print('   - Final location list pattern result: $result');
+    await Logger.log('   - Final location list pattern result: $result');
 
     return result;
   }
@@ -865,88 +899,159 @@ class AIResponseAnalyzer {
   }
 
   /// Extract itinerary from response
-  static List<ItineraryDayModel> extractItinerary(String response) {
+  static Future<List<ItineraryDayModel>> extractItinerary(
+      String response) async {
     final List<ItineraryDayModel> days = [];
 
-    print('📅 Starting to parse itinerary from response...');
-    print('📝 Response text length: ${response.length}');
+    await Logger.log('📅 Starting to parse itinerary from response...');
+    await Logger.log('📝 FULL RAW RESPONSE FROM AGENT:');
+    await Logger.log(response);
+    await Logger.log(
+        '📝 Response text length: \u001b[32m${response.length}\u001b[0m');
 
     try {
-      // Try multiple patterns for day detection
+      // 1. Check for <itinerary>...</itinerary> block
+      final itineraryBlock =
+          RegExp(r'<itinerary>([\s\S]*?)<\/itinerary>', caseSensitive: false)
+              .firstMatch(response);
+      if (itineraryBlock != null) {
+        String itineraryContent = itineraryBlock.group(1)?.trim() ?? '';
+        await Logger.log(
+            '🟦 Found <itinerary> block, content length:  [34m${itineraryContent.length} [0m');
+        // 2. Detect if it's a Python dict (dùng dấu nháy đơn)
+        final isPythonDict = itineraryContent.startsWith("{'") ||
+            itineraryContent.startsWith('{\'');
+        if (isPythonDict) {
+          // 3. Convert Python dict to JSON string
+          String jsonString = itineraryContent
+              .replaceAll("'", '"')
+              .replaceAll('None', 'null')
+              .replaceAll('True', 'true')
+              .replaceAll('False', 'false');
+          // 4. Parse JSON
+          try {
+            final Map<String, dynamic> data = jsonDecode(jsonString);
+            final List<dynamic> daysJson = data['days'] ?? [];
+            for (final dayJson in daysJson) {
+              final int dayNumber = dayJson['day_number'] ?? 0;
+              final String dateStr = dayJson['date'] ?? '';
+              final DateTime date =
+                  DateTime.tryParse(dateStr) ?? DateTime.now();
+              final String displayDate =
+                  AIResponseAnalyzer._formatDisplayDate(date);
+              final List<ItineraryActivityModel> activities = [];
+              final List<dynamic> events = dayJson['events'] ?? [];
+              for (final event in events) {
+                final String timeSlot =
+                    event['start_time'] ?? event['time'] ?? '';
+                final String title =
+                    event['description'] ?? event['event_type'] ?? '';
+                final String description = event['description'] ?? '';
+                final String weatherIcon = '';
+                activities.add(ItineraryActivityModel(
+                  timeSlot: timeSlot,
+                  title: title,
+                  description: description,
+                  weatherIcon: weatherIcon,
+                  isActive: activities.isEmpty,
+                ));
+              }
+              days.add(ItineraryDayModel(
+                dayNumber: dayNumber,
+                date: date,
+                displayDate: displayDate,
+                activities: activities,
+              ));
+            }
+            await Logger.log(
+                '✅ Parsed itinerary from Python dict/JSON. Days: ${days.length}');
+            return days;
+          } catch (e) {
+            await Logger.log('❌ Error parsing itinerary JSON: $e');
+            // fallback to old logic
+          }
+        }
+      }
+      // Fallback: improved markdown/text logic
       List<RegExpMatch> dayMatches = [];
 
-      // Pattern 1: **Day X (YYYY-MM-DD):**
-      final dayPattern1 = RegExp(r'\*\*Day (\d+) \(([\d-]+)\):\*\*');
-      dayMatches = dayPattern1.allMatches(response).toList();
-      print('🔍 Pattern 1 found ${dayMatches.length} matches');
+      // New flexible pattern: match lines starting with Day/Ngày, allow extra info after colon
+      final dayPattern = RegExp(
+        r'^(?:\*\*)?\s*(Day|Ngày)\s*(\d+)(?:\s*\(([^)]+)\))?\s*:?\s*(.*)',
+        multiLine: true,
+        caseSensitive: false,
+      );
+      dayMatches = dayPattern.allMatches(response).toList();
+      await Logger.log('🔍 Flexible pattern found [33m${dayMatches.length} [0m matches');
 
-      // Pattern 2: Day X: or **Day X:** or **Day X: July 15, 2025**
-      if (dayMatches.isEmpty) {
-        final dayPattern2 = RegExp(r'\*\*?Day (\d+):[^*]*\*\*?');
-        dayMatches = dayPattern2.allMatches(response).toList();
-        print('🔍 Pattern 2 found ${dayMatches.length} matches');
-      }
-
-      // Pattern 3: Ngày X: (Vietnamese)
-      if (dayMatches.isEmpty) {
-        final dayPattern3 = RegExp(r'\*\*?Ngày (\d+):?\*\*?');
-        dayMatches = dayPattern3.allMatches(response).toList();
-        print('🔍 Pattern 3 found ${dayMatches.length} matches');
-      }
-
-      print('🔍 Total day matches found: ${dayMatches.length}');
-
-      for (final match in dayMatches) {
-        try {
-          final dayNumber = int.parse(match.group(1)!);
-
-          // Try to extract date from the match or generate one
-          String dateString = '';
-          DateTime date;
-
-          if (match.groupCount >= 2 && match.group(2) != null) {
-            dateString = match.group(2)!;
-            date = DateTime.parse(dateString);
-          } else {
-            // Generate a date based on day number (starting from today)
-            date = DateTime.now().add(Duration(days: dayNumber - 1));
-            dateString = date.toIso8601String().split('T')[0];
-          }
-
-          print('📅 Processing Day $dayNumber with date: $dateString');
-
-          final displayDate = _formatDisplayDate(date);
-
-          // Extract activities for this day
-          final activities = _extractActivitiesForDay(response, match);
-
-          if (activities.isNotEmpty) {
+      if (dayMatches.isNotEmpty) {
+        for (int i = 0; i < dayMatches.length; i++) {
+          final match = dayMatches[i];
+          try {
+            final dayNumber = int.tryParse(match.group(2) ?? '') ?? (i + 1);
+            String dateString = match.group(3) ?? '';
+            DateTime date;
+            if (dateString.isNotEmpty) {
+              date = DateTime.tryParse(dateString) ??
+                  DateTime.now().add(Duration(days: i));
+            } else {
+              date = DateTime.now().add(Duration(days: i));
+              dateString = date.toIso8601String().split('T')[0];
+            }
+            final displayDate = AIResponseAnalyzer._formatDisplayDate(date);
+            // Block text for this day
+            final startIndex = match.start;
+            final endIndex = (i + 1 < dayMatches.length)
+                ? dayMatches[i + 1].start
+                : response.length;
+            final daySection = response.substring(startIndex, endIndex);
+            // Parse activities as trước đây
+            final activities =
+                await AIResponseAnalyzer._extractActivitiesForDay(
+                    daySection, RegExpMatchAdapter(daySection));
             days.add(ItineraryDayModel(
               dayNumber: dayNumber,
               date: date,
               displayDate: displayDate,
               activities: activities,
             ));
-            print(
-                '✅ Successfully parsed Day $dayNumber with ${activities.length} activities');
+            await Logger.log(
+                '✅ Parsed Day $dayNumber with ${activities.length} activities');
+          } catch (e) {
+            await Logger.log('❌ Error parsing day: $e');
+            continue;
           }
-        } catch (e) {
-          print('❌ Error parsing day: $e');
-          continue;
         }
       }
-
-      print('🏁 Itinerary parsing completed. Total days: ${days.length}');
+      // Fallback: Nếu không parse được ngày nào, trả về raw itinerary
+      if (days.isEmpty && response.trim().isNotEmpty) {
+        await Logger.log('⚠️ No days detected, fallback to raw itinerary.');
+        days.add(ItineraryDayModel(
+          dayNumber: 1,
+          date: DateTime.now(),
+          displayDate: AIResponseAnalyzer._formatDisplayDate(DateTime.now()),
+          activities: [
+            ItineraryActivityModel(
+              timeSlot: '',
+              title: 'Raw Itinerary',
+              description: response.trim(),
+              weatherIcon: '',
+              isActive: true,
+            )
+          ],
+        ));
+      }
+      await Logger.log(
+          '🏁 Itinerary parsing completed. Total days: ${days.length}');
     } catch (e) {
-      print('❌ Error parsing itinerary: $e');
+      await Logger.log('❌ Error parsing itinerary: $e');
     }
-
     return days;
   }
 
   /// Extract activities for a specific day
-  static List<ItineraryActivityModel> _extractActivitiesForDay(
-      String text, RegExpMatch dayMatch) {
+  static Future<List<ItineraryActivityModel>> _extractActivitiesForDay(
+      String text, RegExpMatch dayMatch) async {
     final List<ItineraryActivityModel> activities = [];
 
     try {
@@ -959,7 +1064,7 @@ class AIResponseAnalyzer {
           : text.length;
 
       final daySection = text.substring(startIndex, endIndex);
-      print(
+      await Logger.log(
           '📄 Day section: ${daySection.substring(0, daySection.length > 200 ? 200 : daySection.length)}...');
 
       // Try multiple patterns for activities
@@ -968,20 +1073,23 @@ class AIResponseAnalyzer {
       // Pattern 1: * Time: Description
       final activityPattern1 = RegExp(r'\*\s*([^:]+):\s*([^\n]+)');
       activityMatches = activityPattern1.allMatches(daySection).toList();
-      print('🔍 Pattern 1 found ${activityMatches.length} activities');
+      await Logger.log(
+          '🔍 Pattern 1 found ${activityMatches.length} activities');
 
       // Pattern 2: - Time: Description
       if (activityMatches.isEmpty) {
         final activityPattern2 = RegExp(r'-\s*([^:]+):\s*([^\n]+)');
         activityMatches = activityPattern2.allMatches(daySection).toList();
-        print('🔍 Pattern 2 found ${activityMatches.length} activities');
+        await Logger.log(
+            '🔍 Pattern 2 found ${activityMatches.length} activities');
       }
 
       // Pattern 3: Time: Description (without bullet)
       if (activityMatches.isEmpty) {
         final activityPattern3 = RegExp(r'([^:]+):\s*([^\n]+)');
         activityMatches = activityPattern3.allMatches(daySection).toList();
-        print('🔍 Pattern 3 found ${activityMatches.length} activities');
+        await Logger.log(
+            '🔍 Pattern 3 found ${activityMatches.length} activities');
       }
 
       for (final match in activityMatches) {
@@ -1011,11 +1119,11 @@ class AIResponseAnalyzer {
             isActive: activities.isEmpty, // First activity is active
           ));
 
-          print('   - $timeSlot: $title');
+          await Logger.log('   - $timeSlot: $title');
         }
       }
     } catch (e) {
-      print('❌ Error extracting activities: $e');
+      await Logger.log('❌ Error extracting activities: $e');
     }
 
     return activities;
@@ -1072,47 +1180,52 @@ class AIResponseAnalyzer {
   }
 
   /// Extract location results from response and function responses
-  static List<PlaceSearchResult> extractLocationResults(String response,
-      {List<Map<String, dynamic>>? functionResponses}) {
+  static Future<List<PlaceSearchResult>> extractLocationResults(String response,
+      {List<Map<String, dynamic>>? functionResponses}) async {
     final List<PlaceSearchResult> places = [];
 
-    print('🔍 Starting location extraction...');
+    await Logger.log('🔍 Starting location extraction...');
 
     // First try to extract from function responses (new API format)
     if (functionResponses != null && functionResponses.isNotEmpty) {
       final functionPlaces =
-          AIResponseAnalyzer.extractLocationResultsFromFunctions(
+          await AIResponseAnalyzer.extractLocationResultsFromFunctions(
               functionResponses);
       places.addAll(functionPlaces);
-      print(
+      await Logger.log(
           '📍 Extracted ${functionPlaces.length} places from function responses');
     }
 
     // Fallback to text parsing (old format or mixed format)
-    if (places.isEmpty || AIResponseAnalyzer.hasLocationListPattern(response)) {
-      final textPlaces = ResponseParser.parseAIResponse(response);
+    final bool hasLocationList = await hasLocationListPattern(response);
+    final bool isPlacesEmpty = places.isEmpty == true;
+    if (isPlacesEmpty || hasLocationList) {
+      final textPlaces = await ResponseParser.parseAIResponse(response);
       places.addAll(textPlaces);
-      print('📍 Extracted ${textPlaces.length} places from text response');
+      await Logger.log(
+          '📍 Extracted ${textPlaces.length} places from text response');
     }
 
     // Only extract from map_url in text if we don't have function responses
     // This prevents duplicate URLs when server already provides them
-    if (places.isEmpty &&
-        (functionResponses == null || functionResponses.isEmpty) &&
-        (response.contains('map_url') ||
-            response.contains('google.com/maps'))) {
-      final fallbackPlaces = _extractPlacesFromMapUrls(response);
-      places.addAll(fallbackPlaces);
-      print(
-          '📍 Extracted ${fallbackPlaces.length} places from map URLs in text');
+    final bool noFunctionResponses =
+        functionResponses == null || functionResponses.isEmpty;
+    final bool hasMapUrl =
+        response.contains('map_url') || response.contains('bản đồ');
+    if (noFunctionResponses && hasMapUrl) {
+      final urls = await ResponseParser.extractMapUrls(response);
+      // mapUrls.addAll(urls); // This line was removed as per the edit hint
+      await Logger.log(
+          '🗺️ Extracted ${urls.length} map URLs from text response');
     }
 
-    print('🏁 Total places extracted: ${places.length}');
+    await Logger.log('🏁 Total places extracted: ${places.length}');
     return places;
   }
 
   /// Extract places from map URLs found in text response
-  static List<PlaceSearchResult> _extractPlacesFromMapUrls(String response) {
+  static Future<List<PlaceSearchResult>> _extractPlacesFromMapUrls(
+      String response) async {
     final List<PlaceSearchResult> places = [];
 
     try {
@@ -1120,14 +1233,16 @@ class AIResponseAnalyzer {
       final urlPattern = RegExp(r'https://maps\.google\.com[^\s\n]+');
       final urlMatches = urlPattern.allMatches(response);
 
-      print('🔗 Found ${urlMatches.length} Google Maps URLs in response');
+      await Logger.log(
+          '🔗 Found ${urlMatches.length} Google Maps URLs in response');
 
       for (final match in urlMatches) {
         final url = match.group(0)!;
-        print('🔗 Processing URL: $url');
+        await Logger.log('🔗 Processing URL: $url');
 
         // Extract place name from URL or surrounding text
-        final placeName = _extractPlaceNameFromContext(response, match.start);
+        final placeName =
+            await _extractPlaceNameFromContext(response, match.start);
 
         if (placeName.isNotEmpty) {
           // Generate approximate coordinates (you can improve this with geocoding)
@@ -1146,18 +1261,19 @@ class AIResponseAnalyzer {
             imageUrl: null,
           ));
 
-          print('✅ Created place: $placeName');
+          await Logger.log('✅ Created place: $placeName');
         }
       }
     } catch (e) {
-      print('❌ Error extracting places from map URLs: $e');
+      await Logger.log('❌ Error extracting places from map URLs: $e');
     }
 
     return places;
   }
 
   /// Extract place name from context around a URL
-  static String _extractPlaceNameFromContext(String text, int urlStart) {
+  static Future<String> _extractPlaceNameFromContext(
+      String text, int urlStart) async {
     try {
       // Look for place name before the URL (within 100 characters)
       final beforeUrl = text.substring(max(0, urlStart - 100), urlStart);
@@ -1176,7 +1292,7 @@ class AIResponseAnalyzer {
         if (match != null && match.group(1) != null) {
           final name = match.group(1)!.trim();
           if (name.length > 2 && name.length < 50) {
-            print('📝 Extracted place name: $name');
+            await Logger.log('📝 Extracted place name: $name');
             return name;
           }
         }
@@ -1193,11 +1309,11 @@ class AIResponseAnalyzer {
 
       if (words.isNotEmpty) {
         final name = words.take(3).join(' '); // Take up to 3 words
-        print('📝 Fallback place name: $name');
+        await Logger.log('📝 Fallback place name: $name');
         return name;
       }
     } catch (e) {
-      print('❌ Error extracting place name: $e');
+      await Logger.log('❌ Error extracting place name: $e');
     }
 
     return 'Unknown Location';
@@ -1209,32 +1325,39 @@ class AIResponseAnalyzer {
     return '${response.substring(0, 97)}...';
   }
 
+  /// Extract itinerary with fallback extractor (async)
+  static Future<List<ItineraryDayModel>> extractItineraryWithFallback(
+      String response) async {
+    return await extractItineraryWithFallbackImpl(response);
+  }
+
   /// Extract location results from function responses (new API format)
-  static List<PlaceSearchResult> extractLocationResultsFromFunctions(
-      List<Map<String, dynamic>> functionResponses) {
+  static Future<List<PlaceSearchResult>> extractLocationResultsFromFunctions(
+      List<Map<String, dynamic>> functionResponses) async {
     final List<PlaceSearchResult> places = [];
 
-    print('🔍 Processing ${functionResponses.length} function responses...');
+    await Logger.log(
+        '🔍 Processing ${functionResponses.length} function responses...');
 
     for (final functionResponse in functionResponses) {
       try {
         final String? functionName = functionResponse['name'];
-        print('🔧 Processing function: $functionName');
+        await Logger.log('🔧 Processing function: $functionName');
 
         if (functionName == 'map_tool' || functionName == 'poi_agent') {
           final dynamic response = functionResponse['response'];
           if (response is Map<String, dynamic>) {
             final dynamic placesData = response['places'];
             if (placesData is List) {
-              print(
+              await Logger.log(
                   '📍 Found ${placesData.length} places in $functionName response');
 
               for (final placeData in placesData) {
                 if (placeData is Map<String, dynamic>) {
-                  final place = _parseMapToolPlace(placeData);
+                  final place = await _parseMapToolPlace(placeData);
                   if (place != null) {
                     places.add(place);
-                    print('✅ Parsed place: ${place.title}');
+                    await Logger.log('✅ Parsed place: ${place.title}');
                   }
                 }
               }
@@ -1242,16 +1365,18 @@ class AIResponseAnalyzer {
           }
         }
       } catch (e) {
-        print('❌ Error processing function response: $e');
+        await Logger.log('❌ Error processing function response: $e');
       }
     }
 
-    print('🏁 Total places extracted from functions: ${places.length}');
+    await Logger.log(
+        '🏁 Total places extracted from functions: ${places.length}');
     return places;
   }
 
   /// Parse individual place from map_tool response
-  static PlaceSearchResult? _parseMapToolPlace(Map<String, dynamic> placeData) {
+  static Future<PlaceSearchResult?> _parseMapToolPlace(
+      Map<String, dynamic> placeData) async {
     try {
       final String placeName = placeData['place_name'] ?? '';
       final String address = placeData['address'] ?? '';
@@ -1268,24 +1393,24 @@ class AIResponseAnalyzer {
       final double latitude = double.tryParse(latStr) ?? 0.0;
       final double longitude = double.tryParse(longStr) ?? 0.0;
 
-      print('📋 Parsing place:');
-      print('   - Name: $placeName');
-      print('   - Address: $address');
-      print('   - Rating: $rating');
-      print('   - Coordinates: $latitude, $longitude');
-      print('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
-      print('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
+      await Logger.log('📋 Parsing place:');
+      await Logger.log('   - Name: $placeName');
+      await Logger.log('   - Address: $address');
+      await Logger.log('   - Rating: $rating');
+      await Logger.log('   - Coordinates: $latitude, $longitude');
+      await Logger.log('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
+      await Logger.log('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
 
       // Generate Google Maps URL only if not provided
       String finalMapUrl = mapUrl;
       if (finalMapUrl.isEmpty && latitude != 0.0 && longitude != 0.0) {
         finalMapUrl = 'https://www.google.com/maps?q=$latitude,$longitude';
-        print('🔗 Generated Google Maps URL: $finalMapUrl');
+        await Logger.log('🔗 Generated Google Maps URL: $finalMapUrl');
       }
 
       // Validate required fields
       if (placeName.isEmpty || address.isEmpty) {
-        print('❌ Missing required fields for place');
+        await Logger.log('❌ Missing required fields for place');
         return null;
       }
 
@@ -1301,10 +1426,185 @@ class AIResponseAnalyzer {
         imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
       );
     } catch (e) {
-      print('❌ Error parsing map tool place: $e');
+      await Logger.log('❌ Error parsing map tool place: $e');
       return null;
     }
   }
+}
+
+// Helper adapter for RegExpMatch to work with _extractActivitiesForDay
+class RegExpMatchAdapter implements RegExpMatch {
+  final String text;
+  RegExpMatchAdapter(this.text);
+  @override
+  int get start => 0;
+  @override
+  int get end => text.length;
+  @override
+  String? group(int group) => null;
+  @override
+  int get groupCount => 0;
+  @override
+  List<String?> groups(List<int> groupIndices) =>
+      List.filled(groupIndices.length, null);
+  @override
+  RegExp get pattern => RegExp("");
+  @override
+  String get input => text;
+  @override
+  String? operator [](int group) => null;
+  @override
+  String? namedGroup(String name) => null;
+  @override
+  Iterable<String> get groupNames => const <String>[];
+}
+
+/// Internal implementation for async itinerary extraction
+Future<List<ItineraryDayModel>> extractItineraryWithFallbackImpl(
+    String response) async {
+  final List<ItineraryDayModel> days = [];
+
+  await Logger.log('📅 Starting to parse itinerary from response...');
+  await Logger.log('📝 FULL RAW RESPONSE FROM AGENT:');
+  await Logger.log(response);
+  await Logger.log(
+      '📝 Response text length: \u001b[32m${response.length}\u001b[0m');
+
+  try {
+    // 1. Check for <itinerary>...</itinerary> block
+    final itineraryBlock =
+        RegExp(r'<itinerary>([\s\S]*?)<\/itinerary>', caseSensitive: false)
+            .firstMatch(response);
+    if (itineraryBlock != null) {
+      String itineraryContent = itineraryBlock.group(1)?.trim() ?? '';
+      await Logger.log(
+          '🟦 Found <itinerary> block, content length:  [34m${itineraryContent.length} [0m');
+      // 2. Detect if it's a Python dict (dùng dấu nháy đơn)
+      final isPythonDict = itineraryContent.startsWith("{'") ||
+          itineraryContent.startsWith('{\'');
+      if (isPythonDict) {
+        // 3. Convert Python dict to JSON string
+        String jsonString = itineraryContent
+            .replaceAll("'", '"')
+            .replaceAll('None', 'null')
+            .replaceAll('True', 'true')
+            .replaceAll('False', 'false');
+        // 4. Parse JSON
+        try {
+          final Map<String, dynamic> data = jsonDecode(jsonString);
+          final List<dynamic> daysJson = data['days'] ?? [];
+          for (final dayJson in daysJson) {
+            final int dayNumber = dayJson['day_number'] ?? 0;
+            final String dateStr = dayJson['date'] ?? '';
+            final DateTime date = DateTime.tryParse(dateStr) ?? DateTime.now();
+            final String displayDate =
+                AIResponseAnalyzer._formatDisplayDate(date);
+            final List<ItineraryActivityModel> activities = [];
+            final List<dynamic> events = dayJson['events'] ?? [];
+            for (final event in events) {
+              final String timeSlot =
+                  event['start_time'] ?? event['time'] ?? '';
+              final String title =
+                  event['description'] ?? event['event_type'] ?? '';
+              final String description = event['description'] ?? '';
+              final String weatherIcon = '';
+              activities.add(ItineraryActivityModel(
+                timeSlot: timeSlot,
+                title: title,
+                description: description,
+                weatherIcon: weatherIcon,
+                isActive: activities.isEmpty,
+              ));
+            }
+            days.add(ItineraryDayModel(
+              dayNumber: dayNumber,
+              date: date,
+              displayDate: displayDate,
+              activities: activities,
+            ));
+          }
+          await Logger.log(
+              '✅ Parsed itinerary from Python dict/JSON. Days: ${days.length}');
+          return days;
+        } catch (e) {
+          await Logger.log('❌ Error parsing itinerary JSON: $e');
+          // fallback to old logic
+        }
+      }
+    }
+    // Fallback: old markdown/text logic
+    // Try multiple patterns for day detection
+    List<RegExpMatch> dayMatches = [];
+
+    // Pattern 1: **Day X (YYYY-MM-DD):**
+    final dayPattern1 = RegExp(r'\*\*Day (\d+) \(([\d-]+)\):\*\*');
+    dayMatches = dayPattern1.allMatches(response).toList();
+    await Logger.log('🔍 Pattern 1 found ${dayMatches.length} matches');
+
+    // Pattern 2: Day X: or **Day X:** or **Day X: July 15, 2025**
+    if (dayMatches.isEmpty) {
+      final dayPattern2 = RegExp(r'\*\*?Day (\d+):[^*]*\*\*?');
+      dayMatches = dayPattern2.allMatches(response).toList();
+      await Logger.log('🔍 Pattern 2 found ${dayMatches.length} matches');
+    }
+
+    // Pattern 3: Ngày X: (Vietnamese)
+    if (dayMatches.isEmpty) {
+      final dayPattern3 = RegExp(r'\*\*?Ngày (\d+):?\*\*?');
+      dayMatches = dayPattern3.allMatches(response).toList();
+      await Logger.log('🔍 Pattern 3 found ${dayMatches.length} matches');
+    }
+
+    await Logger.log('🔍 Total day matches found: ${dayMatches.length}');
+
+    for (final match in dayMatches) {
+      try {
+        final dayNumber = int.parse(match.group(1)!);
+
+        // Try to extract date from the match or generate one
+        String dateString = '';
+        DateTime date;
+
+        if (match.groupCount >= 2 && match.group(2) != null) {
+          dateString = match.group(2)!;
+          date = DateTime.parse(dateString);
+        } else {
+          // Generate a date based on day number (starting from today)
+          date = DateTime.now().add(Duration(days: dayNumber - 1));
+          dateString = date.toIso8601String().split('T')[0];
+        }
+
+        await Logger.log('📅 Processing Day $dayNumber with date: $dateString');
+
+        final displayDate = AIResponseAnalyzer._formatDisplayDate(date);
+
+        // Extract activities for this day
+        final activities =
+            await AIResponseAnalyzer._extractActivitiesForDay(response, match);
+
+        if (activities.isNotEmpty) {
+          days.add(ItineraryDayModel(
+            dayNumber: dayNumber,
+            date: date,
+            displayDate: displayDate,
+            activities: activities,
+          ));
+          await Logger.log(
+              '✅ Successfully parsed Day $dayNumber with ${activities.length} activities');
+        }
+      } catch (e) {
+        await Logger.log('❌ Error parsing day: $e');
+        continue;
+      }
+    }
+
+    await Logger.log(
+        '🏁 Itinerary parsing completed. Total days: ${days.length}');
+  } catch (e) {
+    await Logger.log('❌ Error parsing itinerary: $e');
+  }
+
+  return days;
 }
 
 /// Model for parsed itinerary day

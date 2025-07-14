@@ -168,57 +168,61 @@ class _PlanListScreenState extends State<PlanListScreen> {
                   child: Padding(
                     padding: EdgeInsets.only(
                         left: 16.h, right: 16.h, top: 24.h, bottom: 16.h),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          plan.title,
-                          style: TextStyleHelper.instance.title16Medium,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 8.h),
-                        Text(
-                          plan.destination,
-                          style: TextStyleHelper.instance.body14,
-                        ),
-                        SizedBox(height: 8.h),
-                        Text(
-                          dateRange,
-                          style: TextStyleHelper.instance.body12
-                              .copyWith(color: Colors.grey),
-                        ),
-                        SizedBox(height: 12.h),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ...List.generate(
-                                4,
-                                (i) => Icon(Icons.star,
-                                    color: Colors.amber, size: 18)),
-                            // SizedBox(width: 8),
-                            // Icon(Icons.favorite,
-                            //     color: Colors.redAccent, size: 20),
-                          ],
-                        ),
-                        const Spacer(),
-                        Align(
-                          alignment: Alignment.bottomRight,
-                          child: Stack(
-                            alignment: Alignment.center,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              CircleAvatar(
-                                radius: 22,
-                                backgroundColor:
-                                    Color(0xFF2196F3), // Blue background
-                                // Không để icon ảnh, chỉ nền xanh
+                              Text(
+                                plan.title,
+                                style: TextStyleHelper.instance.title16Medium,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              Icon(Icons.favorite,
-                                  color: Colors.white, size: 24),
+                              SizedBox(height: 8.h),
+                              Text(
+                                plan.destination,
+                                style: TextStyleHelper.instance.body14,
+                              ),
+                              SizedBox(height: 8.h),
+                              Text(
+                                dateRange,
+                                style: TextStyleHelper.instance.body12
+                                    .copyWith(color: Colors.grey),
+                              ),
+                              SizedBox(height: 12.h),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  ...List.generate(
+                                      4,
+                                      (i) => Icon(Icons.star,
+                                          color: Colors.amber, size: 18)),
+                                ],
+                              ),
                             ],
                           ),
-                        ),
-                      ],
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: 22,
+                                  backgroundColor:
+                                      Color(0xFF2196F3), // Blue background
+                                ),
+                                Icon(Icons.favorite,
+                                    color: Colors.white, size: 24),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -231,29 +235,8 @@ class _PlanListScreenState extends State<PlanListScreen> {
           top: 8,
           right: 8,
           child: GestureDetector(
-            onTap: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                barrierColor: Colors.black.withOpacity(0.3),
-                builder: (ctx) => DeletePlanDialog(
-                  onDelete: () => Navigator.pop(ctx, true),
-                  onCancel: () => Navigator.pop(ctx, false),
-                ),
-              );
-              if (confirm == true) {
-                final success =
-                    await TravelConciergeService().deletePlan(plan.planUuid);
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Delete plan successfully!')),
-                  );
-                  await _fetchPlans();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Delete plan failed!')),
-                  );
-                }
-              }
+            onTap: () {
+              _onDeletePlanTap(plan);
             },
             child: Container(
               decoration: BoxDecoration(
@@ -270,6 +253,34 @@ class _PlanListScreenState extends State<PlanListScreen> {
   }
 
   String _pad2(int n) => n < 10 ? '0$n' : '$n';
+
+  void _onDeletePlanTap(PlanSummaryModel plan) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return DeletePlanDialog(
+          onDelete: () async {
+            setState(() {
+              _isLoading = true;
+            });
+            final authService = AuthService();
+            final user = authService.currentUser;
+            if (user != null && user.id.isNotEmpty) {
+              await TravelConciergeService().deletePlan(plan.planUuid);
+              await _fetchPlans();
+              Navigator.of(context).pop();
+            }
+            setState(() {
+              _isLoading = false;
+            });
+          },
+          onCancel: () {
+            Navigator.of(context).pop();
+          },
+        );
+      },
+    );
+  }
 }
 
 // Dialog xác nhận xóa plan đồng bộ style với ChangePasswordModal

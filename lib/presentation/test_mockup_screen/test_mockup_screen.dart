@@ -320,12 +320,12 @@ class _TestMockupScreenState extends State<TestMockupScreen> {
       });
 
       // Analyze response for locations and itinerary
-      final locations = AIResponseAnalyzer.extractLocationResults(
+      final List<PlaceSearchResult> locations = await AIResponseAnalyzer.extractLocationResults(
         response,
         functionResponses: functionResponses,
       );
 
-      final itinerary = AIResponseAnalyzer.extractItinerary(response);
+      final List<ItineraryDayModel> itinerary = await AIResponseAnalyzer.extractItinerary(response);
 
       setState(() {
         _detectedLocations = locations;

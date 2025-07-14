@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/api_models.dart';
 import 'api_config.dart';
 import 'auth_service.dart';
+import '../utils/logger.dart';
 
 class PlanSummaryModel {
   final String planUuid;
@@ -54,14 +55,14 @@ class TravelConciergeService {
       final response = await http.post(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        print('Session created successfully: $_sessionId');
+        await Logger.log('Session created successfully: $_sessionId');
         return true;
       } else {
-        print('Failed to create session: ${response.statusCode}');
+        await Logger.log('Failed to create session: ${response.statusCode}');
         return false;
       }
     } catch (e) {
-      print('Error creating session: $e');
+      await Logger.log('Error creating session: $e');
       return false;
     }
   }
@@ -231,8 +232,8 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
     try {
       // TODO: Implement actual save to backend
       // For now, we'll simulate a successful save
-      print('Saving itinerary for ${itinerary.destination}');
-      print('Days: ${itinerary.days.length}');
+      await Logger.log('Saving itinerary for ${itinerary.destination}');
+      await Logger.log('Days: ${itinerary.days.length}');
 
       // In a real implementation, this would:
       // 1. Send POST request to save endpoint
@@ -242,7 +243,7 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
       await Future.delayed(const Duration(milliseconds: 500));
       return true;
     } catch (e) {
-      print('Error saving itinerary: $e');
+      await Logger.log('Error saving itinerary: $e');
       return false;
     }
   }
@@ -253,7 +254,7 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
       final authService = AuthService();
       final user = authService.currentUser;
       if (user == null || user.id.isEmpty) {
-        print(
+        await Logger.log(
             '[TravelConciergeService] User not logged in or missing user_uuid');
         return (false, 'User not logged in');
       }
@@ -288,16 +289,16 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
           'days_count': itinerary.length,
         },
       };
-      print('[TravelConciergeService] Create Plan API call:');
-      print('  URL: $url');
-      print('  Payload: ${planData.toString()}');
+      await Logger.log('[TravelConciergeService] Create Plan API call:');
+      await Logger.log('  URL: $url');
+      await Logger.log('  Payload: ${planData.toString()}');
       final response = await http.post(
         Uri.parse(url),
         headers: authService.getAuthHeaders(),
         body: jsonEncode(planData),
       );
-      print('  Status code: ${response.statusCode}');
-      print('  Response body: ${response.body}');
+      await Logger.log('  Status code: ${response.statusCode}');
+      await Logger.log('  Response body: ${response.body}');
       final body = jsonDecode(response.body);
       final message = body['message']?.toString() ?? 'Unknown error';
       if ((response.statusCode == 200 || response.statusCode == 201) &&
@@ -307,7 +308,7 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
         return (false, message);
       }
     } catch (e) {
-      print('[TravelConciergeService] Error creating plan: $e');
+      await Logger.log('[TravelConciergeService] Error creating plan: $e');
       return (false, 'Error: $e');
     }
   }
@@ -319,7 +320,7 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
       final authService = AuthService();
       final user = authService.currentUser;
       if (user == null || planUuid.isEmpty) {
-        print(
+        await Logger.log(
             '[TravelConciergeService] User not logged in hoặc thiếu planUuid');
         return (false, 'User not logged in hoặc thiếu planUuid');
       }
@@ -353,16 +354,16 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
           'days_count': itinerary.length,
         },
       };
-      print('[TravelConciergeService] Update Plan API call:');
-      print('  URL: $url');
-      print('  Payload: ${planData.toString()}');
+      await Logger.log('[TravelConciergeService] Update Plan API call:');
+      await Logger.log('  URL: $url');
+      await Logger.log('  Payload: ${planData.toString()}');
       final response = await http.put(
         Uri.parse(url),
         headers: authService.getAuthHeaders(),
         body: jsonEncode(planData),
       );
-      print('  Status code: ${response.statusCode}');
-      print('  Response body: ${response.body}');
+      await Logger.log('  Status code: ${response.statusCode}');
+      await Logger.log('  Response body: ${response.body}');
       final body = jsonDecode(response.body);
       final message = body['message']?.toString() ?? 'Unknown error';
       if ((response.statusCode == 200 || response.statusCode == 201) &&
@@ -372,7 +373,7 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
         return (false, message);
       }
     } catch (e) {
-      print('[TravelConciergeService] Error updating plan: $e');
+      await Logger.log('[TravelConciergeService] Error updating plan: $e');
       return (false, 'Error: $e');
     }
   }
@@ -381,17 +382,17 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
   Future<bool> deletePlan(String planUuid) async {
     try {
       final url = '${ApiConfig.baseUrl}/user_manager/plan/$planUuid/delete/';
-      print('[TravelConciergeService] Delete plan: $url');
+      await Logger.log('[TravelConciergeService] Delete plan: $url');
       final response =
           await http.delete(Uri.parse(url), headers: ApiConfig.jsonHeaders);
-      print('  Status code: ${response.statusCode}');
-      print('  Response body: ${response.body}');
+      await Logger.log('  Status code: ${response.statusCode}');
+      await Logger.log('  Response body: ${response.body}');
       if (response.statusCode == 200 || response.statusCode == 204) {
         return true;
       }
       return false;
     } catch (e) {
-      print('[TravelConciergeService] Error deletePlan: $e');
+      await Logger.log('[TravelConciergeService] Error deletePlan: $e');
       return false;
     }
   }
@@ -429,13 +430,15 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
 
             // Debug: Log function responses
             if (functionResponses.isNotEmpty) {
-              print('🔧 Found ${functionResponses.length} function responses:');
+              await Logger.log(
+                  '🔧 Found ${functionResponses.length} function responses:');
               for (int i = 0; i < functionResponses.length; i++) {
                 final fr = functionResponses[i];
-                print('   [$i] Name: ${fr['name']}');
-                print('       Response type: ${fr['response'].runtimeType}');
+                await Logger.log('   [$i] Name: ${fr['name']}');
+                await Logger.log(
+                    '       Response type: ${fr['response'].runtimeType}');
                 if (fr['response'] is Map) {
-                  print(
+                  await Logger.log(
                       '       Response keys: ${(fr['response'] as Map).keys.toList()}');
                 }
               }
@@ -468,7 +471,7 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
             }
           }
         } catch (e) {
-          print('Error parsing SSE data: $e');
+          await Logger.log('Error parsing SSE data: $e');
         }
       }
     }
@@ -504,11 +507,11 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
   Future<List<PlanSummaryModel>> getUserPlans(String userUuid) async {
     try {
       final url = '${ApiConfig.baseUrl}/user_manager/plan/$userUuid/list/';
-      print('[TravelConciergeService] Get user plans: $url');
+      await Logger.log('[TravelConciergeService] Get user plans: $url');
       final response =
           await http.get(Uri.parse(url), headers: ApiConfig.jsonHeaders);
-      print('  Status code: ${response.statusCode}');
-      print('  Response body: ${response.body}');
+      await Logger.log('  Status code: ${response.statusCode}');
+      await Logger.log('  Response body: ${response.body}');
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);
         if (body['success'] == true && body['data'] is List) {
@@ -519,8 +522,64 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
       }
       return [];
     } catch (e) {
-      print('[TravelConciergeService] Error getUserPlans: $e');
+      await Logger.log('[TravelConciergeService] Error getUserPlans: $e');
       return [];
     }
+  }
+
+  /// Lấy chi tiết plan theo planUuid
+  Future<Map<String, dynamic>?> getPlanDetail(String planUuid) async {
+    try {
+      final url = '${ApiConfig.baseUrl}/user_manager/plan/$planUuid/';
+      await Logger.log('[TravelConciergeService] Get plan detail: $url');
+      final response =
+          await http.get(Uri.parse(url), headers: ApiConfig.jsonHeaders);
+      await Logger.log('  Status code: ${response.statusCode}');
+      await Logger.log('  Response body: ${response.body}');
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body['success'] == true && body['data'] != null) {
+          return body['data'] as Map<String, dynamic>;
+        }
+      }
+      return null;
+    } catch (e) {
+      await Logger.log('[TravelConciergeService] Error getPlanDetail: $e');
+      return null;
+    }
+  }
+
+  /// Extract itinerary JSON from free-form text using extractor API
+  static Future<String?> extractItineraryFromText(String text) async {
+    try {
+      await Logger.log('🛠️ Calling extractor API for itinerary text...');
+      // Ví dụ endpoint extractor, cần chỉnh lại cho đúng API thực tế
+      final url = ApiConfig.getExtractorUrl();
+      final payload = {
+        'task': 'extract_itinerary',
+        'text': text,
+      };
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+      await Logger.log('🛠️ Extractor API status: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is Map<String, dynamic> && data['json'] != null) {
+          await Logger.log('🛠️ Extractor API returned JSON itinerary.');
+          return data['json'] as String;
+        } else if (data is String) {
+          await Logger.log('🛠️ Extractor API returned raw string.');
+          return data;
+        }
+      } else {
+        await Logger.log('❌ Extractor API error: ${response.body}');
+      }
+    } catch (e) {
+      await Logger.log('❌ Exception in extractor API: $e');
+    }
+    return null;
   }
 }

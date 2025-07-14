@@ -52,10 +52,48 @@ class _PlanViewScreenState extends State<PlanViewScreen> {
 
   /// Initialize with arguments from navigation
   void _initializeWithArguments() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      if (args != null && args['itinerary'] != null) {
+      if (args != null &&
+          args['plan_uuid'] != null &&
+          (args['plan_uuid'] as String).isNotEmpty) {
+        // Fetch plan detail from API
+        final planUuid = args['plan_uuid'] as String;
+        final planData = await _travelConciergeService.getPlanDetail(planUuid);
+        if (planData != null && planData['itinerary'] is List) {
+          final List<dynamic> itineraryJson = planData['itinerary'];
+          final List<ItineraryDayModel> itinerary = [];
+          for (final dayJson in itineraryJson) {
+            final int dayNumber = dayJson['day_number'] ?? 0;
+            final String dateStr = dayJson['date'] ?? '';
+            final DateTime date = DateTime.tryParse(dateStr) ?? DateTime.now();
+            final String displayDate = dayJson['display_date'] ?? '';
+            final List<ItineraryActivityModel> activities = [];
+            final List<dynamic> acts = dayJson['activities'] ?? [];
+            for (final act in acts) {
+              activities.add(ItineraryActivityModel(
+                timeSlot: act['time_slot'] ?? '',
+                title: act['title'] ?? '',
+                description: act['description'] ?? '',
+                weatherIcon: act['weather_icon'] ?? '',
+                isActive: act['is_active'] ?? false,
+              ));
+            }
+            itinerary.add(ItineraryDayModel(
+              dayNumber: dayNumber,
+              date: date,
+              displayDate: displayDate.isNotEmpty
+                  ? displayDate
+                  : date.toIso8601String().split('T')[0],
+              activities: activities,
+            ));
+          }
+          _loadAIItinerary(itinerary);
+        } else {
+          _loadDefaultData();
+        }
+      } else if (args != null && args['itinerary'] != null) {
         final itinerary = args['itinerary'] as List<ItineraryDayModel>;
         _loadAIItinerary(itinerary);
       } else {

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../core/app_export.dart';
-import '../travel_exploration_screen.dart' show BottomNavItemModel;
 import 'bottom_nav_item.dart';
+
+class BottomNavItemModel {
+  final dynamic icon; // Accepts String (asset path) or IconData
+  final String? label;
+  final bool? isSelected;
+  BottomNavItemModel({this.icon, this.label, this.isSelected});
+}
 
 class SharedBottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -18,8 +24,8 @@ class SharedBottomNavBar extends StatelessWidget {
         isSelected: selectedIndex == 0,
       ),
       BottomNavItemModel(
-        icon: ImageConstant.imgGroup120,
-        label: "Wallet",
+        icon: Icons.list_alt, // Use a list icon for Plan List
+        label: "Plan List",
         isSelected: selectedIndex == 1,
       ),
       BottomNavItemModel(
@@ -62,7 +68,7 @@ class SharedBottomNavBar extends StatelessWidget {
                   Navigator.pushNamed(
                       context, AppRoutes.travelExplorationScreen);
                 } else if (index == 1) {
-                  // Wallet: Not implemented
+                  Navigator.pushNamed(context, AppRoutes.planListScreen);
                 } else if (index == 2) {
                   // Guide: Not implemented
                 } else if (index == 3) {

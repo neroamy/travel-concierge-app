@@ -41,6 +41,10 @@ class _AIChatScreenState extends State<AIChatScreen> {
   List<PlaceSearchResult> _detectedLocations = [];
   List<ItineraryDayModel> _detectedItinerary = [];
 
+  // Lưu trạng thái plan trong session chat với AI Agent
+  String? _lastPlanUuid;
+  String? _lastPlanTitle;
+
   @override
   void initState() {
     super.initState();
@@ -247,8 +251,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   /// Analyze AI response for location results and itinerary
-  void _analyzeResponse(String response,
-      {List<Map<String, dynamic>>? functionResponses}) {
+  Future<void> _analyzeResponse(String response,
+      {List<Map<String, dynamic>>? functionResponses}) async {
     print('🔍 Analyzing response for locations and itinerary...');
     print('   - Response text length: ${response.length}');
     print('   - Function responses count: ${functionResponses?.length ?? 0}');
@@ -261,11 +265,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
     print('📄 END FULL RESPONSE');
 
     // Check for itinerary pattern first
-    final hasItinerary = AIResponseAnalyzer.hasItineraryPattern(response);
+    final bool hasItinerary = await AIResponseAnalyzer.hasItineraryPattern(response);
     print('   - Has itinerary pattern: $hasItinerary');
 
     // Check for location pattern
-    final hasLocationList = AIResponseAnalyzer.hasLocationListPattern(response);
+    final bool hasLocationList = await AIResponseAnalyzer.hasLocationListPattern(response);
     print('   - Has location list pattern: $hasLocationList');
 
     // Check for map_url in text response
@@ -288,7 +292,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
       for (int i = 0; i < functionResponses.length; i++) {
         final fr = functionResponses[i];
         print('   [$i] Name: ${fr['name']}');
-        print('       Response type: ${fr['response'].runtimeType}');
+        print('       Response type: ${(fr['response'] as Map).runtimeType}');
         if (fr['response'] is Map) {
           print(
               '       Response keys: ${(fr['response'] as Map).keys.toList()}');
@@ -312,19 +316,16 @@ class _AIChatScreenState extends State<AIChatScreen> {
     }
 
     // If no specific patterns detected, still try to extract any structured data
-    if (!hasItinerary &&
-        !hasLocationList &&
-        !hasMapTool &&
-        !hasMapUrlInText &&
-        !hasPoiAgent) {
+    bool noPattern = !(hasItinerary || hasLocationList || hasMapTool || hasMapUrlInText || hasPoiAgent);
+    if (noPattern) {
       print('❓ No specific patterns detected, trying general analysis...');
 
       // Use new analyzer that handles both text and function responses
       final responseType =
           functionResponses != null && functionResponses.isNotEmpty
-              ? AIResponseAnalyzer.analyzeResponseWithFunctions(
+              ? await AIResponseAnalyzer.analyzeResponseWithFunctions(
                   response, functionResponses)
-              : AIResponseAnalyzer.analyzeResponse(response);
+              : await AIResponseAnalyzer.analyzeResponse(response);
 
       print('   - General response type: $responseType');
 
@@ -355,8 +356,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   /// Handle location response
   void _handleLocationResponse(
-      String response, List<Map<String, dynamic>>? functionResponses) {
-    final locations = AIResponseAnalyzer.extractLocationResults(
+      String response, List<Map<String, dynamic>>? functionResponses) async {
+    final locations = await AIResponseAnalyzer.extractLocationResults(
       response,
       functionResponses: functionResponses,
     );
@@ -377,8 +378,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   /// Handle itinerary response
-  void _handleItineraryResponse(String response) {
-    final itinerary = AIResponseAnalyzer.extractItinerary(response);
+  void _handleItineraryResponse(String response) async {
+    final itinerary =
+        await AIResponseAnalyzer.extractItineraryWithFallback(response);
 
     setState(() {
       _detectedItinerary = itinerary;
@@ -391,7 +393,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
           '   Day ${day.dayNumber} (${day.displayDate}): ${day.activities.length} activities');
       for (int j = 0; j < day.activities.length; j++) {
         final activity = day.activities[j];
-        print('     [$j] ${activity.timeSlot}: ${activity.title}');
+        print('     [${j}] ${activity.timeSlot}: ${activity.title}');
       }
     }
   }
@@ -434,24 +436,63 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   /// Navigate to weather query screen with itinerary
-  void _navigateToPlanViewScreen() {
-    if (_detectedItinerary.isNotEmpty) {
-      Navigator.pushNamed(
-        context,
-        AppRoutes.planViewScreen,
-        arguments: {
-          'itinerary': _detectedItinerary,
-          'source': 'ai_chat',
-        },
-      );
-    } else {
+  Future<void> _navigateToPlanViewScreen() async {
+    if (_detectedItinerary.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('No itinerary available to display'),
           backgroundColor: Colors.orange,
         ),
       );
+      return;
     }
+    // Lấy title plan hiện tại (ví dụ: từ ngày đầu tiên hoặc logic bạn muốn)
+    final String currentTitle = _detectedItinerary.first.activities.isNotEmpty
+        ? _detectedItinerary.first.activities.first.title
+        : 'AI Plan';
+    final TravelConciergeService travelService = TravelConciergeService();
+    String? planUuidToUse;
+    // Nếu chưa có plan hoặc title khác thì tạo mới
+    if (_lastPlanUuid == null || _lastPlanTitle != currentTitle) {
+      final (success, message) =
+          await travelService.createPlan(_detectedItinerary);
+      if (success) {
+        // Lấy plan_uuid từ response body nếu có
+        final uuid =
+            RegExp(r'plan_uuid[":\s]*([\w-]+)').firstMatch(message)?.group(1);
+        if (uuid != null) {
+          _lastPlanUuid = uuid;
+          _lastPlanTitle = currentTitle;
+          planUuidToUse = uuid;
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Create plan failed: $message')),
+        );
+        return;
+      }
+    } else {
+      // Nếu title giống, update plan
+      final (success, message) =
+          await travelService.updatePlan(_lastPlanUuid!, _detectedItinerary);
+      if (!success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Update plan failed: $message')),
+        );
+        return;
+      }
+      planUuidToUse = _lastPlanUuid;
+    }
+    // Điều hướng sang Plan View, truyền plan_uuid
+    Navigator.pushNamed(
+      context,
+      AppRoutes.planViewScreen,
+      arguments: {
+        'itinerary': _detectedItinerary,
+        'plan_uuid': planUuidToUse,
+        'source': 'ai_chat',
+      },
+    );
   }
 
   /// Scroll to bottom of chat
