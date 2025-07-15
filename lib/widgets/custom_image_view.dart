@@ -144,26 +144,64 @@ class CustomImageView extends StatelessWidget {
                 : null,
           );
         case ImageType.network:
+          print('🌐 Loading network image: $imagePath');
           return CachedNetworkImage(
             height: height,
             width: width,
             fit: fit,
             imageUrl: imagePath!,
             color: color,
-            placeholder: (context, url) => SizedBox(
-              height: 30,
-              width: 30,
-              child: LinearProgressIndicator(
-                color: appTheme.grey200,
-                backgroundColor: appTheme.grey100,
-              ),
-            ),
-            errorWidget: (context, url, error) => Image.asset(
-              placeHolder ?? ImageConstant.imgImageNotFound,
-              height: height,
-              width: width,
-              fit: fit ?? BoxFit.cover,
-            ),
+            placeholder: (context, url) {
+              print('⏳ Loading placeholder for: $url');
+              return SizedBox(
+                height: height ?? 30,
+                width: width ?? 30,
+                child: Center(
+                  child: SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      color: appTheme.grey200,
+                      backgroundColor: appTheme.grey100,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                ),
+              );
+            },
+            errorWidget: (context, url, error) {
+              print('❌ Failed to load image: $url');
+              print('   Error: $error');
+              return Container(
+                height: height,
+                width: width,
+                decoration: BoxDecoration(
+                  color: appTheme.grey100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                                         Icon(
+                       Icons.broken_image,
+                       color: Colors.grey[600],
+                       size: 24,
+                     ),
+                     if (height != null && height! > 60) ...[
+                       SizedBox(height: 4),
+                       Text(
+                         'Image failed to load',
+                         style: TextStyle(
+                           color: Colors.grey[600],
+                           fontSize: 10,
+                         ),
+                         textAlign: TextAlign.center,
+                       ),
+                     ],
+                  ],
+                ),
+              );
+            },
           );
         case ImageType.png:
         default:

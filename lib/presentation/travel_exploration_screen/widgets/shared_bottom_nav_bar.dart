@@ -29,8 +29,8 @@ class SharedBottomNavBar extends StatelessWidget {
         isSelected: selectedIndex == 1,
       ),
       BottomNavItemModel(
-        icon: ImageConstant.imgGroup123,
-        label: "Guide",
+        icon: Icons.place, // Change to place icon for Place List
+        label: "Place List",
         isSelected: selectedIndex == 2,
       ),
       BottomNavItemModel(
@@ -70,7 +70,8 @@ class SharedBottomNavBar extends StatelessWidget {
                 } else if (index == 1) {
                   Navigator.pushNamed(context, AppRoutes.planListScreen);
                 } else if (index == 2) {
-                  // Guide: Not implemented
+                  Navigator.pushNamed(context,
+                      AppRoutes.placeListScreen); // Navigate to Place List
                 } else if (index == 3) {
                   Navigator.pushNamed(context, AppRoutes.profileSettingsScreen);
                 }

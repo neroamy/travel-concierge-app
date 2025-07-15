@@ -419,7 +419,7 @@ class _LocationTargetingScreenState extends State<LocationTargetingScreen> {
     }
 
     return SizedBox(
-      height: 166.h,
+      height: 320.h, // Tăng chiều cao để khớp với LocationCard + padding
       child: PageView.builder(
         controller: _pageController,
         onPageChanged: (index) {
@@ -457,6 +457,10 @@ class _LocationTargetingScreenState extends State<LocationTargetingScreen> {
         'locationPrice':
             location.address, // address contains the price for legacy data
         'locationRating': location.rating,
+        'highlights': (location.highlights != null &&
+                location.highlights.trim().isNotEmpty)
+            ? location.highlights
+            : '', // Truyền empty nếu không có dữ liệu
       },
     );
   }

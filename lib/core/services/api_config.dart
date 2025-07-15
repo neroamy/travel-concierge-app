@@ -4,11 +4,11 @@ class ApiConfig {
   // NOTE: Update this URL to match your server setup
   // For local development: http://localhost:8001/api
   // For testing with real device: http://[PC_IP]:8001/api
-  static const String baseUrl = 'http://192.168.1.7:8001/api';
+  static const String baseUrl = 'http://192.168.1.8:8001/api';
   static const String appName = 'travel_concierge';
 
   // Chat/AI Agent Endpoints (different server)
-  static const String chatBaseUrl = 'http://192.168.1.7:8002';
+  static const String chatBaseUrl = 'http://192.168.1.8:8002';
   static const String sessionEndpoint = '/apps/$appName/users';
   static const String messageEndpoint = '/run_sse';
   static const String docsEndpoint = '/docs';

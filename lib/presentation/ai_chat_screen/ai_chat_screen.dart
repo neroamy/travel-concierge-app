@@ -57,11 +57,13 @@ class _AIChatScreenState extends State<AIChatScreen> {
     final args =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null) {
+      print('🔍 AI Chat Screen arguments: $args');
       if (args['autoSend'] == true &&
           !_hasAutoSent &&
           args['initialQuery'] != null &&
           (args['initialQuery'] as String).isNotEmpty) {
         _hasAutoSent = true;
+        print('📤 Auto-sending message: ${args['initialQuery']}');
         _sendMessage(args['initialQuery'] as String);
       }
     }

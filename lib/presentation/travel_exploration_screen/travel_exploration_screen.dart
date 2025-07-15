@@ -37,6 +37,9 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
   List<PlanSummaryModel> _userPlans = [];
   bool _isLoadingPlans = false;
 
+  List<Map<String, dynamic>> _userPlaces = [];
+  bool _isLoadingPlaces = false;
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +48,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
     _checkDataAvailability();
     _checkPlanDraftAvailability();
     _fetchUserPlans();
+    _fetchUserPlaces();
   }
 
   @override
@@ -123,6 +127,25 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
       setState(() {
         _userPlans = [];
         _isLoadingPlans = false;
+      });
+    }
+  }
+
+  Future<void> _fetchUserPlaces() async {
+    setState(() {
+      _isLoadingPlaces = true;
+    });
+    final userUuid = AuthService().currentUser?.id;
+    if (userUuid != null && userUuid.isNotEmpty) {
+      final places = await _travelService.getUserPlaces(userUuid);
+      setState(() {
+        _userPlaces = places;
+        _isLoadingPlaces = false;
+      });
+    } else {
+      setState(() {
+        _userPlaces = [];
+        _isLoadingPlaces = false;
       });
     }
   }
@@ -476,11 +499,14 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                           AppRoutes.aiChatScreen,
                           arguments: {
                             'initialQuery': query,
+                            'autoSend': true,
                             'useGlobalSession': true,
                             'conversationHistory':
                                 _globalChatService.conversationHistory,
                           },
                         );
+                        // Clear the search text after sending
+                        _searchController.clear();
                       }
                     },
                   ),
@@ -564,25 +590,15 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
   }
 
   Widget _buildHorizontalLocationSection() {
-    List<TravelDestinationModel> destinations = [
-      TravelDestinationModel(
-        name: "Switzerland",
-        price: "from \$699",
-        rating: "4.9",
-        image: ImageConstant.imgRectangle462,
-        ratingColor: appTheme.whiteCustom,
-        ratingIcon: ImageConstant.imgGroup128,
-      ),
-      TravelDestinationModel(
-        name: "Ilulissat Icefjord",
-        price: "from \$726",
-        rating: "5.0",
-        image: ImageConstant.imgRectangle463,
-        ratingColor: appTheme.blackCustom,
-        ratingIcon: ImageConstant.imgGroup129,
-      ),
-    ];
-
+    if (_isLoadingPlaces) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 32.h),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_userPlaces.isEmpty) {
+      return SizedBox.shrink();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -599,13 +615,118 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
           child: ListView.separated(
             padding: EdgeInsets.symmetric(horizontal: 24.h),
             scrollDirection: Axis.horizontal,
-            itemCount: destinations.length,
+            itemCount: _userPlaces.length,
             separatorBuilder: (context, index) => SizedBox(width: 20.h),
             itemBuilder: (context, index) {
-              return TravelDestinationCard(
-                destination: destinations[index],
-                width: 230.h,
-                onTap: () => _navigateToDestinationDetails(destinations[index]),
+              final place = _userPlaces[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.attractionDetailsScreen,
+                    arguments: {
+                      'attractionName': place['place_name'] ?? '',
+                      'description': place['highlights'] ?? '',
+                      'rating':
+                          double.tryParse(place['review_ratings'] ?? '0') ??
+                              0.0,
+                      'reviews': 0,
+                      'imagePath': place['image_url'] ?? '',
+                      'address': place['address'] ?? '',
+                      'mapUrl': place['map_url'] ?? '',
+                      'place_uuid': place['place_uuid'] ?? '', // Add place_uuid
+                      'highlights': place['highlights'] ?? '',
+                    },
+                  );
+                },
+                child: Container(
+                  width: 230.h,
+                  height: 138.h,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15.h),
+                    color: appTheme.grey200,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CustomImageView(
+                        imagePath: (place['image_url'] == null ||
+                                place['image_url'].toString().isEmpty ||
+                                place['image_url']
+                                    .toString()
+                                    .contains('example.com'))
+                            ? ImageConstant.imgImageNotFound
+                            : place['image_url'],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              appTheme.transparentCustom,
+                              appTheme.blackCustom.withAlpha(179),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Padding(
+                          padding: EdgeInsets.all(16.h),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                place['place_name'] ?? '',
+                                style: TextStyleHelper
+                                    .instance.title22RegularAndika,
+                              ),
+                              SizedBox(height: 4.h),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      place['address'] ?? '',
+                                      style: TextStyleHelper.instance.body12
+                                          .copyWith(
+                                        color: appTheme.whiteCustom,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        place['review_ratings'] ?? '',
+                                        style: TextStyleHelper.instance.body12
+                                            .copyWith(
+                                          color: appTheme.whiteCustom,
+                                        ),
+                                      ),
+                                      SizedBox(width: 4.h),
+                                      Icon(Icons.star,
+                                          color: Colors.amber, size: 16),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               );
             },
           ),

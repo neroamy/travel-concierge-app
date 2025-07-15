@@ -596,8 +596,10 @@ class ResponseParser {
       await Logger.log('   - Address: $address');
       await Logger.log('   - Rating: $rating');
       await Logger.log('   - Coordinates: $latitude, $longitude');
-      await Logger.log('   - Image URL: ${imageUrl.isNotEmpty ? "✅" : "❌"}');
-      await Logger.log('   - Map URL: ${mapUrl.isNotEmpty ? "✅" : "❌"}');
+      await Logger.log(
+          '   - Image URL: ${imageUrl.isNotEmpty ? "✅ $imageUrl" : "❌ Empty"}');
+      await Logger.log(
+          '   - Map URL: ${mapUrl.isNotEmpty ? "✅ $mapUrl" : "❌ Empty"}');
 
       // Generate Google Maps URL only if not provided
       String finalMapUrl = mapUrl;
@@ -982,7 +984,8 @@ class AIResponseAnalyzer {
         caseSensitive: false,
       );
       dayMatches = dayPattern.allMatches(response).toList();
-      await Logger.log('🔍 Flexible pattern found [33m${dayMatches.length} [0m matches');
+      await Logger.log(
+          '🔍 Flexible pattern found [33m${dayMatches.length} [0m matches');
 
       if (dayMatches.isNotEmpty) {
         for (int i = 0; i < dayMatches.length; i++) {

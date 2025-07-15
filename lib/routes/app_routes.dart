@@ -11,6 +11,7 @@ import '../presentation/splash_screen/splash_screen.dart';
 import '../presentation/test_mockup_screen/test_mockup_screen.dart';
 import '../presentation/voice_chat_screen/voice_chat_screen.dart';
 import '../presentation/plan_list_screen/plan_list_screen.dart';
+import '../presentation/place_list_screen/place_list_screen.dart';
 
 class AppRoutes {
   static const String splashScreen = '/splash_screen';
@@ -26,6 +27,7 @@ class AppRoutes {
   static const String testMockupScreen = '/test_mockup_screen';
   static const String voiceChatScreen = '/voice_chat_screen';
   static const String planListScreen = '/plan_list_screen';
+  static const String placeListScreen = '/place_list_screen';
   static const String initialRoute = '/initialRoute';
 
   static Map<String, WidgetBuilder> routes = {
@@ -42,6 +44,7 @@ class AppRoutes {
     testMockupScreen: (context) => const TestMockupScreen(),
     voiceChatScreen: (context) => const VoiceChatScreen(),
     planListScreen: (context) => const PlanListScreen(),
+    placeListScreen: (context) => const PlaceListScreen(),
     initialRoute: (context) => const SplashScreen(),
   };
 }

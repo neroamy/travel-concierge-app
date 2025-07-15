@@ -400,10 +400,17 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
   /// Handle Server-Sent Events response
   Stream<SearchResult> _handleSSEResponse(
       http.StreamedResponse response) async* {
+    await Logger.log('🔄 Starting to handle SSE response...');
     final stream = response.stream.transform(utf8.decoder);
 
     await for (String chunk in stream) {
+      await Logger.log('📡 Raw SSE chunk received:');
+      await Logger.log('   Chunk length: ${chunk.length}');
+      await Logger.log(
+          '   Chunk content: ${chunk.substring(0, chunk.length > 500 ? 500 : chunk.length)}${chunk.length > 500 ? "..." : ""}');
+
       final lines = chunk.split('\n');
+      await Logger.log('   Split into ${lines.length} lines');
 
       for (String line in lines) {
         line = line.trim();
@@ -411,8 +418,22 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
 
         try {
           final jsonString = line.substring(6); // Remove "data: " prefix
+          await Logger.log('📤 Processing SSE data line:');
+          await Logger.log('   JSON string: $jsonString');
+
           final eventData = jsonDecode(jsonString);
+          await Logger.log('✅ Successfully parsed JSON:');
+          await Logger.log('   Event data keys: ${eventData.keys.toList()}');
+          await Logger.log('   Full event data: $eventData');
+
           final event = ApiEvent.fromJson(eventData);
+          await Logger.log('🎯 Created ApiEvent:');
+          await Logger.log('   Author: ${event.author}');
+          await Logger.log('   Has error: ${event.hasError}');
+          await Logger.log('   Has content: ${event.hasContent}');
+          if (event.hasError) {
+            await Logger.log('   Error: ${event.error}');
+          }
 
           if (event.hasError) {
             yield SearchResult(
@@ -425,8 +446,18 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
 
           if (event.hasContent) {
             final content = event.content!;
+            await Logger.log('📋 Processing event content:');
+            await Logger.log('   Content type: ${content.runtimeType}');
+
             final textParts = content.getTextParts();
             final functionResponses = content.getFunctionResponses();
+
+            await Logger.log('📝 Extracted data:');
+            await Logger.log('   Text parts count: ${textParts.length}');
+            for (int i = 0; i < textParts.length; i++) {
+              await Logger.log(
+                  '   Text part [$i]: ${textParts[i].substring(0, textParts[i].length > 200 ? 200 : textParts[i].length)}${textParts[i].length > 200 ? "..." : ""}');
+            }
 
             // Debug: Log function responses
             if (functionResponses.isNotEmpty) {
@@ -437,16 +468,27 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
                 await Logger.log('   [$i] Name: ${fr['name']}');
                 await Logger.log(
                     '       Response type: ${fr['response'].runtimeType}');
+                await Logger.log('       Full function response: $fr');
                 if (fr['response'] is Map) {
                   await Logger.log(
                       '       Response keys: ${(fr['response'] as Map).keys.toList()}');
+                  await Logger.log('       Response data: ${fr['response']}');
                 }
               }
+            } else {
+              await Logger.log('🔧 No function responses found in this event');
             }
 
             // Yield text parts as separate results
             for (String text in textParts) {
               if (text.trim().isNotEmpty) {
+                await Logger.log('🚀 Yielding SearchResult:');
+                await Logger.log(
+                    '   Text: ${text.substring(0, text.length > 200 ? 200 : text.length)}${text.length > 200 ? "..." : ""}');
+                await Logger.log('   Author: ${event.author ?? 'agent'}');
+                await Logger.log(
+                    '   Function responses attached: ${functionResponses.length}');
+
                 yield SearchResult(
                   text: text,
                   author: event.author ?? 'agent',
@@ -460,6 +502,8 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
             for (var functionResponse in functionResponses) {
               final functionName = functionResponse['name'];
               final indicator = _getFunctionIndicator(functionName);
+              await Logger.log(
+                  '🎨 Function indicator for "$functionName": $indicator');
               if (indicator != null) {
                 yield SearchResult(
                   text: indicator,
@@ -471,10 +515,12 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
             }
           }
         } catch (e) {
-          await Logger.log('Error parsing SSE data: $e');
+          await Logger.log('❌ Error parsing SSE data: $e');
+          await Logger.log('❌ Problematic line: $line');
         }
       }
     }
+    await Logger.log('✅ Finished handling SSE response');
   }
 
   /// Get indicator text for function responses
@@ -581,5 +627,84 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
       await Logger.log('❌ Exception in extractor API: $e');
     }
     return null;
+  }
+
+  /// Save a place for the user
+  Future<(bool, String)> savePlace(
+      String userUuid, Map<String, dynamic> place) async {
+    try {
+      final url = '${ApiConfig.baseUrl}/user_manager/place/$userUuid/create/';
+      final authService = AuthService();
+      final headers = authService.getAuthHeaders();
+      final payload = jsonEncode(place); // Send as flat object
+      await Logger.log('[TravelConciergeService] Saving place: $payload');
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: payload,
+      );
+      await Logger.log('  Status code: ${response.statusCode}');
+      await Logger.log('  Response body: ${response.body}');
+      final body = jsonDecode(response.body);
+      final message = body['message']?.toString() ?? 'Unknown error';
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          body['success'] == true) {
+        return (true, message);
+      } else {
+        return (false, message);
+      }
+    } catch (e) {
+      await Logger.log('[TravelConciergeService] Error saving place: $e');
+      return (false, 'Error: $e');
+    }
+  }
+
+  /// Get user's saved places
+  Future<List<Map<String, dynamic>>> getUserPlaces(String userUuid) async {
+    try {
+      final url = '${ApiConfig.baseUrl}/user_manager/place/$userUuid/list/';
+      final authService = AuthService();
+      final headers = authService.getAuthHeaders();
+      await Logger.log('[TravelConciergeService] Fetching user places: $url');
+      final response = await http.get(Uri.parse(url), headers: headers);
+      await Logger.log('  Status code: ${response.statusCode}');
+      await Logger.log('  Response body: ${response.body}');
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body['success'] == true && body['data'] is List) {
+          return List<Map<String, dynamic>>.from(body['data']);
+        }
+      }
+      return [];
+    } catch (e) {
+      await Logger.log(
+          '[TravelConciergeService] Error fetching user places: $e');
+      return [];
+    }
+  }
+
+  /// Get detailed place information by place_uuid
+  Future<Map<String, dynamic>?> getPlaceDetails(String placeUuid) async {
+    try {
+      final url = '${ApiConfig.baseUrl}/user_manager/place/$placeUuid';
+      final authService = AuthService();
+      final headers = authService.getAuthHeaders();
+      await Logger.log('[TravelConciergeService] Fetching place details: $url');
+      final response = await http.get(Uri.parse(url), headers: headers);
+      await Logger.log('  Status code: ${response.statusCode}');
+      await Logger.log('  Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body['success'] == true && body['data'] is Map) {
+          return Map<String, dynamic>.from(body['data']);
+        }
+      }
+      return null;
+    } catch (e) {
+      await Logger.log(
+          '[TravelConciergeService] Error fetching place details: $e');
+      return null;
+    }
   }
 }

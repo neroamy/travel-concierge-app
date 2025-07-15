@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_export.dart';
 import '../../widgets/custom_image_view.dart';
+import '../../core/services/travel_concierge_service.dart';
 
 class AttractionDetailsScreen extends StatefulWidget {
   const AttractionDetailsScreen({super.key});
@@ -12,14 +13,10 @@ class AttractionDetailsScreen extends StatefulWidget {
 }
 
 class _AttractionDetailsScreenState extends State<AttractionDetailsScreen> {
-  Map<String, dynamic> attractionData = {
-    'attractionName': 'Nordic Cottage',
-    'description':
-        'Blue Lagoon Drive from Reykjavík, the capital of Iceland, to the southeast for about an hour, you can reach Blue Lagoon, the famous',
-    'rating': 4.79,
-    'reviews': 78,
-    'imagePath': ImageConstant.imgNordicCottage,
-  };
+  Map<String, dynamic> attractionData = {};
+  Map<String, dynamic>? fullPlaceData; // Full place data from API
+  bool _isLoadingPlaceData = false;
+  final TravelConciergeService _travelService = TravelConciergeService();
 
   @override
   void initState() {
@@ -32,6 +29,12 @@ class _AttractionDetailsScreenState extends State<AttractionDetailsScreen> {
         setState(() {
           attractionData = args;
         });
+
+        // If we have place_uuid, fetch detailed place information
+        final placeUuid = args['place_uuid'] as String?;
+        if (placeUuid != null && placeUuid.isNotEmpty) {
+          _fetchPlaceDetails(placeUuid);
+        }
       }
     });
   }
@@ -60,10 +63,15 @@ class _AttractionDetailsScreenState extends State<AttractionDetailsScreen> {
 
   /// Builds the full-screen background image
   Widget _buildBackgroundImage() {
+    // Get imagePath with proper fallback
+    String imagePath = attractionData['imagePath'] ?? '';
+    if (imagePath.isEmpty || imagePath == 'null') {
+      imagePath = ImageConstant.imgImageNotFound;
+    }
+
     return Positioned.fill(
       child: CustomImageView(
-        imagePath:
-            attractionData['imagePath'] ?? ImageConstant.imgNordicCottage,
+        imagePath: imagePath,
         fit: BoxFit.cover,
       ),
     );
@@ -141,7 +149,7 @@ class _AttractionDetailsScreenState extends State<AttractionDetailsScreen> {
   /// Builds the attraction title
   Widget _buildAttractionTitle() {
     return Text(
-      attractionData['attractionName'] ?? "Nordic Cottage",
+      (attractionData['attractionName'] ?? '').toString(),
       style: TextStyle(
         fontSize: 42.fSize,
         fontWeight: FontWeight.w400,
@@ -157,8 +165,7 @@ class _AttractionDetailsScreenState extends State<AttractionDetailsScreen> {
   /// Builds the description text
   Widget _buildDescription() {
     return Text(
-      attractionData['description'] ??
-          "Blue Lagoon Drive from Reykjavík, the capital of Iceland, to the southeast for about an hour, you can reach Blue Lagoon, the famous",
+      (attractionData['highlights'] ?? '').toString(),
       style: TextStyle(
         fontSize: 16.fSize,
         fontWeight: FontWeight.w400,
@@ -193,7 +200,7 @@ class _AttractionDetailsScreenState extends State<AttractionDetailsScreen> {
 
         // Rating score - Fixed size
         Text(
-          "${attractionData['rating'] ?? 4.79}",
+          (attractionData['rating'] ?? '').toString(),
           style: TextStyle(
             fontSize: 14.fSize,
             fontWeight: FontWeight.w400,
@@ -206,7 +213,7 @@ class _AttractionDetailsScreenState extends State<AttractionDetailsScreen> {
         // Review count - Flexible to prevent overflow
         Flexible(
           child: Text(
-            "(${attractionData['reviews'] ?? 78} reviews)",
+            "(${attractionData['reviews'] ?? ''} reviews)",
             style: TextStyle(
               fontSize: 14.fSize,
               fontWeight: FontWeight.w400,
@@ -282,8 +289,7 @@ class _AttractionDetailsScreenState extends State<AttractionDetailsScreen> {
         Expanded(
           child: GestureDetector(
             onTap: () {
-              Navigator.pushNamed(
-                  context, AppRoutes.locationTargetingScreenWithMaps);
+              _handleExploreMapTap();
             },
             child: Container(
               height: 54.h,
@@ -318,5 +324,115 @@ class _AttractionDetailsScreenState extends State<AttractionDetailsScreen> {
         backgroundColor: Colors.black.withOpacity(0.8),
       ),
     );
+  }
+
+  /// Fetches detailed place information from the API
+  Future<void> _fetchPlaceDetails(String placeUuid) async {
+    setState(() {
+      _isLoadingPlaceData = true;
+    });
+    try {
+      final place = await _travelService.getPlaceDetails(placeUuid);
+      if (place != null) {
+        setState(() {
+          fullPlaceData = place;
+        });
+      } else {
+        _showSnackBar("Failed to fetch place details.");
+      }
+    } catch (e) {
+      _showSnackBar("Error fetching place details: ${e.toString()}");
+    } finally {
+      setState(() {
+        _isLoadingPlaceData = false;
+      });
+    }
+  }
+
+  /// Handles the "Explore Map" button tap
+  void _handleExploreMapTap() {
+    // Check if we have location data (from API or from attractionData)
+    String? latitude;
+    String? longitude;
+    String placeName = '';
+
+    // Try to get coordinates from fullPlaceData first (most accurate)
+    if (fullPlaceData != null) {
+      latitude = fullPlaceData!['lat']?.toString();
+      longitude = fullPlaceData!['long']?.toString();
+      placeName = fullPlaceData!['place_name']?.toString() ?? '';
+    }
+
+    // If no API data, check if attractionData has coordinates
+    if ((latitude == null || longitude == null) && attractionData.isNotEmpty) {
+      latitude = attractionData['lat']?.toString() ??
+          attractionData['latitude']?.toString();
+      longitude = attractionData['long']?.toString() ??
+          attractionData['longitude']?.toString();
+      placeName = attractionData['attractionName']?.toString() ??
+          attractionData['place_name']?.toString() ??
+          '';
+    }
+
+    // If we have coordinates, create PlaceSearchResult and navigate
+    if (latitude != null &&
+        longitude != null &&
+        latitude.isNotEmpty &&
+        longitude.isNotEmpty) {
+      try {
+        final double lat = double.parse(latitude);
+        final double lng = double.parse(longitude);
+
+        // Create a PlaceSearchResult for the current place
+        final currentPlace = PlaceSearchResult(
+          title: placeName,
+          address: fullPlaceData?['address']?.toString() ??
+              attractionData['address']?.toString() ??
+              '',
+          highlights: fullPlaceData?['highlights']?.toString() ??
+              attractionData['highlights']?.toString() ??
+              '',
+          rating: double.tryParse(fullPlaceData?['review_ratings']?.toString() ??
+              attractionData['rating']?.toString() ??
+              '0.0') ?? 0.0,
+          latitude: lat,
+          longitude: lng,
+          imageUrl: fullPlaceData?['image_url']?.toString() ??
+              attractionData['imagePath']?.toString() ??
+              '',
+          googleMapsUrl: fullPlaceData?['map_url']?.toString() ??
+              attractionData['mapUrl']?.toString() ??
+              '',
+          placeId: fullPlaceData?['place_id']?.toString() ??
+              attractionData['place_id']?.toString() ??
+              '',
+        );
+
+        // Navigate to LocationTargetingScreen with place data
+        Navigator.pushNamed(
+          context,
+          AppRoutes.locationTargetingScreenWithMaps,
+          arguments: {
+            'searchQuery': placeName,
+            'searchResults': [currentPlace], // Pass as single-item list
+            'focusedPlace': currentPlace, // Indicate which place to focus on
+            'centerOnPlace': true, // Flag to center map on this place
+          },
+        );
+      } catch (e) {
+        _showSnackBar("Error parsing location coordinates: ${e.toString()}");
+      }
+    } else {
+      // No coordinates available, navigate without location data
+      Navigator.pushNamed(
+        context,
+        AppRoutes.locationTargetingScreenWithMaps,
+        arguments: {
+          'searchQuery': placeName.isNotEmpty ? placeName : 'Explore Location',
+        },
+      );
+
+      _showSnackBar("Location coordinates not available for this place.");
+    }
   }
 }

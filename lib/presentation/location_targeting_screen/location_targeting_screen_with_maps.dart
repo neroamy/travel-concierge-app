@@ -48,6 +48,8 @@ class _LocationTargetingScreenWithMapsState
       if (args != null) {
         final searchQuery = args['searchQuery'] as String?;
         final searchResults = args['searchResults'] as List<PlaceSearchResult>?;
+        final focusedPlace = args['focusedPlace'] as PlaceSearchResult?;
+        final centerOnPlace = args['centerOnPlace'] as bool? ?? false;
 
         if (searchQuery != null) {
           _searchController.text = searchQuery;
@@ -56,6 +58,11 @@ class _LocationTargetingScreenWithMapsState
 
         if (searchResults != null && searchResults.isNotEmpty) {
           _processSearchResults(searchResults);
+
+          // If we have a focused place and should center on it
+          if (focusedPlace != null && centerOnPlace) {
+            _centerOnPlace(focusedPlace);
+          }
         } else if (searchQuery != null) {
           // Fallback to API call if no results provided
           _performSearch(searchQuery);
@@ -130,6 +137,7 @@ class _LocationTargetingScreenWithMapsState
     }
   }
 
+  /// Update route polyline between user and destination
   void _updateRoutePolyline() async {
     List<LatLng> points = [];
     LatLng? origin = _userPosition;
@@ -183,6 +191,43 @@ class _LocationTargetingScreenWithMapsState
       setState(() {
         _polylines = {};
       });
+    }
+  }
+
+  /// Center map on a specific place and show its location card
+  Future<void> _centerOnPlace(PlaceSearchResult place) async {
+    try {
+      final placeLocation = LatLng(place.latitude, place.longitude);
+
+      // Move camera to the place
+      _moveCamera(placeLocation);
+
+      // Find the index of this place in the location cards
+      final placeIndex = _locationCards.indexWhere((card) =>
+          card.title == place.title &&
+          card.latitude == place.latitude &&
+          card.longitude == place.longitude);
+
+      if (placeIndex != -1) {
+        // Update current card index and scroll to it
+        setState(() {
+          _currentCardIndex = placeIndex;
+        });
+
+        // Scroll to the corresponding card with animation
+        if (_pageController.hasClients) {
+          await _pageController.animateToPage(
+            placeIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+
+      // Update route polyline to this destination
+      _updateRoutePolyline();
+    } catch (e) {
+      debugPrint('Error centering on place: $e');
     }
   }
 
@@ -541,7 +586,8 @@ class _LocationTargetingScreenWithMapsState
       left: 0,
       right: 0,
       child: SizedBox(
-        height: 166.h,
+        height:
+            180.h, // Tăng height để phù hợp với LocationCard 300.h + padding
         child: PageView.builder(
           controller: _pageController,
           onPageChanged: (index) {
