@@ -725,6 +725,7 @@ class ChatMessage {
   final String author;
   final DateTime timestamp;
   final bool isFromUser;
+  final List<String>? imagePaths; // List of image file paths
 
   ChatMessage({
     required this.id,
@@ -732,6 +733,7 @@ class ChatMessage {
     required this.author,
     required this.timestamp,
     required this.isFromUser,
+    this.imagePaths,
   });
 
   factory ChatMessage.fromApiResponse(String text, String author) {
@@ -744,15 +746,22 @@ class ChatMessage {
     );
   }
 
-  factory ChatMessage.fromUser(String text) {
+  factory ChatMessage.fromUser(String text, {List<String>? imagePaths}) {
     return ChatMessage(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       text: text,
       author: 'user',
       timestamp: DateTime.now(),
       isFromUser: true,
+      imagePaths: imagePaths,
     );
   }
+
+  /// Check if message has images
+  bool get hasImages => imagePaths != null && imagePaths!.isNotEmpty;
+
+  /// Get number of images
+  int get imageCount => imagePaths?.length ?? 0;
 }
 
 /// Analyzer for AI response types and content

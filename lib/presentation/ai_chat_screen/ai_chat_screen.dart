@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -45,6 +46,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
   String? _lastPlanUuid;
   String? _lastPlanTitle;
 
+  // Selected images from arguments
+  List<File> _selectedImages = [];
+
   @override
   void initState() {
     super.initState();
@@ -58,13 +62,24 @@ class _AIChatScreenState extends State<AIChatScreen> {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null) {
       print('🔍 AI Chat Screen arguments: $args');
+
+      // Handle selected images
+      if (args['selectedImages'] != null) {
+        final images = args['selectedImages'] as List<File>;
+        setState(() {
+          _selectedImages = images;
+        });
+        print('📷 Received ${images.length} selected images');
+      }
+
       if (args['autoSend'] == true &&
           !_hasAutoSent &&
-          args['initialQuery'] != null &&
-          (args['initialQuery'] as String).isNotEmpty) {
+          (args['initialQuery'] != null || _selectedImages.isNotEmpty)) {
         _hasAutoSent = true;
-        print('📤 Auto-sending message: ${args['initialQuery']}');
-        _sendMessage(args['initialQuery'] as String);
+        final query = args['initialQuery'] as String? ?? '';
+        print(
+            '📤 Auto-sending message: "$query" with ${_selectedImages.length} images');
+        _sendMessage(query);
       }
     }
     if (_messages.isEmpty) {
@@ -117,17 +132,25 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   /// Send message to AI
   Future<void> _sendMessage(String message) async {
-    if (message.trim().isEmpty) return;
+    if (message.trim().isEmpty && _selectedImages.isEmpty) return;
 
-    print('💬 Sending message: "$message"');
+    print(
+        '💬 Sending message: "$message" with ${_selectedImages.length} images');
+
+    // Convert File objects to file paths for ChatMessage
+    List<String>? imagePaths;
+    if (_selectedImages.isNotEmpty) {
+      imagePaths = _selectedImages.map((file) => file.path).toList();
+    }
 
     // If in mockup mode, don't make API calls
     if (widget.useMockupMode) {
       print('🧪 Mockup mode enabled - skipping API call');
-      // Add user message to chat
-      final userMessage = ChatMessage.fromUser(message);
+      // Add user message to chat with images
+      final userMessage = ChatMessage.fromUser(message, imagePaths: imagePaths);
       setState(() {
         _messages.add(userMessage);
+        _selectedImages.clear(); // Clear images after sending
       });
       _scrollToBottom();
       return;
@@ -171,10 +194,17 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   /// Send message via local travel service
   Future<void> _sendMessageViaLocalService(String message) async {
-    final userMessage = ChatMessage.fromUser(message);
+    // Convert File objects to file paths for ChatMessage
+    List<String>? imagePaths;
+    if (_selectedImages.isNotEmpty) {
+      imagePaths = _selectedImages.map((file) => file.path).toList();
+    }
+
+    final userMessage = ChatMessage.fromUser(message, imagePaths: imagePaths);
     setState(() {
       _messages.add(userMessage);
       _isTyping = true;
+      _selectedImages.clear(); // Clear images after sending
     });
 
     _scrollToBottom();
@@ -183,9 +213,13 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   /// Send message via global chat service
   Future<void> _sendMessageViaGlobalService(String message) async {
-    print('🚀 Sending message via global service: "$message"');
+    print(
+        '🚀 Sending message via global service: "$message" with ${_selectedImages.length} images');
+
+    // Clear images after sending (they will be handled by global service)
     setState(() {
       _isTyping = true;
+      _selectedImages.clear();
     });
 
     await _globalChatService.sendMessage(message, (chatMessage) {
@@ -825,16 +859,26 @@ class _AIChatScreenState extends State<AIChatScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    message.text,
-                    style: TextStyle(
-                      fontSize: 14.fSize,
-                      fontWeight: FontWeight.w400,
-                      fontFamily: 'Poppins',
-                      color:
-                          isUser ? appTheme.whiteCustom : appTheme.blackCustom,
+                  // Display images if present
+                  if (message.hasImages) ...[
+                    _buildMessageImages(message.imagePaths!),
+                    if (message.text.isNotEmpty) SizedBox(height: 8.h),
+                  ],
+
+                  // Display text if present
+                  if (message.text.isNotEmpty)
+                    Text(
+                      message.text,
+                      style: TextStyle(
+                        fontSize: 14.fSize,
+                        fontWeight: FontWeight.w400,
+                        fontFamily: 'Poppins',
+                        color: isUser
+                            ? appTheme.whiteCustom
+                            : appTheme.blackCustom,
+                      ),
                     ),
-                  ),
+
                   SizedBox(height: 4.h),
                   Text(
                     DateFormat('HH:mm').format(message.timestamp),
@@ -1196,6 +1240,106 @@ class _AIChatScreenState extends State<AIChatScreen> {
             'Viewing itinerary. Use the map button in the itinerary screen to see locations.'),
         backgroundColor: Colors.green,
         duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
+  /// Build images display in message
+  Widget _buildMessageImages(List<String> imagePaths) {
+    return Container(
+      constraints: BoxConstraints(maxWidth: 250.h),
+      child: Wrap(
+        spacing: 4.h,
+        runSpacing: 4.h,
+        children: imagePaths.map((imagePath) {
+          return Container(
+            width: 60.h,
+            height: 60.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8.h),
+              border: Border.all(color: Colors.grey.withOpacity(0.3)),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8.h),
+              child: GestureDetector(
+                onTap: () => _showImagePreview(imagePath),
+                child: Image.file(
+                  File(imagePath),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[200],
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Colors.grey[400],
+                        size: 24.h,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  /// Show image preview in dialog
+  void _showImagePreview(String imagePath) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Stack(
+          children: [
+            Center(
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.9,
+                  maxHeight: MediaQuery.of(context).size.height * 0.8,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12.h),
+                  child: Image.file(
+                    File(imagePath),
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[200],
+                        child: Icon(
+                          Icons.broken_image,
+                          color: Colors.grey[400],
+                          size: 48.h,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 40.h,
+              right: 20.h,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  width: 40.h,
+                  height: 40.h,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 24.h,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -27,6 +27,8 @@ dependencies:
   url_launcher: ^6.2.5
   flutter_polyline_points: 2.1.0
   path_provider: ^2.0.15
+  image_picker: ^1.0.7
+  image: ^4.1.7
 
 dev_dependencies:
   flutter_test:

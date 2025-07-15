@@ -10,6 +10,7 @@ export 'package:travel_concierge/core/services/global_chat_service.dart';
 export 'package:travel_concierge/core/services/profile_service.dart';
 export 'package:travel_concierge/core/services/google_maps_service.dart';
 export 'package:travel_concierge/core/services/auth_service.dart';
+export 'package:travel_concierge/core/services/image_service.dart';
 export 'package:travel_concierge/core/models/api_models.dart';
 export 'package:travel_concierge/widgets/safe_avatar_image.dart';
 export 'package:travel_concierge/presentation/attraction_details_screen/attraction_details_screen.dart';

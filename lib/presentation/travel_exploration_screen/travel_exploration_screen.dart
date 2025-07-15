@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../core/app_export.dart';
@@ -9,8 +10,6 @@ import './widgets/bottom_nav_item.dart';
 import './widgets/location_category_card.dart';
 import './widgets/travel_destination_card.dart';
 import '../../core/services/plan_storage_service.dart';
-import '../../core/services/travel_concierge_service.dart';
-import '../../core/services/auth_service.dart';
 import './widgets/shared_bottom_nav_bar.dart';
 
 class TravelExplorationScreen extends StatefulWidget {
@@ -39,6 +38,9 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
 
   List<Map<String, dynamic>> _userPlaces = [];
   bool _isLoadingPlaces = false;
+
+  // Selected images for chat
+  List<File> _selectedImages = [];
 
   @override
   void initState() {
@@ -446,6 +448,9 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
         ),
         child: Column(
           children: [
+            // Selected images thumbnails
+            if (_selectedImages.isNotEmpty) _buildImageThumbnails(),
+
             // Text area
             Padding(
               padding:
@@ -478,9 +483,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                   IconButton(
                     icon: Icon(Icons.add_a_photo_outlined,
                         color: appTheme.colorFF0373),
-                    onPressed: () async {
-                      // TODO: Hiển thị bottom sheet chọn: "Chụp ảnh" hoặc "Chọn từ thư viện"
-                    },
+                    onPressed: _showImagePickerBottomSheet,
                   ),
                   IconButton(
                     icon: Icon(Icons.mic, color: appTheme.colorFF0373),
@@ -491,24 +494,7 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
                   const Spacer(),
                   IconButton(
                     icon: Icon(Icons.send, color: appTheme.colorFF0373),
-                    onPressed: () {
-                      final query = _searchController.text.trim();
-                      if (query.isNotEmpty) {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.aiChatScreen,
-                          arguments: {
-                            'initialQuery': query,
-                            'autoSend': true,
-                            'useGlobalSession': true,
-                            'conversationHistory':
-                                _globalChatService.conversationHistory,
-                          },
-                        );
-                        // Clear the search text after sending
-                        _searchController.clear();
-                      }
-                    },
+                    onPressed: _sendMessageWithImages,
                   ),
                 ],
               ),
@@ -1133,6 +1119,247 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
         ),
       ),
     );
+  }
+
+  /// Build image thumbnails display
+  Widget _buildImageThumbnails() {
+    return Container(
+      padding: EdgeInsets.all(8.h),
+      child: Wrap(
+        spacing: 8.h,
+        runSpacing: 8.h,
+        children: _selectedImages.asMap().entries.map((entry) {
+          final index = entry.key;
+          final imageFile = entry.value;
+
+          return Stack(
+            children: [
+              // Image thumbnail
+              Container(
+                width: 40.h,
+                height: 40.h,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.h),
+                  border: Border.all(color: appTheme.colorFFE9E9),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.h),
+                  child: Image.file(
+                    imageFile,
+                    fit: BoxFit.cover,
+                    width: 40.h,
+                    height: 40.h,
+                  ),
+                ),
+              ),
+              // Delete button
+              Positioned(
+                top: -4.h,
+                right: -4.h,
+                child: GestureDetector(
+                  onTap: () => _removeImage(index),
+                  child: Container(
+                    width: 20.h,
+                    height: 20.h,
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 2.h,
+                          offset: Offset(0, 1.h),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 12.h,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  /// Show bottom sheet for image selection
+  void _showImagePickerBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.h)),
+      ),
+      builder: (context) => Container(
+        padding: EdgeInsets.all(24.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Select Photo',
+              style: TextStyle(
+                fontSize: 18.fSize,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Poppins',
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildImageOptionButton(
+                    icon: Icons.camera_alt,
+                    label: 'Take Photo',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _takePhotoFromCamera();
+                    },
+                  ),
+                ),
+                SizedBox(width: 16.h),
+                Expanded(
+                  child: _buildImageOptionButton(
+                    icon: Icons.photo_library,
+                    label: 'Choose from Gallery',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImagesFromGallery();
+                    },
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build image option button
+  Widget _buildImageOptionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 12.h),
+        decoration: BoxDecoration(
+          color: appTheme.colorFF0373.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12.h),
+          border: Border.all(color: appTheme.colorFF0373.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: appTheme.colorFF0373,
+              size: 32.h,
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14.fSize,
+                fontWeight: FontWeight.w500,
+                color: appTheme.colorFF0373,
+                fontFamily: 'Poppins',
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Take photo from camera
+  Future<void> _takePhotoFromCamera() async {
+    try {
+      final File? imageFile = await ImageService.takePhotoFromCamera();
+      if (imageFile != null) {
+        setState(() {
+          _selectedImages.add(imageFile);
+        });
+        _showSnackBarSafe('Photo taken successfully!');
+      }
+    } catch (e) {
+      _showSnackBarSafe('Error taking photo: $e');
+    }
+  }
+
+  /// Pick images from gallery
+  Future<void> _pickImagesFromGallery() async {
+    try {
+      final List<File> imageFiles = await ImageService.pickImagesFromGallery();
+      if (imageFiles.isNotEmpty) {
+        setState(() {
+          _selectedImages.addAll(imageFiles);
+        });
+        _showSnackBarSafe('${imageFiles.length} image(s) selected!');
+      }
+    } catch (e) {
+      _showSnackBarSafe('Error selecting images: $e');
+    }
+  }
+
+  /// Remove image at index
+  void _removeImage(int index) {
+    if (index >= 0 && index < _selectedImages.length) {
+      // Delete the temporary file
+      ImageService.deleteImageFile(_selectedImages[index]);
+
+      setState(() {
+        _selectedImages.removeAt(index);
+      });
+    }
+  }
+
+  /// Send message with images
+  void _sendMessageWithImages() {
+    final query = _searchController.text.trim();
+
+    if (query.isEmpty && _selectedImages.isEmpty) {
+      _showSnackBarSafe('Please enter a message or select images');
+      return;
+    }
+
+    // Navigate to AI Chat Screen with text and images
+    Navigator.pushNamed(
+      context,
+      AppRoutes.aiChatScreen,
+      arguments: {
+        'initialQuery': query,
+        'selectedImages': _selectedImages,
+        'autoSend': true,
+        'useGlobalSession': true,
+        'conversationHistory': _globalChatService.conversationHistory,
+      },
+    );
+
+    // Clear the search text and images after sending
+    _searchController.clear();
+    setState(() {
+      _selectedImages.clear();
+    });
+  }
+
+  /// Show snackbar safely
+  void _showSnackBarSafe(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }
 
