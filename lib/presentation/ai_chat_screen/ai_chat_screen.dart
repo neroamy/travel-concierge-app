@@ -267,11 +267,13 @@ class _AIChatScreenState extends State<AIChatScreen> {
     print('📄 END FULL RESPONSE');
 
     // Check for itinerary pattern first
-    final bool hasItinerary = await AIResponseAnalyzer.hasItineraryPattern(response);
+    final bool hasItinerary =
+        await AIResponseAnalyzer.hasItineraryPattern(response);
     print('   - Has itinerary pattern: $hasItinerary');
 
     // Check for location pattern
-    final bool hasLocationList = await AIResponseAnalyzer.hasLocationListPattern(response);
+    final bool hasLocationList =
+        await AIResponseAnalyzer.hasLocationListPattern(response);
     print('   - Has location list pattern: $hasLocationList');
 
     // Check for map_url in text response
@@ -302,24 +304,25 @@ class _AIChatScreenState extends State<AIChatScreen> {
       }
     }
 
-    // ALWAYS try to extract locations and itinerary from text response
-    // This ensures we catch cases where AI returns structured data in text format
+    // Handle response based on detected patterns
+    bool hasHandledResponse = false;
 
     // Handle itinerary detection
     if (hasItinerary) {
       print('📅 Processing itinerary response...');
       _handleItineraryResponse(response);
+      hasHandledResponse = true;
     }
 
     // Handle location detection (from both text and function responses)
     if (hasLocationList || hasMapTool || hasMapUrlInText || hasPoiAgent) {
       print('📍 Processing location response...');
       _handleLocationResponse(response, functionResponses);
+      hasHandledResponse = true;
     }
 
-    // If no specific patterns detected, still try to extract any structured data
-    bool noPattern = !(hasItinerary || hasLocationList || hasMapTool || hasMapUrlInText || hasPoiAgent);
-    if (noPattern) {
+    // If no specific patterns detected, use general analyzer as fallback
+    if (!hasHandledResponse) {
       print('❓ No specific patterns detected, trying general analysis...');
 
       // Use new analyzer that handles both text and function responses

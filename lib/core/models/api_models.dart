@@ -1073,31 +1073,46 @@ class AIResponseAnalyzer {
       // Try multiple patterns for activities
       List<RegExpMatch> activityMatches = [];
 
-      // Pattern 1: * Time: Description
-      final activityPattern1 = RegExp(r'\*\s*([^:]+):\s*([^\n]+)');
+      // Pattern 1: * Time (with AM/PM): Description
+      final activityPattern1 =
+          RegExp(r'\*\s*(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?):\s*([^\n]+)');
       activityMatches = activityPattern1.allMatches(daySection).toList();
       await Logger.log(
           '🔍 Pattern 1 found ${activityMatches.length} activities');
 
-      // Pattern 2: - Time: Description
+      // Pattern 2: - Time (with AM/PM): Description
       if (activityMatches.isEmpty) {
-        final activityPattern2 = RegExp(r'-\s*([^:]+):\s*([^\n]+)');
+        final activityPattern2 =
+            RegExp(r'-\s*(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?):\s*([^\n]+)');
         activityMatches = activityPattern2.allMatches(daySection).toList();
         await Logger.log(
             '🔍 Pattern 2 found ${activityMatches.length} activities');
       }
 
-      // Pattern 3: Time: Description (without bullet)
+      // Pattern 3: Time (with AM/PM): Description (without bullet)
       if (activityMatches.isEmpty) {
-        final activityPattern3 = RegExp(r'([^:]+):\s*([^\n]+)');
+        final activityPattern3 =
+            RegExp(r'(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?):\s*([^\n]+)');
         activityMatches = activityPattern3.allMatches(daySection).toList();
         await Logger.log(
             '🔍 Pattern 3 found ${activityMatches.length} activities');
       }
 
+      // Fallback Pattern 4: Generic * Text: Description (for non-time activities)
+      if (activityMatches.isEmpty) {
+        final activityPattern4 = RegExp(r'\*\s*([^:]+):\s*([^\n]+)');
+        activityMatches = activityPattern4.allMatches(daySection).toList();
+        await Logger.log(
+            '🔍 Pattern 4 (fallback) found ${activityMatches.length} activities');
+      }
+
       for (final match in activityMatches) {
         final timeSlot = match.group(1)?.trim() ?? '';
         final description = match.group(2)?.trim() ?? '';
+
+        await Logger.log('🔍 Raw match found:');
+        await Logger.log('   - Time slot: "$timeSlot"');
+        await Logger.log('   - Description: "$description"');
 
         // Filter out non-activity entries
         if (timeSlot.isNotEmpty && description.isNotEmpty) {
@@ -1105,6 +1120,7 @@ class AIResponseAnalyzer {
           if (timeSlot.toLowerCase().contains('day') ||
               timeSlot.toLowerCase().contains('ngày') ||
               timeSlot.length > 20) {
+            await Logger.log('   ❌ Skipping: Header or section title');
             continue;
           }
 
@@ -1122,7 +1138,9 @@ class AIResponseAnalyzer {
             isActive: activities.isEmpty, // First activity is active
           ));
 
-          await Logger.log('   - $timeSlot: $title');
+          await Logger.log('   ✅ Added activity: $timeSlot: $title');
+        } else {
+          await Logger.log('   ❌ Skipping: Empty time slot or description');
         }
       }
     } catch (e) {

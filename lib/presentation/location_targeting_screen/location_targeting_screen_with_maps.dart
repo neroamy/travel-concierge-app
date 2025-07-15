@@ -83,10 +83,12 @@ class _LocationTargetingScreenWithMapsState
     try {
       Position? position = await GoogleMapsService.getCurrentLocation();
       if (position != null) {
-        setState(() {
-          _userPosition = LatLng(position.latitude, position.longitude);
-          _currentPosition = _userPosition!;
-        });
+        if (mounted) {
+          setState(() {
+            _userPosition = LatLng(position.latitude, position.longitude);
+            _currentPosition = _userPosition!;
+          });
+        }
         _moveCamera(_currentPosition);
         _updateRoutePolyline();
       } else {
@@ -142,9 +144,11 @@ class _LocationTargetingScreenWithMapsState
     List<LatLng> points = [];
     LatLng? origin = _userPosition;
     if (_searchResults.isEmpty) {
-      setState(() {
-        _polylines = {};
-      });
+      if (mounted) {
+        setState(() {
+          _polylines = {};
+        });
+      }
       return;
     }
     if (origin == null) {
@@ -169,28 +173,36 @@ class _LocationTargetingScreenWithMapsState
       );
       debugPrint('Route points count: \'${routePoints.length}\'');
       if (routePoints.isNotEmpty) {
-        setState(() {
-          _polylines = {
-            Polyline(
-              polylineId: const PolylineId('route'),
-              color: Colors.blue,
-              width: 5,
-              points: routePoints,
-            ),
-          };
-        });
-        await _fitMapToPolylineAndMarkers(routePoints);
+        if (mounted) {
+          setState(() {
+            _polylines = {
+              Polyline(
+                polylineId: const PolylineId('route'),
+                color: Colors.blue,
+                width: 5,
+                points: routePoints,
+              ),
+            };
+          });
+        }
+        if (mounted) {
+          await _fitMapToPolylineAndMarkers(routePoints);
+        }
       } else {
         debugPrint('No route points returned from Directions API.');
+        if (mounted) {
+          setState(() {
+            _polylines = {};
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching turn-by-turn route: $e');
+      if (mounted) {
         setState(() {
           _polylines = {};
         });
       }
-    } catch (e) {
-      debugPrint('Error fetching turn-by-turn route: $e');
-      setState(() {
-        _polylines = {};
-      });
     }
   }
 
@@ -210,12 +222,14 @@ class _LocationTargetingScreenWithMapsState
 
       if (placeIndex != -1) {
         // Update current card index and scroll to it
-        setState(() {
-          _currentCardIndex = placeIndex;
-        });
+        if (mounted) {
+          setState(() {
+            _currentCardIndex = placeIndex;
+          });
+        }
 
         // Scroll to the corresponding card with animation
-        if (_pageController.hasClients) {
+        if (_pageController.hasClients && mounted) {
           await _pageController.animateToPage(
             placeIndex,
             duration: const Duration(milliseconds: 300),
@@ -258,9 +272,11 @@ class _LocationTargetingScreenWithMapsState
 
   /// Perform search using AI API
   Future<void> _performSearch(String query) async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       final searchResults = <PlaceSearchResult>[];
@@ -274,9 +290,11 @@ class _LocationTargetingScreenWithMapsState
         }
       }
 
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
 
       if (searchResults.isNotEmpty) {
         _processSearchResults(searchResults);
@@ -285,9 +303,11 @@ class _LocationTargetingScreenWithMapsState
         _showSnackBarSafe('No locations found for "$query"');
       }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
       _showSnackBarSafe(
           'Error: Could not get information from Google Maps API');
       debugPrint('Search error: $e');
@@ -307,9 +327,11 @@ class _LocationTargetingScreenWithMapsState
         curve: Curves.easeInOut,
       );
 
-      setState(() {
-        _currentCardIndex = index;
-      });
+      if (mounted) {
+        setState(() {
+          _currentCardIndex = index;
+        });
+      }
     }
   }
 
@@ -319,9 +341,11 @@ class _LocationTargetingScreenWithMapsState
       final place = _searchResults[index];
       _moveCamera(LatLng(place.latitude, place.longitude), zoom: 16.0);
 
-      setState(() {
-        _currentCardIndex = index;
-      });
+      if (mounted) {
+        setState(() {
+          _currentCardIndex = index;
+        });
+      }
     }
   }
 
@@ -516,12 +540,14 @@ class _LocationTargetingScreenWithMapsState
             GestureDetector(
               onTap: () {
                 _searchController.clear();
-                setState(() {
-                  _locationCards.clear();
-                  _markers.clear();
-                  _searchResults.clear();
-                  _currentSearchQuery = null;
-                });
+                if (mounted) {
+                  setState(() {
+                    _locationCards.clear();
+                    _markers.clear();
+                    _searchResults.clear();
+                    _currentSearchQuery = null;
+                  });
+                }
               },
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12.h),
@@ -545,10 +571,12 @@ class _LocationTargetingScreenWithMapsState
           Position? position = await GoogleMapsService.getCurrentLocation();
           if (position != null) {
             final currentPos = LatLng(position.latitude, position.longitude);
-            setState(() {
-              _userPosition = currentPos;
-              _currentPosition = currentPos;
-            });
+            if (mounted) {
+              setState(() {
+                _userPosition = currentPos;
+                _currentPosition = currentPos;
+              });
+            }
             _moveCamera(currentPos);
             _updateRoutePolyline();
           }
@@ -591,9 +619,11 @@ class _LocationTargetingScreenWithMapsState
         child: PageView.builder(
           controller: _pageController,
           onPageChanged: (index) {
-            setState(() {
-              _currentCardIndex = index;
-            });
+            if (mounted) {
+              setState(() {
+                _currentCardIndex = index;
+              });
+            }
             // Auto-zoom to marker when swiping cards
             if (index < _searchResults.length) {
               final place = _searchResults[index];
