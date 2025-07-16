@@ -68,7 +68,8 @@ class TravelConciergeService {
   }
 
   /// Send search query to Travel Concierge API
-  Stream<SearchResult> searchTravel(String query) async* {
+  Stream<SearchResult> searchTravel(String query,
+      {List<String>? imagePaths}) async* {
     if (_sessionId == null || _userId == null) {
       yield SearchResult(
         text: 'Session not initialized. Please try again.',
@@ -79,11 +80,19 @@ class TravelConciergeService {
     }
 
     try {
+      final UserMessage userMessage;
+      if (imagePaths != null && imagePaths.isNotEmpty) {
+        userMessage = await UserMessage.withImages(query, imagePaths);
+        print('📷 Creating message with ${imagePaths.length} images');
+      } else {
+        userMessage = UserMessage.text(query);
+      }
+
       final payload = MessagePayload(
         sessionId: _sessionId!,
         appName: ApiConfig.appName,
         userId: _userId!,
-        newMessage: UserMessage.text(query),
+        newMessage: userMessage,
       );
 
       final url = ApiConfig.getMessageUrl();

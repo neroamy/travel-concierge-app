@@ -6,6 +6,7 @@ import '../../core/utils/suggest_label_constants.dart';
 import '../../widgets/custom_image_view.dart';
 import '../../widgets/floating_chat_button.dart';
 import '../../widgets/safe_avatar_image.dart';
+import '../../widgets/shared_chat_input.dart';
 import './widgets/bottom_nav_item.dart';
 import './widgets/location_category_card.dart';
 import './widgets/travel_destination_card.dart';
@@ -439,68 +440,23 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
 
   Widget _buildSearchSection() {
     return Padding(
-      padding: EdgeInsets.only(left: 24.h, right: 24.h, top: 12.h), // giảm top
-      child: Container(
-        decoration: BoxDecoration(
-          color: appTheme.whiteCustom,
-          borderRadius: BorderRadius.circular(16.h),
-          border: Border.all(color: appTheme.colorFFE9E9),
-        ),
-        child: Column(
-          children: [
-            // Selected images thumbnails
-            if (_selectedImages.isNotEmpty) _buildImageThumbnails(),
-
-            // Text area
-            Padding(
-              padding:
-                  EdgeInsets.only(left: 8.h, right: 8.h, top: 6.h, bottom: 2.h),
-              child: TextField(
-                controller: _searchController,
-                minLines: 1,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: "How can I help you?",
-                  hintStyle: TextStyle(
-                    color: Colors.grey[600], // match suggestion label color
-                    fontSize: 16, // adjust if needed for consistency
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                      vertical: 10.h, horizontal: 8.h), // giảm vertical
-                ),
-                onChanged: (value) {
-                  setState(() {});
-                },
-              ),
-            ),
-            // Toolbar buttons giữ nguyên
-            Padding(
-              padding:
-                  EdgeInsets.only(left: 4.h, right: 4.h, bottom: 4.h, top: 2.h),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.add_a_photo_outlined,
-                        color: appTheme.colorFF0373),
-                    onPressed: _showImagePickerBottomSheet,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.mic, color: appTheme.colorFF0373),
-                    onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.voiceChatScreen);
-                    },
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: Icon(Icons.send, color: appTheme.colorFF0373),
-                    onPressed: _sendMessageWithImages,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      padding: EdgeInsets.only(left: 24.h, right: 24.h, top: 12.h),
+      child: SharedChatInput(
+        textController: _searchController,
+        hintText: "How can I help you?",
+        selectedImages: _selectedImages,
+        onSend: (message) => _sendMessageWithImages(),
+        onImagesSelected: (images) {
+          setState(() {
+            _selectedImages = images;
+          });
+        },
+        onVoicePressed: () {
+          Navigator.pushNamed(context, AppRoutes.voiceChatScreen);
+        },
+        onChanged: (value) {
+          setState(() {});
+        },
       ),
     );
   }
@@ -1121,206 +1077,6 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
     );
   }
 
-  /// Build image thumbnails display
-  Widget _buildImageThumbnails() {
-    return Container(
-      padding: EdgeInsets.all(8.h),
-      child: Wrap(
-        spacing: 8.h,
-        runSpacing: 8.h,
-        children: _selectedImages.asMap().entries.map((entry) {
-          final index = entry.key;
-          final imageFile = entry.value;
-
-          return Stack(
-            children: [
-              // Image thumbnail
-              Container(
-                width: 40.h,
-                height: 40.h,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8.h),
-                  border: Border.all(color: appTheme.colorFFE9E9),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.h),
-                  child: Image.file(
-                    imageFile,
-                    fit: BoxFit.cover,
-                    width: 40.h,
-                    height: 40.h,
-                  ),
-                ),
-              ),
-              // Delete button
-              Positioned(
-                top: -4.h,
-                right: -4.h,
-                child: GestureDetector(
-                  onTap: () => _removeImage(index),
-                  child: Container(
-                    width: 20.h,
-                    height: 20.h,
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 2.h,
-                          offset: Offset(0, 1.h),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 12.h,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  /// Show bottom sheet for image selection
-  void _showImagePickerBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.h)),
-      ),
-      builder: (context) => Container(
-        padding: EdgeInsets.all(24.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Select Photo',
-              style: TextStyle(
-                fontSize: 18.fSize,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            SizedBox(height: 20.h),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildImageOptionButton(
-                    icon: Icons.camera_alt,
-                    label: 'Take Photo',
-                    onTap: () {
-                      Navigator.pop(context);
-                      _takePhotoFromCamera();
-                    },
-                  ),
-                ),
-                SizedBox(width: 16.h),
-                Expanded(
-                  child: _buildImageOptionButton(
-                    icon: Icons.photo_library,
-                    label: 'Choose from Gallery',
-                    onTap: () {
-                      Navigator.pop(context);
-                      _pickImagesFromGallery();
-                    },
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20.h),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Build image option button
-  Widget _buildImageOptionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 12.h),
-        decoration: BoxDecoration(
-          color: appTheme.colorFF0373.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12.h),
-          border: Border.all(color: appTheme.colorFF0373.withOpacity(0.3)),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color: appTheme.colorFF0373,
-              size: 32.h,
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14.fSize,
-                fontWeight: FontWeight.w500,
-                color: appTheme.colorFF0373,
-                fontFamily: 'Poppins',
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Take photo from camera
-  Future<void> _takePhotoFromCamera() async {
-    try {
-      final File? imageFile = await ImageService.takePhotoFromCamera();
-      if (imageFile != null) {
-        setState(() {
-          _selectedImages.add(imageFile);
-        });
-        _showSnackBarSafe('Photo taken successfully!');
-      }
-    } catch (e) {
-      _showSnackBarSafe('Error taking photo: $e');
-    }
-  }
-
-  /// Pick images from gallery
-  Future<void> _pickImagesFromGallery() async {
-    try {
-      final List<File> imageFiles = await ImageService.pickImagesFromGallery();
-      if (imageFiles.isNotEmpty) {
-        setState(() {
-          _selectedImages.addAll(imageFiles);
-        });
-        _showSnackBarSafe('${imageFiles.length} image(s) selected!');
-      }
-    } catch (e) {
-      _showSnackBarSafe('Error selecting images: $e');
-    }
-  }
-
-  /// Remove image at index
-  void _removeImage(int index) {
-    if (index >= 0 && index < _selectedImages.length) {
-      // Delete the temporary file
-      ImageService.deleteImageFile(_selectedImages[index]);
-
-      setState(() {
-        _selectedImages.removeAt(index);
-      });
-    }
-  }
-
   /// Send message with images
   void _sendMessageWithImages() {
     final query = _searchController.text.trim();
@@ -1330,13 +1086,23 @@ class _TravelExplorationScreenState extends State<TravelExplorationScreen> {
       return;
     }
 
+    // Create a copy of images before navigation to avoid race condition
+    final List<File> imagesToSend = List<File>.from(_selectedImages);
+
+    debugPrint('🚀 Navigating to AI Chat with:');
+    debugPrint('   📝 Query: "$query"');
+    debugPrint('   📷 Images count: ${imagesToSend.length}');
+    for (int i = 0; i < imagesToSend.length; i++) {
+      debugPrint('   📄 Image $i: ${imagesToSend[i].path}');
+    }
+
     // Navigate to AI Chat Screen with text and images
     Navigator.pushNamed(
       context,
       AppRoutes.aiChatScreen,
       arguments: {
         'initialQuery': query,
-        'selectedImages': _selectedImages,
+        'selectedImages': imagesToSend,
         'autoSend': true,
         'useGlobalSession': true,
         'conversationHistory': _globalChatService.conversationHistory,

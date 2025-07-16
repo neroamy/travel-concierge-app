@@ -45,8 +45,10 @@ class GlobalChatService {
 
   /// Send message and get AI response
   Future<void> sendMessage(
-      String message, Function(ChatMessage) onMessageReceived) async {
-    print('🌐 GlobalChatService: Starting sendMessage for: "$message"');
+      String message, Function(ChatMessage) onMessageReceived,
+      {List<String>? imagePaths}) async {
+    print(
+        '🌐 GlobalChatService: Starting sendMessage for: "$message" with ${imagePaths?.length ?? 0} images');
 
     if (!await ensureSessionInitialized()) {
       final errorMessage = ChatMessage(
@@ -61,9 +63,10 @@ class GlobalChatService {
       return;
     }
 
-    // Add user message to history
-    print('👤 Adding user message to history');
-    final userMessage = ChatMessage.fromUser(message);
+    // Add user message to history with images
+    print(
+        '👤 Adding user message to history with ${imagePaths?.length ?? 0} images');
+    final userMessage = ChatMessage.fromUser(message, imagePaths: imagePaths);
     addMessageToHistory(userMessage);
     onMessageReceived(userMessage);
 
@@ -74,7 +77,7 @@ class GlobalChatService {
       List<Map<String, dynamic>> allFunctionResponses = [];
       String? lastAuthor;
 
-      await for (final result in _travelService.searchTravel(message)) {
+      await for (final result in _travelService.searchTravel(message, imagePaths: imagePaths)) {
         print('📡 Received stream result:');
         print('   - Author: ${result.author}');
         print('   - Text length: ${result.text.length}');

@@ -1,5 +1,6 @@
+import 'dart:io';
 import 'dart:math';
-import 'dart:convert'; // Added for jsonDecode
+import 'dart:convert'; // Added for jsonDecode and base64
 import '../../core/services/travel_concierge_service.dart';
 import '../utils/logger.dart';
 
@@ -41,6 +42,33 @@ class UserMessage {
       : role = 'user',
         parts = [MessagePart.text(text)];
 
+  static Future<UserMessage> withImages(
+      String text, List<String> imagePaths) async {
+    final List<MessagePart> parts = [MessagePart.text(text)];
+
+    for (String imagePath in imagePaths) {
+      try {
+        final File imageFile = File(imagePath);
+        if (await imageFile.exists()) {
+          final bytes = await imageFile.readAsBytes();
+          final base64String = base64Encode(bytes);
+          final String mimeType = imagePath.toLowerCase().endsWith('.png')
+              ? 'image/png'
+              : 'image/jpeg';
+          parts.add(MessagePart.image(mimeType, base64String));
+          print(
+              '📷 Encoded image: ${imagePath} (${bytes.length} bytes -> ${base64String.length} chars)');
+        } else {
+          print('❌ Image file not found: $imagePath');
+        }
+      } catch (e) {
+        print('❌ Error encoding image $imagePath: $e');
+      }
+    }
+
+    return UserMessage(role: 'user', parts: parts);
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'role': role,
@@ -54,19 +82,32 @@ class MessagePart {
   final String? text;
   final Map<String, dynamic>? functionCall;
   final Map<String, dynamic>? functionResponse;
+  final Map<String, dynamic>? inlineData;
 
-  MessagePart({this.text, this.functionCall, this.functionResponse});
+  MessagePart(
+      {this.text, this.functionCall, this.functionResponse, this.inlineData});
 
   MessagePart.text(String text)
       : text = text,
         functionCall = null,
-        functionResponse = null;
+        functionResponse = null,
+        inlineData = null;
+
+  MessagePart.image(String mimeType, String data)
+      : text = null,
+        functionCall = null,
+        functionResponse = null,
+        inlineData = {
+          'mimeType': mimeType,
+          'data': data,
+        };
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> json = {};
     if (text != null) json['text'] = text;
     if (functionCall != null) json['functionCall'] = functionCall;
     if (functionResponse != null) json['functionResponse'] = functionResponse;
+    if (inlineData != null) json['inlineData'] = inlineData;
     return json;
   }
 }

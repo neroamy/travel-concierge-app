@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/app_export.dart';
 import '../../widgets/safe_avatar_image.dart';
+import '../../widgets/shared_chat_input.dart';
 
 class AIChatScreen extends StatefulWidget {
   final String? initialQuery;
@@ -70,6 +71,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
           _selectedImages = images;
         });
         print('📷 Received ${images.length} selected images');
+        for (int i = 0; i < images.length; i++) {
+          print('   📄 Image $i: ${images[i].path}');
+        }
+      } else {
+        print('⚠️ No selectedImages in arguments');
       }
 
       if (args['autoSend'] == true &&
@@ -124,7 +130,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
   /// Send message from input field
   Future<void> _sendMessageFromInput() async {
     final message = _messageController.text.trim();
-    if (message.isEmpty) return;
+    if (message.isEmpty && _selectedImages.isEmpty) return;
 
     _messageController.clear();
     await _sendMessage(message);
@@ -150,7 +156,6 @@ class _AIChatScreenState extends State<AIChatScreen> {
       final userMessage = ChatMessage.fromUser(message, imagePaths: imagePaths);
       setState(() {
         _messages.add(userMessage);
-        _selectedImages.clear(); // Clear images after sending
       });
       _scrollToBottom();
       return;
@@ -204,7 +209,6 @@ class _AIChatScreenState extends State<AIChatScreen> {
     setState(() {
       _messages.add(userMessage);
       _isTyping = true;
-      _selectedImages.clear(); // Clear images after sending
     });
 
     _scrollToBottom();
@@ -216,7 +220,13 @@ class _AIChatScreenState extends State<AIChatScreen> {
     print(
         '🚀 Sending message via global service: "$message" with ${_selectedImages.length} images');
 
-    // Clear images after sending (they will be handled by global service)
+    // Convert File objects to file paths
+    List<String>? imagePaths;
+    if (_selectedImages.isNotEmpty) {
+      imagePaths = _selectedImages.map((file) => file.path).toList();
+    }
+
+    // Clear images after getting paths
     setState(() {
       _isTyping = true;
       _selectedImages.clear();
@@ -251,7 +261,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
       });
 
       _scrollToBottom();
-    });
+    }, imagePaths: imagePaths);
 
     print('✅ Global service sendMessage completed');
   }
@@ -622,16 +632,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
             // Input Section
             _buildInputSection(),
-
-            // Add bottom padding for floating action button
-            if (_detectedLocations.isNotEmpty || _detectedItinerary.isNotEmpty)
-              SizedBox(height: 80.h),
           ],
         ),
       ),
-      // Floating Action Button for quick access
-      floatingActionButton: _buildFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -979,270 +982,25 @@ class _AIChatScreenState extends State<AIChatScreen> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          // Input Field
-          Expanded(
-            child: Container(
-              height: 48.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(24.h),
-              ),
-              child: TextField(
-                controller: _messageController,
-                decoration: InputDecoration(
-                  hintText: "Type your message...",
-                  hintStyle: TextStyle(
-                    fontSize: 16.fSize,
-                    color: Colors.grey[600],
-                    fontFamily: 'Poppins',
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 20.h,
-                    vertical: 12.h,
-                  ),
-                ),
-                style: TextStyle(
-                  fontSize: 16.fSize,
-                  color: appTheme.blackCustom,
-                  fontFamily: 'Poppins',
-                ),
-                enabled: !_isTyping,
-                onSubmitted: (_) => _sendMessageFromInput(),
-              ),
-            ),
-          ),
-
-          SizedBox(width: 12.h),
-
-          // Send Button
-          GestureDetector(
-            onTap: _isTyping ? null : _sendMessageFromInput,
-            child: Container(
-              width: 48.h,
-              height: 48.h,
-              decoration: BoxDecoration(
-                color: _isTyping ? Colors.grey[400] : appTheme.colorFF0373,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.send,
-                color: appTheme.whiteCustom,
-                size: 20.h,
-              ),
-            ),
-          ),
-        ],
+      child: SharedChatInput(
+        textController: _messageController,
+        hintText: "Type your message...",
+        selectedImages: _selectedImages,
+        isEnabled: !_isTyping,
+        showVoiceButton: false, // Disable voice button in AI chat
+        onSend: (message) => _sendMessageFromInput(),
+        onImagesSelected: (images) {
+          setState(() {
+            _selectedImages = images;
+          });
+        },
       ),
     );
   }
 
-  /// Build floating action button for quick access to Map and Plan
-  Widget? _buildFloatingActionButton() {
-    // Disable Quick Actions button in AI Chat screen since we have Map and Plan buttons in header
-    // Quick Actions should only be shown in other screens like home
-    return null;
 
-    // Original code (commented out):
-    // Only show if we have detected locations or itinerary
-    // if (_detectedLocations.isEmpty && _detectedItinerary.isEmpty) {
-    //   return null;
-    // }
 
-    // return FloatingActionButton.extended(
-    //   onPressed: () {
-    //     _showQuickActionsDialog();
-    //   },
-    //   backgroundColor: appTheme.colorFF0373,
-    //   icon: Icon(
-    //     Icons.flash_on,
-    //     color: appTheme.whiteCustom,
-    //   ),
-    //   label: Text(
-    //     'Quick Actions',
-    //     style: TextStyle(
-    //       color: appTheme.whiteCustom,
-    //       fontWeight: FontWeight.w600,
-    //     ),
-    //   ),
-    // );
-  }
 
-  /// Show quick actions dialog
-  void _showQuickActionsDialog() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: appTheme.whiteCustom,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20.h),
-            topRight: Radius.circular(20.h),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle bar
-            Container(
-              margin: EdgeInsets.only(top: 12.h),
-              width: 40.h,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2.h),
-              ),
-            ),
-
-            Padding(
-              padding: EdgeInsets.all(24.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Quick Actions',
-                    style: TextStyle(
-                      fontSize: 20.fSize,
-                      fontWeight: FontWeight.w600,
-                      color: appTheme.blackCustom,
-                    ),
-                  ),
-
-                  SizedBox(height: 16.h),
-
-                  // Map Action
-                  if (_detectedLocations.isNotEmpty)
-                    _buildQuickActionTile(
-                      icon: Icons.map_outlined,
-                      title: 'View on Map',
-                      subtitle: '${_detectedLocations.length} locations found',
-                      color: appTheme.colorFF0373,
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToLocationScreen();
-                      },
-                    ),
-
-                  // Plan Action
-                  if (_detectedItinerary.isNotEmpty)
-                    _buildQuickActionTile(
-                      icon: Icons.calendar_today,
-                      title: 'View Itinerary',
-                      subtitle: '${_detectedItinerary.length} days planned',
-                      color: const Color(0xFF0373F3),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToPlanViewScreen();
-                      },
-                    ),
-
-                  // Combined Action
-                  if (_detectedLocations.isNotEmpty &&
-                      _detectedItinerary.isNotEmpty)
-                    _buildQuickActionTile(
-                      icon: Icons.explore,
-                      title: 'Plan & Explore',
-                      subtitle: 'View both itinerary and map',
-                      color: Colors.green,
-                      onTap: () {
-                        Navigator.pop(context);
-                        _showCombinedView();
-                      },
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Build quick action tile
-  Widget _buildQuickActionTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.all(16.h),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12.h),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48.h,
-              height: 48.h,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: appTheme.whiteCustom,
-                size: 24.h,
-              ),
-            ),
-            SizedBox(width: 16.h),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16.fSize,
-                      fontWeight: FontWeight.w600,
-                      color: appTheme.blackCustom,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 14.fSize,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: color,
-              size: 16.h,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Show combined view (both itinerary and map)
-  void _showCombinedView() {
-    // For now, navigate to itinerary first, then user can access map from there
-    _navigateToPlanViewScreen();
-
-    // Show a snackbar to inform user
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-            'Viewing itinerary. Use the map button in the itinerary screen to see locations.'),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
-      ),
-    );
-  }
 
   /// Build images display in message
   Widget _buildMessageImages(List<String> imagePaths) {

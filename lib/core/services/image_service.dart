@@ -11,63 +11,69 @@ class ImageService {
 
   /// Pick multiple images from gallery
   static Future<List<File>> pickImagesFromGallery() async {
-    try {
-      // Check and request permission
-      final permission = await _requestGalleryPermission();
-      if (!permission) {
-        throw Exception('Gallery permission denied');
-      }
+    debugPrint('🖼️ Starting image picker for multiple images...');
 
-      // Pick multiple images
-      final List<XFile> pickedFiles = await _picker.pickMultipleMedia(
+    try {
+      // First attempt - let image_picker handle permissions naturally
+      final List<XFile> pickedFiles = await _picker.pickMultiImage(
         imageQuality: 85,
       );
 
+      debugPrint('📱 Image picker returned ${pickedFiles.length} files');
+
       if (pickedFiles.isEmpty) {
+        debugPrint('👤 No files selected by user');
         return [];
       }
 
       // Convert XFiles to Files and process them
       List<File> processedImages = [];
-      for (XFile xFile in pickedFiles) {
-        final File originalFile = File(xFile.path);
+      for (int i = 0; i < pickedFiles.length; i++) {
+        debugPrint(
+            '🔄 Processing image ${i + 1}/${pickedFiles.length}: ${pickedFiles[i].path}');
+        final File originalFile = File(pickedFiles[i].path);
         final File processedFile = await _processImage(originalFile);
         processedImages.add(processedFile);
       }
 
+      debugPrint('✅ Successfully processed ${processedImages.length} images');
       return processedImages;
     } catch (e) {
-      debugPrint('Error picking images: $e');
+      debugPrint('❌ Error picking images: $e');
+      debugPrint('🔍 Error type: ${e.runtimeType}');
+
+      // Return empty list instead of retrying to avoid infinite loops
       return [];
     }
   }
 
   /// Pick single image from gallery
   static Future<File?> pickImageFromGallery() async {
-    try {
-      // Check and request permission
-      final permission = await _requestGalleryPermission();
-      if (!permission) {
-        throw Exception('Gallery permission denied');
-      }
+    debugPrint('🖼️ Starting single image picker...');
 
-      // Pick single image
+    try {
+      // Pick single image - let image_picker handle permissions
       final XFile? pickedFile = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 85,
       );
 
       if (pickedFile == null) {
+        debugPrint('👤 No file selected by user');
         return null;
       }
+
+      debugPrint('🔄 Processing single image: ${pickedFile.path}');
 
       // Process the image
       final File originalFile = File(pickedFile.path);
       final File processedFile = await _processImage(originalFile);
 
+      debugPrint('✅ Successfully processed single image');
       return processedFile;
     } catch (e) {
-      debugPrint('Error picking image: $e');
+      debugPrint('❌ Error picking single image: $e');
+      debugPrint('🔍 Error type: ${e.runtimeType}');
       return null;
     }
   }
@@ -159,16 +165,33 @@ class ImageService {
   static Future<bool> _requestGalleryPermission() async {
     try {
       if (Platform.isAndroid) {
-        // For Android 13+ (API 33+), use READ_MEDIA_IMAGES
-        // For older versions, use READ_EXTERNAL_STORAGE
-        final androidInfo = await _getAndroidInfo();
-        if (androidInfo >= 33) {
-          final status = await Permission.photos.request();
-          return status.isGranted;
-        } else {
-          final status = await Permission.storage.request();
-          return status.isGranted;
+        debugPrint('Requesting Android gallery permissions...');
+
+        // Check photos permission first (Android 13+)
+        final photosStatus = await Permission.photos.status;
+        debugPrint('Photos permission status: $photosStatus');
+
+        if (photosStatus.isDenied) {
+          final photosResult = await Permission.photos.request();
+          debugPrint('Photos permission request result: $photosResult');
+          if (photosResult.isGranted) {
+            return true;
+          }
+        } else if (photosStatus.isGranted) {
+          return true;
         }
+
+        // Check storage permission (older Android)
+        final storageStatus = await Permission.storage.status;
+        debugPrint('Storage permission status: $storageStatus');
+
+        if (storageStatus.isDenied) {
+          final storageResult = await Permission.storage.request();
+          debugPrint('Storage permission request result: $storageResult');
+          return storageResult.isGranted;
+        }
+
+        return storageStatus.isGranted;
       } else if (Platform.isIOS) {
         final status = await Permission.photos.request();
         return status.isGranted;
@@ -176,7 +199,9 @@ class ImageService {
       return true; // For other platforms
     } catch (e) {
       debugPrint('Error requesting gallery permission: $e');
-      return false;
+      // If permission_handler fails, assume permission is granted
+      // image_picker will handle the actual permission check
+      return true;
     }
   }
 
@@ -189,16 +214,6 @@ class ImageService {
       debugPrint('Error requesting camera permission: $e');
       return false;
     }
-  }
-
-  /// Get Android API level
-  static Future<int> _getAndroidInfo() async {
-    if (Platform.isAndroid) {
-      // This is a simplified version. In a real app, you might want to use
-      // device_info_plus package for more accurate version detection
-      return 33; // Assume API 33+ for now
-    }
-    return 0;
   }
 
   /// Delete temporary image file
@@ -230,5 +245,72 @@ class ImageService {
     return extension.endsWith('.jpg') ||
         extension.endsWith('.jpeg') ||
         extension.endsWith('.png');
+  }
+
+  /// Debug permission status
+  static Future<void> debugPermissionStatus() async {
+    try {
+      debugPrint('🔍 === PERMISSION DEBUG INFO ===');
+      debugPrint('📱 Platform: ${Platform.operatingSystem}');
+
+      if (Platform.isAndroid) {
+        final photosStatus = await Permission.photos.status;
+        final storageStatus = await Permission.storage.status;
+
+        debugPrint('📸 Photos permission: $photosStatus');
+        debugPrint('💾 Storage permission: $storageStatus');
+
+        // Check if permission is permanently denied
+        final isPhotosRestricted = await Permission.photos.isPermanentlyDenied;
+        final isStorageRestricted =
+            await Permission.storage.isPermanentlyDenied;
+        debugPrint('🚫 Photos permanently denied: $isPhotosRestricted');
+        debugPrint('🚫 Storage permanently denied: $isStorageRestricted');
+      } else if (Platform.isIOS) {
+        final photosStatus = await Permission.photos.status;
+        debugPrint('📸 Photos permission: $photosStatus');
+      }
+
+      debugPrint('🔍 === END PERMISSION DEBUG ===');
+    } catch (e) {
+      debugPrint('❌ Error debugging permissions: $e');
+    }
+  }
+
+  /// Simple image picker without explicit permission handling
+  static Future<List<File>> pickImagesFromGallerySimple() async {
+    debugPrint('🖼️ Starting SIMPLE image picker for multiple images...');
+
+    try {
+      // Use the most basic approach - no custom permission handling
+      final List<XFile> pickedFiles = await _picker.pickMultiImage();
+
+      debugPrint('📱 Simple picker returned ${pickedFiles.length} files');
+
+      if (pickedFiles.isEmpty) {
+        debugPrint('👤 No files selected by user');
+        return [];
+      }
+
+      // Just convert without processing for now to test basic functionality
+      List<File> imageFiles = [];
+      for (int i = 0; i < pickedFiles.length; i++) {
+        debugPrint(
+            '📄 Converting file ${i + 1}/${pickedFiles.length}: ${pickedFiles[i].path}');
+        imageFiles.add(File(pickedFiles[i].path));
+      }
+
+      debugPrint(
+          '✅ Simple picker successfully returned ${imageFiles.length} files');
+      return imageFiles;
+    } catch (e) {
+      debugPrint('❌ Simple picker error: $e');
+      debugPrint('🔍 Error type: ${e.runtimeType}');
+
+      // Print the full stack trace for debugging
+      debugPrint('📚 Stack trace: ${StackTrace.current}');
+
+      return [];
+    }
   }
 }
