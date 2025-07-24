@@ -2,7 +2,7 @@
 /// This file allows easy switching between local development and production
 class EnvironmentConfig {
   // Set this to false for local development, true for production
-  static const bool isProduction = true;
+  static const bool isProduction = false;
 
   // Environment names
   static const String local = 'local';
@@ -13,13 +13,13 @@ class EnvironmentConfig {
 
   // Base URLs for different environments
   static const Map<String, String> baseUrls = {
-    local: 'http://localhost:8001/api',
+    local: 'http://192.168.1.8:8001/api',
     production: 'https://django-server-277713629269.us-central1.run.app/api',
   };
 
   // Chat/AI Agent Base URLs for different environments
   static const Map<String, String> chatBaseUrls = {
-    local: 'http://localhost:8000', // ADK Agent server for local development
+    local: 'http://192.168.1.8:8002', // ADK Agent server for local development
     production:
         'https://adk-agent-server-277713629269.us-central1.run.app', // ADK Agent server for production
   };
@@ -38,8 +38,8 @@ class EnvironmentConfig {
       'timeout': 30,
     },
     production: {
-      'useSSE': false,
-      'createSession': false,
+      'useSSE': true, // Enable SSE streaming for production
+      'createSession': true, // Enable session creation for production
       'timeout': 60,
     },
   };

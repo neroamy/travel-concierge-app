@@ -76,8 +76,8 @@ class GlobalChatService {
       String accumulatedText = '';
       List<Map<String, dynamic>> allFunctionResponses = [];
       String? lastAuthor;
-
-      await for (final result in _travelService.searchTravel(message, imagePaths: imagePaths)) {
+      await for (final result
+          in _travelService.searchTravel(message)) {
         print('📡 Received stream result:');
         print('   - Author: ${result.author}');
         print('   - Text length: ${result.text.length}');

@@ -51,34 +51,24 @@ class TravelConciergeService {
       _userId = 'user_$timestamp';
       _sessionId = 'session_$timestamp';
 
-      if (ApiConfig.isProduction) {
-        // For Django agent endpoint, we don't need to create session separately
-        // Session will be created when first message is sent
-        await Logger.log('Session initialized for production: $_sessionId');
+      final url = ApiConfig.getSessionUrl(_userId!, _sessionId!);
+      final response = await http.post(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        await Logger.log('Session created successfully: $_sessionId');
         return true;
       } else {
-        // For local development: Create session with ADK Agent server
-        final url = ApiConfig.getSessionUrl(_userId!, _sessionId!);
-        final response = await http.post(Uri.parse(url));
-
-        if (response.statusCode == 200) {
-          await Logger.log('Session created with ADK Agent: $_sessionId');
-          return true;
-        } else {
-          await Logger.log(
-              'Failed to create session with ADK Agent: ${response.statusCode}');
-          return false;
-        }
+        await Logger.log('Failed to create session: ${response.statusCode}');
+        return false;
       }
     } catch (e) {
-      await Logger.log('Error initializing session: $e');
+      await Logger.log('Error creating session: $e');
       return false;
     }
   }
 
   /// Send search query to Travel Concierge API
-  Stream<SearchResult> searchTravel(String query,
-      {List<String>? imagePaths}) async* {
+  Stream<SearchResult> searchTravel(String query) async* {
     if (_sessionId == null || _userId == null) {
       yield SearchResult(
         text: 'Session not initialized. Please try again.',
@@ -89,99 +79,11 @@ class TravelConciergeService {
     }
 
     try {
-      if (ApiConfig.isProduction) {
-        // Production: Use Django API endpoint
-        yield* _searchTravelProduction(query, imagePaths: imagePaths);
-      } else {
-        // Local: Use ADK Agent server with SSE streaming
-        yield* _searchTravelLocal(query, imagePaths: imagePaths);
-      }
-    } catch (e) {
-      yield SearchResult(
-        text: 'Network error: $e',
-        author: 'system',
-        timestamp: DateTime.now(),
-      );
-    }
-  }
-
-  /// Production: Send search query to Django API
-  Stream<SearchResult> _searchTravelProduction(String query,
-      {List<String>? imagePaths}) async* {
-    try {
-      // Create payload for Django agent endpoint
-      final payload = {
-        'message': query,
-        'user_id': _userId!,
-        'session_id': _sessionId!,
-      };
-
-      final url = ApiConfig.getMessageUrl();
-      final request = http.Request('POST', Uri.parse(url));
-      request.headers.addAll(ApiConfig.jsonHeaders);
-      request.body = jsonEncode(payload);
-
-      final response = await request.send();
-      final responseBody = await response.stream.bytesToString();
-
-      if (response.statusCode == 200) {
-        // Parse Django response
-        final responseData = jsonDecode(responseBody);
-        if (responseData['success'] == true) {
-          final data = responseData['data'];
-          if (data != null && data['response'] != null) {
-            yield SearchResult(
-              text: data['response'],
-              author: 'agent',
-              timestamp: DateTime.now(),
-            );
-          } else {
-            yield SearchResult(
-              text: 'No response from agent',
-              author: 'system',
-              timestamp: DateTime.now(),
-            );
-          }
-        } else {
-          yield SearchResult(
-            text: 'Agent error: ${responseData['error'] ?? 'Unknown error'}',
-            author: 'system',
-            timestamp: DateTime.now(),
-          );
-        }
-      } else {
-        yield SearchResult(
-          text: 'Server error: ${response.statusCode} - $responseBody',
-          author: 'system',
-          timestamp: DateTime.now(),
-        );
-      }
-    } catch (e) {
-      yield SearchResult(
-        text: 'Production API error: $e',
-        author: 'system',
-        timestamp: DateTime.now(),
-      );
-    }
-  }
-
-  /// Local: Send search query to ADK Agent server with SSE streaming
-  Stream<SearchResult> _searchTravelLocal(String query,
-      {List<String>? imagePaths}) async* {
-    try {
-      final UserMessage userMessage;
-      if (imagePaths != null && imagePaths.isNotEmpty) {
-        userMessage = await UserMessage.withImages(query, imagePaths);
-        print('📷 Creating message with ${imagePaths.length} images');
-      } else {
-        userMessage = UserMessage.text(query);
-      }
-
       final payload = MessagePayload(
         sessionId: _sessionId!,
         appName: ApiConfig.appName,
         userId: _userId!,
-        newMessage: userMessage,
+        newMessage: UserMessage.text(query),
       );
 
       final url = ApiConfig.getMessageUrl();
@@ -195,14 +97,14 @@ class TravelConciergeService {
         yield* _handleSSEResponse(streamedResponse);
       } else {
         yield SearchResult(
-          text: 'ADK Agent server error: ${streamedResponse.statusCode}',
+          text: 'Server error: ${streamedResponse.statusCode}',
           author: 'system',
           timestamp: DateTime.now(),
         );
       }
     } catch (e) {
       yield SearchResult(
-        text: 'Local ADK Agent error: $e',
+        text: 'Network error: $e',
         author: 'system',
         timestamp: DateTime.now(),
       );
@@ -501,14 +403,32 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
     await Logger.log('🔄 Starting to handle SSE response...');
     final stream = response.stream.transform(utf8.decoder);
 
+    // Buffer to accumulate partial chunks
+    String buffer = '';
+    bool hasReceivedResponse = false;
+
     await for (String chunk in stream) {
       await Logger.log('📡 Raw SSE chunk received:');
       await Logger.log('   Chunk length: ${chunk.length}');
       await Logger.log(
           '   Chunk content: ${chunk.substring(0, chunk.length > 500 ? 500 : chunk.length)}${chunk.length > 500 ? "..." : ""}');
 
-      final lines = chunk.split('\n');
+      // Accumulate chunk in buffer
+      buffer += chunk;
+
+      // Split buffer into lines and process complete lines
+      final lines = buffer.split('\n');
+
+      // Keep the last line in buffer if it's incomplete
+      if (!buffer.endsWith('\n')) {
+        buffer = lines.last;
+        lines.removeLast();
+      } else {
+        buffer = '';
+      }
+
       await Logger.log('   Split into ${lines.length} lines');
+      await Logger.log('   Buffer remaining: ${buffer.length} chars');
 
       for (String line in lines) {
         line = line.trim();
@@ -543,6 +463,7 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
           }
 
           if (event.hasContent) {
+            hasReceivedResponse = true;
             final content = event.content!;
             await Logger.log('📋 Processing event content:');
             await Logger.log('   Content type: ${content.runtimeType}');
@@ -615,9 +536,16 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
         } catch (e) {
           await Logger.log('❌ Error parsing SSE data: $e');
           await Logger.log('❌ Problematic line: $line');
+          // Don't break the stream, continue processing other lines
         }
       }
     }
+
+    // Check if we received any response
+    if (!hasReceivedResponse) {
+      await Logger.log('❌ No AI response received from stream');
+    }
+
     await Logger.log('✅ Finished handling SSE response');
   }
 

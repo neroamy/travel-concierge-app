@@ -43,29 +43,17 @@ class ApiConfig {
       'AIzaSyC6CKHUDCkbDcukn3-U8sG0xkoWGsKv9Xg';
 
   // Build full session URL (for chat service)
-  // Local: Uses ADK Agent server endpoints
-  // Production: Uses Django API endpoints
+  // Both Local and Production: Use ADK Agent server endpoints for proper session management
   static String getSessionUrl(String userId, String sessionId) {
-    if (isProduction) {
-      // Production: Use Django API endpoint
-      return '$baseUrl/agent/chat/';
-    } else {
-      // Local: Use ADK Agent server endpoint
-      return '$chatBaseUrl$sessionEndpoint/$userId/sessions/$sessionId';
-    }
+    // Always use ADK Agent server endpoint for proper session management
+    return '$chatBaseUrl$sessionEndpoint/$userId/sessions/$sessionId';
   }
 
   // Build message URL (for chat service)
-  // Local: Uses ADK Agent server SSE endpoint
-  // Production: Uses Django API endpoint
+  // Both Local and Production: Use ADK Agent server SSE endpoint for proper function call handling
   static String getMessageUrl() {
-    if (isProduction) {
-      // Production: Use Django API endpoint
-      return '$baseUrl/agent/chat/';
-    } else {
-      // Local: Use ADK Agent server SSE endpoint
-      return '$chatBaseUrl$messageEndpoint';
-    }
+    // Always use ADK Agent server SSE endpoint for proper function call processing
+    return '$chatBaseUrl$messageEndpoint';
   }
 
   // Build API docs URL (for chat service)
@@ -120,16 +108,22 @@ class ApiConfig {
 
   // Travel Service Endpoints
   static String getTravelRecommendationsUrl() {
-    return isProduction ? ProductionConfig.travelRecommendationsEndpoint : '$baseUrl/travel/recommendations';
+    return isProduction
+        ? ProductionConfig.travelRecommendationsEndpoint
+        : '$baseUrl/travel/recommendations';
   }
 
   static String getTravelToolsStatusUrl() {
-    return isProduction ? ProductionConfig.travelToolsStatusEndpoint : '$baseUrl/travel/tools/status';
+    return isProduction
+        ? ProductionConfig.travelToolsStatusEndpoint
+        : '$baseUrl/travel/tools/status';
   }
 
   // Helper method to test connection
   static String getHealthCheckUrl() {
-    return isProduction ? ProductionConfig.djangoHealthEndpoint : '$baseUrl/health';
+    return isProduction
+        ? ProductionConfig.djangoHealthEndpoint
+        : '$baseUrl/health';
   }
 
   static String getExtractorUrl() {
