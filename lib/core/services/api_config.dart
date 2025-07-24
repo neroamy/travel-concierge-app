@@ -34,9 +34,9 @@ class ApiConfig {
     'Accept': 'text/event-stream',
   };
 
-  // Timeouts
-  static const Duration connectionTimeout = Duration(seconds: 30);
-  static const Duration receiveTimeout = Duration(seconds: 60);
+  // Timeouts - Increased for production network latency
+  static const Duration connectionTimeout = Duration(seconds: 60); // Increased from 30
+  static const Duration receiveTimeout = Duration(seconds: 120); // Increased from 60
 
   // Google Maps API Key
   static const String googleMapsApiKey =

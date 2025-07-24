@@ -67,7 +67,7 @@ class TravelConciergeService {
     }
   }
 
-  /// Send search query to Travel Concierge API
+  /// Send search query to Travel Concierge API with retry logic
   Stream<SearchResult> searchTravel(String query) async* {
     if (_sessionId == null || _userId == null) {
       yield SearchResult(
@@ -78,36 +78,68 @@ class TravelConciergeService {
       return;
     }
 
-    try {
-      final payload = MessagePayload(
-        sessionId: _sessionId!,
-        appName: ApiConfig.appName,
-        userId: _userId!,
-        newMessage: UserMessage.text(query),
-      );
+    const int maxRetries = 3;
+    int retryCount = 0;
 
-      final url = ApiConfig.getMessageUrl();
-      final request = http.Request('POST', Uri.parse(url));
-      request.headers.addAll(ApiConfig.sseHeaders);
-      request.body = jsonEncode(payload.toJson());
+    while (retryCount < maxRetries) {
+      try {
+        await Logger.log(
+            '🔄 Attempt ${retryCount + 1}/$maxRetries for searchTravel');
 
-      final streamedResponse = await request.send();
-
-      if (streamedResponse.statusCode == 200) {
-        yield* _handleSSEResponse(streamedResponse);
-      } else {
-        yield SearchResult(
-          text: 'Server error: ${streamedResponse.statusCode}',
-          author: 'system',
-          timestamp: DateTime.now(),
+        final payload = MessagePayload(
+          sessionId: _sessionId!,
+          appName: ApiConfig.appName,
+          userId: _userId!,
+          newMessage: UserMessage.text(query),
         );
+
+        final url = ApiConfig.getMessageUrl();
+        await Logger.log('📡 Making request to: $url');
+
+        final request = http.Request('POST', Uri.parse(url));
+        request.headers.addAll(ApiConfig.sseHeaders);
+        request.body = jsonEncode(payload.toJson());
+
+        // Use increased timeout for production
+        final streamedResponse = await request.send().timeout(
+          ApiConfig.receiveTimeout,
+          onTimeout: () {
+            throw TimeoutException(
+                'Request timeout after ${ApiConfig.receiveTimeout.inSeconds} seconds');
+          },
+        );
+
+        if (streamedResponse.statusCode == 200) {
+          await Logger.log('✅ Received 200 response, processing SSE stream...');
+          yield* _handleSSEResponse(streamedResponse);
+          break; // Success, exit retry loop
+        } else {
+          await Logger.log('❌ Server error: ${streamedResponse.statusCode}');
+          yield SearchResult(
+            text: 'Server error: ${streamedResponse.statusCode}',
+            author: 'system',
+            timestamp: DateTime.now(),
+          );
+          break; // Don't retry on server errors
+        }
+      } catch (e) {
+        retryCount++;
+        await Logger.log('❌ Error on attempt $retryCount: $e');
+
+        if (retryCount >= maxRetries) {
+          await Logger.log('❌ Max retries reached, giving up');
+          yield SearchResult(
+            text: 'Network error after $maxRetries attempts: $e',
+            author: 'system',
+            timestamp: DateTime.now(),
+          );
+        } else {
+          // Wait before retry with exponential backoff
+          final delay = Duration(seconds: retryCount * 2);
+          await Logger.log('⏳ Waiting ${delay.inSeconds}s before retry...');
+          await Future.delayed(delay);
+        }
       }
-    } catch (e) {
-      yield SearchResult(
-        text: 'Network error: $e',
-        author: 'system',
-        timestamp: DateTime.now(),
-      );
     }
   }
 
@@ -397,153 +429,185 @@ Include: temperature, conditions, rainfall probability, clothing recommendations
     }
   }
 
-  /// Handle Server-Sent Events response
+  /// Handle Server-Sent Events response with better error handling
   Stream<SearchResult> _handleSSEResponse(
       http.StreamedResponse response) async* {
     await Logger.log('🔄 Starting to handle SSE response...');
+    await Logger.log('📊 Response headers: ${response.headers}');
+    await Logger.log('📊 Response status: ${response.statusCode}');
+
     final stream = response.stream.transform(utf8.decoder);
 
     // Buffer to accumulate partial chunks
     String buffer = '';
     bool hasReceivedResponse = false;
+    int chunkCount = 0;
+    DateTime? lastChunkTime;
 
-    await for (String chunk in stream) {
-      await Logger.log('📡 Raw SSE chunk received:');
-      await Logger.log('   Chunk length: ${chunk.length}');
-      await Logger.log(
-          '   Chunk content: ${chunk.substring(0, chunk.length > 500 ? 500 : chunk.length)}${chunk.length > 500 ? "..." : ""}');
+    try {
+      await for (String chunk in stream) {
+        chunkCount++;
+        lastChunkTime = DateTime.now();
 
-      // Accumulate chunk in buffer
-      buffer += chunk;
+        await Logger.log('📡 Raw SSE chunk #$chunkCount received:');
+        await Logger.log('   Chunk length: ${chunk.length}');
+        await Logger.log(
+            '   Chunk content: ${chunk.substring(0, chunk.length > 500 ? 500 : chunk.length)}${chunk.length > 500 ? "..." : ""}');
 
-      // Split buffer into lines and process complete lines
-      final lines = buffer.split('\n');
+        // Accumulate chunk in buffer
+        buffer += chunk;
 
-      // Keep the last line in buffer if it's incomplete
-      if (!buffer.endsWith('\n')) {
-        buffer = lines.last;
-        lines.removeLast();
-      } else {
-        buffer = '';
-      }
+        // Split buffer into lines and process complete lines
+        final lines = buffer.split('\n');
 
-      await Logger.log('   Split into ${lines.length} lines');
-      await Logger.log('   Buffer remaining: ${buffer.length} chars');
+        // Keep the last line in buffer if it's incomplete
+        if (!buffer.endsWith('\n')) {
+          buffer = lines.last;
+          lines.removeLast();
+        } else {
+          buffer = '';
+        }
 
-      for (String line in lines) {
-        line = line.trim();
-        if (line.isEmpty || !line.startsWith('data: ')) continue;
+        await Logger.log('   Split into ${lines.length} lines');
+        await Logger.log('   Buffer remaining: ${buffer.length} chars');
 
-        try {
-          final jsonString = line.substring(6); // Remove "data: " prefix
-          await Logger.log('📤 Processing SSE data line:');
-          await Logger.log('   JSON string: $jsonString');
+        for (String line in lines) {
+          line = line.trim();
+          if (line.isEmpty || !line.startsWith('data: ')) continue;
 
-          final eventData = jsonDecode(jsonString);
-          await Logger.log('✅ Successfully parsed JSON:');
-          await Logger.log('   Event data keys: ${eventData.keys.toList()}');
-          await Logger.log('   Full event data: $eventData');
+          try {
+            final jsonString = line.substring(6); // Remove "data: " prefix
+            await Logger.log('📤 Processing SSE data line:');
+            await Logger.log('   JSON string: $jsonString');
 
-          final event = ApiEvent.fromJson(eventData);
-          await Logger.log('🎯 Created ApiEvent:');
-          await Logger.log('   Author: ${event.author}');
-          await Logger.log('   Has error: ${event.hasError}');
-          await Logger.log('   Has content: ${event.hasContent}');
-          if (event.hasError) {
-            await Logger.log('   Error: ${event.error}');
-          }
+            final eventData = jsonDecode(jsonString);
+            await Logger.log('✅ Successfully parsed JSON:');
+            await Logger.log('   Event data keys: ${eventData.keys.toList()}');
+            await Logger.log('   Full event data: $eventData');
 
-          if (event.hasError) {
-            yield SearchResult(
-              text: 'Agent Error: ${event.error}',
-              author: 'system',
-              timestamp: DateTime.now(),
-            );
-            continue;
-          }
-
-          if (event.hasContent) {
-            hasReceivedResponse = true;
-            final content = event.content!;
-            await Logger.log('📋 Processing event content:');
-            await Logger.log('   Content type: ${content.runtimeType}');
-
-            final textParts = content.getTextParts();
-            final functionResponses = content.getFunctionResponses();
-
-            await Logger.log('📝 Extracted data:');
-            await Logger.log('   Text parts count: ${textParts.length}');
-            for (int i = 0; i < textParts.length; i++) {
-              await Logger.log(
-                  '   Text part [$i]: ${textParts[i].substring(0, textParts[i].length > 200 ? 200 : textParts[i].length)}${textParts[i].length > 200 ? "..." : ""}');
+            final event = ApiEvent.fromJson(eventData);
+            await Logger.log('🎯 Created ApiEvent:');
+            await Logger.log('   Author: ${event.author}');
+            await Logger.log('   Has error: ${event.hasError}');
+            await Logger.log('   Has content: ${event.hasContent}');
+            if (event.hasError) {
+              await Logger.log('   Error: ${event.error}');
             }
 
-            // Debug: Log function responses
-            if (functionResponses.isNotEmpty) {
-              await Logger.log(
-                  '🔧 Found ${functionResponses.length} function responses:');
-              for (int i = 0; i < functionResponses.length; i++) {
-                final fr = functionResponses[i];
-                await Logger.log('   [$i] Name: ${fr['name']}');
+            if (event.hasError) {
+              yield SearchResult(
+                text: 'Agent Error: ${event.error}',
+                author: 'system',
+                timestamp: DateTime.now(),
+              );
+              continue;
+            }
+
+            if (event.hasContent) {
+              hasReceivedResponse = true;
+              final content = event.content!;
+              await Logger.log('📋 Processing event content:');
+              await Logger.log('   Content type: ${content.runtimeType}');
+
+              final textParts = content.getTextParts();
+              final functionResponses = content.getFunctionResponses();
+
+              await Logger.log('📝 Extracted data:');
+              await Logger.log('   Text parts count: ${textParts.length}');
+              for (int i = 0; i < textParts.length; i++) {
                 await Logger.log(
-                    '       Response type: ${fr['response'].runtimeType}');
-                await Logger.log('       Full function response: $fr');
-                if (fr['response'] is Map) {
+                    '   Text part [$i]: ${textParts[i].substring(0, textParts[i].length > 200 ? 200 : textParts[i].length)}${textParts[i].length > 200 ? "..." : ""}');
+              }
+
+              // Debug: Log function responses
+              if (functionResponses.isNotEmpty) {
+                await Logger.log(
+                    '🔧 Found ${functionResponses.length} function responses:');
+                for (int i = 0; i < functionResponses.length; i++) {
+                  final fr = functionResponses[i];
+                  await Logger.log('   [$i] Name: ${fr['name']}');
                   await Logger.log(
-                      '       Response keys: ${(fr['response'] as Map).keys.toList()}');
-                  await Logger.log('       Response data: ${fr['response']}');
+                      '       Response type: ${fr['response'].runtimeType}');
+                  await Logger.log('       Full function response: $fr');
+                  if (fr['response'] is Map) {
+                    await Logger.log(
+                        '       Response keys: ${(fr['response'] as Map).keys.toList()}');
+                    await Logger.log('       Response data: ${fr['response']}');
+                  }
+                }
+              } else {
+                await Logger.log(
+                    '🔧 No function responses found in this event');
+              }
+
+              // Yield text parts as separate results
+              for (String text in textParts) {
+                if (text.trim().isNotEmpty) {
+                  await Logger.log('🚀 Yielding SearchResult:');
+                  await Logger.log(
+                      '   Text: ${text.substring(0, text.length > 200 ? 200 : text.length)}${text.length > 200 ? "..." : ""}');
+                  await Logger.log('   Author: ${event.author ?? 'agent'}');
+                  await Logger.log(
+                      '   Function responses attached: ${functionResponses.length}');
+
+                  yield SearchResult(
+                    text: text,
+                    author: event.author ?? 'agent',
+                    timestamp: DateTime.now(),
+                    functionResponses: functionResponses,
+                  );
                 }
               }
-            } else {
-              await Logger.log('🔧 No function responses found in this event');
-            }
 
-            // Yield text parts as separate results
-            for (String text in textParts) {
-              if (text.trim().isNotEmpty) {
-                await Logger.log('🚀 Yielding SearchResult:');
+              // Handle function responses for rich UI indicators
+              for (var functionResponse in functionResponses) {
+                final functionName = functionResponse['name'];
+                final indicator = _getFunctionIndicator(functionName);
                 await Logger.log(
-                    '   Text: ${text.substring(0, text.length > 200 ? 200 : text.length)}${text.length > 200 ? "..." : ""}');
-                await Logger.log('   Author: ${event.author ?? 'agent'}');
-                await Logger.log(
-                    '   Function responses attached: ${functionResponses.length}');
-
-                yield SearchResult(
-                  text: text,
-                  author: event.author ?? 'agent',
-                  timestamp: DateTime.now(),
-                  functionResponses: functionResponses,
-                );
+                    '🎨 Function indicator for "$functionName": $indicator');
+                if (indicator != null) {
+                  yield SearchResult(
+                    text: indicator,
+                    author: 'system',
+                    timestamp: DateTime.now(),
+                    functionResponses: [functionResponse],
+                  );
+                }
               }
             }
-
-            // Handle function responses for rich UI indicators
-            for (var functionResponse in functionResponses) {
-              final functionName = functionResponse['name'];
-              final indicator = _getFunctionIndicator(functionName);
-              await Logger.log(
-                  '🎨 Function indicator for "$functionName": $indicator');
-              if (indicator != null) {
-                yield SearchResult(
-                  text: indicator,
-                  author: 'system',
-                  timestamp: DateTime.now(),
-                  functionResponses: [functionResponse],
-                );
-              }
-            }
+          } catch (e) {
+            await Logger.log('❌ Error parsing SSE data: $e');
+            await Logger.log('❌ Problematic line: $line');
+            // Don't break the stream, continue processing other lines
           }
-        } catch (e) {
-          await Logger.log('❌ Error parsing SSE data: $e');
-          await Logger.log('❌ Problematic line: $line');
-          // Don't break the stream, continue processing other lines
         }
       }
+    } catch (e) {
+      await Logger.log('❌ Error in SSE stream: $e');
+      yield SearchResult(
+        text: 'Stream error: $e',
+        author: 'system',
+        timestamp: DateTime.now(),
+      );
+    }
+
+    // Log final statistics
+    await Logger.log('📊 SSE Stream Statistics:');
+    await Logger.log('   Total chunks received: $chunkCount');
+    await Logger.log('   Buffer remaining: ${buffer.length} chars');
+    await Logger.log('   Has received response: $hasReceivedResponse');
+    if (lastChunkTime != null) {
+      await Logger.log('   Last chunk time: $lastChunkTime');
     }
 
     // Check if we received any response
     if (!hasReceivedResponse) {
       await Logger.log('❌ No AI response received from stream');
+      yield SearchResult(
+        text: 'No response received from AI Agent. Please try again.',
+        author: 'system',
+        timestamp: DateTime.now(),
+      );
     }
 
     await Logger.log('✅ Finished handling SSE response');
