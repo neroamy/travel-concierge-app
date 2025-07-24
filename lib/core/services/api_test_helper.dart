@@ -10,42 +10,42 @@ class ApiTestHelper {
     // Test main API server
     try {
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/health'),
+        Uri.parse(ApiConfig.getHealthCheckUrl()),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 5));
 
       results['main_api'] = {
         'status': response.statusCode,
         'reachable': response.statusCode == 200,
-        'url': '${ApiConfig.baseUrl}/health',
+        'url': ApiConfig.getHealthCheckUrl(),
       };
     } catch (e) {
       results['main_api'] = {
         'status': 'error',
         'reachable': false,
         'error': e.toString(),
-        'url': '${ApiConfig.baseUrl}/health',
+        'url': ApiConfig.getHealthCheckUrl(),
       };
     }
 
-    // Test chat API server
+    // Test chat API server (same as main API for now)
     try {
       final response = await http.get(
-        Uri.parse('${ApiConfig.chatBaseUrl}/health'),
+        Uri.parse(ApiConfig.getHealthCheckUrl()),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 5));
 
       results['chat_api'] = {
         'status': response.statusCode,
         'reachable': response.statusCode == 200,
-        'url': '${ApiConfig.chatBaseUrl}/health',
+        'url': ApiConfig.getHealthCheckUrl(),
       };
     } catch (e) {
       results['chat_api'] = {
         'status': 'error',
         'reachable': false,
         'error': e.toString(),
-        'url': '${ApiConfig.chatBaseUrl}/health',
+        'url': ApiConfig.getHealthCheckUrl(),
       };
     }
 
@@ -114,21 +114,21 @@ class ApiTestHelper {
     // Test profile endpoint (should return 401 for missing token)
     try {
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/profile'),
+        Uri.parse(ApiConfig.getUserProfileUrl()),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 5));
 
       results['profile_endpoint'] = {
         'status': response.statusCode,
         'available': true, // Any response means endpoint exists
-        'url': '${ApiConfig.baseUrl}/profile',
+        'url': ApiConfig.getUserProfileUrl(),
       };
     } catch (e) {
       results['profile_endpoint'] = {
         'status': 'error',
         'available': false,
         'error': e.toString(),
-        'url': '${ApiConfig.baseUrl}/profile',
+        'url': ApiConfig.getUserProfileUrl(),
       };
     }
 
@@ -145,8 +145,8 @@ class ApiTestHelper {
             Uri.parse('${ApiConfig.baseUrl}/auth/login/'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
-              'username': 'alan_love',
-              'password': 'SecurePassword123!',
+              'username': 'nero',
+              'password': '1234@pass',
             }),
           )
           .timeout(Duration(seconds: 10));
@@ -167,7 +167,7 @@ class ApiTestHelper {
 
         if (token != null) {
           final profileResponse = await http.get(
-            Uri.parse('${ApiConfig.baseUrl}/profile'),
+            Uri.parse(ApiConfig.getUserProfileUrl()),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $token',
@@ -177,7 +177,7 @@ class ApiTestHelper {
           results['sample_profile'] = {
             'status': profileResponse.statusCode,
             'success': profileResponse.statusCode == 200,
-            'url': '${ApiConfig.baseUrl}/profile',
+            'url': ApiConfig.getUserProfileUrl(),
             'response_preview': profileResponse.body.length > 200
                 ? '${profileResponse.body.substring(0, 200)}...'
                 : profileResponse.body,

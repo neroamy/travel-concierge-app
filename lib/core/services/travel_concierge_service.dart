@@ -51,18 +51,27 @@ class TravelConciergeService {
       _userId = 'user_$timestamp';
       _sessionId = 'session_$timestamp';
 
-      final url = ApiConfig.getSessionUrl(_userId!, _sessionId!);
-      final response = await http.post(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        await Logger.log('Session created successfully: $_sessionId');
+      if (ApiConfig.isProduction) {
+        // For Django agent endpoint, we don't need to create session separately
+        // Session will be created when first message is sent
+        await Logger.log('Session initialized for production: $_sessionId');
         return true;
       } else {
-        await Logger.log('Failed to create session: ${response.statusCode}');
-        return false;
+        // For local development: Create session with ADK Agent server
+        final url = ApiConfig.getSessionUrl(_userId!, _sessionId!);
+        final response = await http.post(Uri.parse(url));
+
+        if (response.statusCode == 200) {
+          await Logger.log('Session created with ADK Agent: $_sessionId');
+          return true;
+        } else {
+          await Logger.log(
+              'Failed to create session with ADK Agent: ${response.statusCode}');
+          return false;
+        }
       }
     } catch (e) {
-      await Logger.log('Error creating session: $e');
+      await Logger.log('Error initializing session: $e');
       return false;
     }
   }
@@ -79,6 +88,86 @@ class TravelConciergeService {
       return;
     }
 
+    try {
+      if (ApiConfig.isProduction) {
+        // Production: Use Django API endpoint
+        yield* _searchTravelProduction(query, imagePaths: imagePaths);
+      } else {
+        // Local: Use ADK Agent server with SSE streaming
+        yield* _searchTravelLocal(query, imagePaths: imagePaths);
+      }
+    } catch (e) {
+      yield SearchResult(
+        text: 'Network error: $e',
+        author: 'system',
+        timestamp: DateTime.now(),
+      );
+    }
+  }
+
+  /// Production: Send search query to Django API
+  Stream<SearchResult> _searchTravelProduction(String query,
+      {List<String>? imagePaths}) async* {
+    try {
+      // Create payload for Django agent endpoint
+      final payload = {
+        'message': query,
+        'user_id': _userId!,
+        'session_id': _sessionId!,
+      };
+
+      final url = ApiConfig.getMessageUrl();
+      final request = http.Request('POST', Uri.parse(url));
+      request.headers.addAll(ApiConfig.jsonHeaders);
+      request.body = jsonEncode(payload);
+
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        // Parse Django response
+        final responseData = jsonDecode(responseBody);
+        if (responseData['success'] == true) {
+          final data = responseData['data'];
+          if (data != null && data['response'] != null) {
+            yield SearchResult(
+              text: data['response'],
+              author: 'agent',
+              timestamp: DateTime.now(),
+            );
+          } else {
+            yield SearchResult(
+              text: 'No response from agent',
+              author: 'system',
+              timestamp: DateTime.now(),
+            );
+          }
+        } else {
+          yield SearchResult(
+            text: 'Agent error: ${responseData['error'] ?? 'Unknown error'}',
+            author: 'system',
+            timestamp: DateTime.now(),
+          );
+        }
+      } else {
+        yield SearchResult(
+          text: 'Server error: ${response.statusCode} - $responseBody',
+          author: 'system',
+          timestamp: DateTime.now(),
+        );
+      }
+    } catch (e) {
+      yield SearchResult(
+        text: 'Production API error: $e',
+        author: 'system',
+        timestamp: DateTime.now(),
+      );
+    }
+  }
+
+  /// Local: Send search query to ADK Agent server with SSE streaming
+  Stream<SearchResult> _searchTravelLocal(String query,
+      {List<String>? imagePaths}) async* {
     try {
       final UserMessage userMessage;
       if (imagePaths != null && imagePaths.isNotEmpty) {
@@ -106,14 +195,14 @@ class TravelConciergeService {
         yield* _handleSSEResponse(streamedResponse);
       } else {
         yield SearchResult(
-          text: 'Server error: ${streamedResponse.statusCode}',
+          text: 'ADK Agent server error: ${streamedResponse.statusCode}',
           author: 'system',
           timestamp: DateTime.now(),
         );
       }
     } catch (e) {
       yield SearchResult(
-        text: 'Network error: $e',
+        text: 'Local ADK Agent error: $e',
         author: 'system',
         timestamp: DateTime.now(),
       );
