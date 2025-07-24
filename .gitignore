@@ -78,6 +78,11 @@ lib/generated_plugin_registrant.dart
 # Coverage
 coverage/
 
+# Logs
+logs/
+**/logs/
+*.log
+
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
