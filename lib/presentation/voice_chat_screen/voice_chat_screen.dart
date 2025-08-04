@@ -5,6 +5,7 @@ import 'dart:math' as dart_math;
 
 import '../../core/app_export.dart';
 import 'bloc/voice_chat_bloc.dart';
+import '../ai_chat_screen/ai_chat_screen.dart';
 
 class VoiceChatScreen extends StatefulWidget {
   const VoiceChatScreen({Key? key}) : super(key: key);
@@ -209,6 +210,11 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
 
           // Voice visualizer
           _buildVoiceVisualizer(state),
+
+          SizedBox(height: 32.h),
+
+          // Chat button
+          _buildChatButton(context),
         ],
       ),
     );
@@ -418,6 +424,46 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
       default:
         return Colors.grey[600] ?? Colors.grey;
     }
+  }
+
+  Widget _buildChatButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 56.h,
+      margin: EdgeInsets.symmetric(horizontal: 24.h),
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AIChatScreen(),
+            ),
+          );
+        },
+        icon: Icon(
+          Icons.chat_bubble_outline,
+          color: Colors.white,
+          size: 20.h,
+        ),
+        label: Text(
+          'Chuyển sang Chat với AI',
+          style: TextStyle(
+            fontSize: 16.h,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: appTheme.colorFF0373,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28.h),
+          ),
+          elevation: 4,
+          shadowColor: appTheme.colorFF0373.withOpacity(0.3),
+        ),
+      ),
+    );
   }
 
   void _showErrorSnackBar(String message) {

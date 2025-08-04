@@ -9,6 +9,7 @@ import 'package:record/record.dart'; // Audio recording functionality
 import 'package:audioplayers/audioplayers.dart'; // Audio playback functionality
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
+import 'environment_config.dart';
 
 /// Events emitted by VoiceChatService
 abstract class VoiceChatEvent {
@@ -98,10 +99,8 @@ class VoiceChatService {
   factory VoiceChatService() => _instance;
   VoiceChatService._internal();
 
-  // WebSocket configuration
-  static const String _websocketUrl =
-      'wss://voice-chat-server-277713629269.us-central1.run.app';
-  static const String _subprotocol = 'voice-chat';
+  // WebSocket configuration - Uses environment config for unified voice server
+  // No subprotocol needed for unified server
 
   // Audio configuration - optimized for ADK Live API
   static const int _inputSampleRate = 16000;
@@ -184,14 +183,13 @@ class VoiceChatService {
 
     try {
       _setStatus(VoiceChatStatus.connecting);
-      debugPrint(
-          '🔌 Connecting to voice chat server with auto-session: $_websocketUrl');
+      
+      // Get voice chat URL from environment config
+      final url = EnvironmentConfig.currentVoiceChatUrl;
+      debugPrint('🔌 Connecting to voice chat server with auto-session: $url');
 
-      // Create WebSocket connection
-      _channel = WebSocketChannel.connect(
-        Uri.parse(_websocketUrl),
-        protocols: [_subprotocol],
-      );
+      // Create WebSocket connection - no subprotocol for unified server
+      _channel = WebSocketChannel.connect(Uri.parse(url));
 
       // Listen for messages
       _channel!.stream.listen(
@@ -200,11 +198,11 @@ class VoiceChatService {
         onDone: _handleWebSocketClose,
       );
 
-      // Wait for connection and auto-session to be established
-      await _waitForAutoSession();
+      // Wait for connection to be established
+      await _waitForConnection();
 
       _setStatus(VoiceChatStatus.sessionActive);
-      debugPrint('✅ Connected with auto-session ready');
+      debugPrint('✅ Connected with unified server ready');
       return true;
     } catch (e) {
       debugPrint('❌ Failed to connect with auto-session: $e');
@@ -242,10 +240,10 @@ class VoiceChatService {
     }
   }
 
-  /// Start recording audio (auto-session managed by server)
+  /// Start recording audio (session managed by unified server)
   Future<bool> startRecording() async {
-    if (!_hasAutoSession) {
-      _emitEvent(VoiceChatErrorEvent('No active session'));
+    if (!isConnected) {
+      _emitEvent(VoiceChatErrorEvent('Not connected to server'));
       return false;
     }
 
@@ -271,7 +269,7 @@ class VoiceChatService {
 
       // Listen to audio chunks and send to server
       stream.listen((audioChunk) {
-        if (_isRecording && _sessionId != null && audioChunk.isNotEmpty) {
+        if (_isRecording && isConnected && audioChunk.isNotEmpty) {
           // Filter out very quiet audio chunks to reduce server load
           if (_hasSignificantAudio(audioChunk)) {
             _sendAudioChunkToServer(audioChunk);
@@ -283,7 +281,7 @@ class VoiceChatService {
       _setStatus(VoiceChatStatus.recording);
       _emitEvent(VoiceChatRecordingStartedEvent());
 
-      debugPrint('✅ Real audio recording started with auto-session');
+      debugPrint('✅ Real audio recording started with unified server');
       return true;
     } catch (e) {
       debugPrint('❌ Failed to start recording: $e');
@@ -431,23 +429,14 @@ class VoiceChatService {
     }
   }
 
-  /// Send audio chunk to server
+  /// Send audio chunk to server as binary data (as per design document)
   void _sendAudioChunkToServer(Uint8List audioChunk) {
     try {
-      // Encode audio data to base64
-      final base64AudioData = base64Encode(audioChunk);
+      // Send raw binary audio data as per design document section 4.3
+      // The unified server expects direct binary PCM data
+      _channel!.sink.add(audioChunk);
 
-      // Create message compatible with server
-      final audioMessage = {
-        'mime_type': 'audio/pcm;rate=$_inputSampleRate',
-        'data': base64AudioData,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-      };
-
-      // Send JSON message to server
-      _channel!.sink.add(jsonEncode(audioMessage));
-
-      debugPrint('📤 Sent audio chunk: ${audioChunk.length} bytes');
+      debugPrint('📤 Sent binary audio chunk: ${audioChunk.length} bytes');
     } catch (e) {
       debugPrint('❌ Failed to send audio chunk: $e');
     }
@@ -489,66 +478,71 @@ class VoiceChatService {
     }
   }
 
-  /// Handle JSON messages from server
+  /// Handle JSON messages from unified server
   void _handleJsonMessage(Map<String, dynamic> data) {
     final type = data['type'] as String?;
 
     switch (type) {
-      case 'connection_established':
-        _serverConfig = data['audio_config'];
-        _emitEvent(VoiceChatConnectedEvent(data));
-        break;
-
-      case 'auto_session_started':
-        _sessionId = data['session_id'];
-        _userId = data['user_id'];
+      case 'connected':
+        // Handle unified server connection confirmation
+        final messageData = data['data'] as Map<String, dynamic>?;
+        _sessionId = messageData?['session_id'] as String?;
+        _userId = 'flutter_client';
         _hasAutoSession = true;
-        debugPrint('🎯 Auto-session started: $_sessionId');
-        _emitEvent(VoiceChatSessionStartedEvent(_sessionId!, _userId!));
+        _serverConfig = messageData;
+        
+        _emitEvent(VoiceChatConnectedEvent(data));
+        _emitEvent(VoiceChatSessionStartedEvent(_sessionId ?? 'unified_session', _userId!));
+        debugPrint('🎯 Unified server connected: $_sessionId');
         break;
 
-      case 'session_stopped':
-        _sessionId = null;
-        _userId = null;
-        _hasAutoSession = false;
-        _setStatus(VoiceChatStatus.connected);
-        _emitEvent(VoiceChatSessionStoppedEvent(data['session_id']));
-        break;
-
-      case 'adk_text_response':
-        final text = data['text'] as String?;
-        if (text != null) {
+      case 'transcript':
+        // Handle text transcript from unified server
+        final text = data['data'] as String?;
+        if (text != null && text.trim().isNotEmpty) {
           _emitEvent(VoiceChatTextResponseEvent(text));
+          debugPrint('📝 Received transcript: $text');
         }
         break;
 
-      case 'adk_audio_response':
-        final audioBase64 = data['audio_data_base64'] as String?;
+      case 'audio_chunk':
+        // Handle audio chunk from unified server
+        final audioBase64 = data['data'] as String?;
         if (audioBase64 != null) {
           final audioData = base64Decode(audioBase64);
           _emitEvent(VoiceChatAudioResponseEvent(audioData));
           playAudioResponse(audioData);
+          debugPrint('🔊 Received audio chunk: ${audioData.length} bytes');
         }
         break;
 
-      case 'adk_turn_complete':
+      case 'turn_complete':
+        // Handle turn completion from unified server
         _emitEvent(VoiceChatTurnCompleteEvent());
-        if (_hasAutoSession) {
-          _setStatus(VoiceChatStatus.sessionActive);
-        }
+        _setStatus(VoiceChatStatus.sessionActive);
+        debugPrint('✅ Turn completed');
         break;
 
-      case 'adk_tool_call':
-        final toolName = data['tool_name'] as String?;
-        debugPrint('🔧 Tool call: $toolName');
+      case 'interrupted':
+        // Handle interruption from unified server
+        _emitEvent(VoiceChatInterruptedEvent());
+        debugPrint('🤐 Conversation interrupted');
         break;
 
       case 'error':
-        _emitEvent(VoiceChatErrorEvent(data['message']));
+        // Handle error from unified server
+        final errorData = data['data'] as Map<String, dynamic>?;
+        final errorMessage = errorData?['error_message'] as String? ?? 
+                            data['message'] as String? ?? 
+                            'Unknown error';
+        debugPrint('❌ Server error: $errorMessage');
+        _emitEvent(VoiceChatErrorEvent(errorMessage));
+        _setStatus(VoiceChatStatus.error);
         break;
 
       default:
         debugPrint('⚠️ Unknown message type: $type');
+        debugPrint('📄 Message data: $data');
     }
   }
 
@@ -567,13 +561,18 @@ class VoiceChatService {
     _emitEvent(VoiceChatDisconnectedEvent());
   }
 
-  /// Wait for auto-session to be established
-  Future<void> _waitForAutoSession() async {
+  /// Wait for connection to unified server
+  Future<void> _waitForConnection() async {
     final completer = Completer<void>();
 
     StreamSubscription? subscription;
     subscription = eventStream.listen((event) {
-      if (event is VoiceChatSessionStartedEvent) {
+      if (event is VoiceChatConnectedEvent) {
+        // Unified server establishes connection immediately
+        subscription?.cancel();
+        completer.complete();
+      } else if (event is VoiceChatSessionStartedEvent) {
+        // Session is auto-created by unified server
         subscription?.cancel();
         completer.complete();
       } else if (event is VoiceChatErrorEvent) {
@@ -582,16 +581,17 @@ class VoiceChatService {
       }
     });
 
-    // Timeout after 15 seconds
-    Timer(Duration(seconds: 15), () {
+    // Timeout after 10 seconds (unified server is faster)
+    Timer(Duration(seconds: 10), () {
       if (!completer.isCompleted) {
         subscription?.cancel();
-        completer.completeError('Auto-session timeout');
+        completer.completeError('Connection timeout');
       }
     });
 
     return completer.future;
   }
+
 
   /// Create WAV file from PCM data
   Uint8List _createWavFile(Uint8List pcmData, int sampleRate) {

@@ -13,15 +13,24 @@ class EnvironmentConfig {
 
   // Base URLs for different environments
   static const Map<String, String> baseUrls = {
-    local: 'http://192.168.1.8:8001/api',
+    local: 'http://192.168.100.5:8001/api',
     production: 'https://django-server-277713629269.us-central1.run.app/api',
   };
 
   // Chat/AI Agent Base URLs for different environments
   static const Map<String, String> chatBaseUrls = {
-    local: 'http://192.168.1.8:8002', // ADK Agent server for local development
+    local:
+        'http://192.168.100.5:8002', // ADK Agent server for local development
     production:
         'https://adk-agent-server-277713629269.us-central1.run.app', // ADK Agent server for production
+  };
+
+  // Voice Chat WebSocket URLs for different environments
+  static const Map<String, String> voiceChatUrls = {
+    local:
+        'ws://192.168.100.5:8003/ws/flutter_client', // Voice chat server for local development
+    production:
+        'wss://voice-chat-server-277713629269.us-central1.run.app/ws/flutter_client', // Voice chat server for production
   };
 
   // Get current base URL
@@ -29,6 +38,9 @@ class EnvironmentConfig {
 
   // Get current chat base URL
   static String get currentChatBaseUrl => chatBaseUrls[currentEnvironment]!;
+
+  // Get current voice chat URL
+  static String get currentVoiceChatUrl => voiceChatUrls[currentEnvironment]!;
 
   // Environment-specific settings
   static const Map<String, Map<String, dynamic>> settings = {

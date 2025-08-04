@@ -4,6 +4,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/services/voice_chat_service.dart';
+import '../../../core/services/global_chat_service.dart';
+import '../../../core/models/api_models.dart';
 
 // BLoC Events (simplified for auto-session flow)
 abstract class VoiceChatBlocEvent extends Equatable {
@@ -157,11 +159,13 @@ enum VoiceChatMessageType {
 // Simplified BLoC for auto-session management
 class VoiceChatBloc extends Bloc<VoiceChatBlocEvent, VoiceChatState> {
   final VoiceChatService _voiceChatService;
+  final GlobalChatService _globalChatService;
   StreamSubscription<VoiceChatEvent>? _serviceSubscription;
   Timer? _autoRecordingTimer;
 
-  VoiceChatBloc({VoiceChatService? voiceChatService})
+  VoiceChatBloc({VoiceChatService? voiceChatService, GlobalChatService? globalChatService})
       : _voiceChatService = voiceChatService ?? VoiceChatService(),
+        _globalChatService = globalChatService ?? GlobalChatService(),
         super(const VoiceChatState()) {
     // Register event handlers
     on<InitializeVoiceChat>(_onInitialize);
@@ -432,9 +436,22 @@ class VoiceChatBloc extends Bloc<VoiceChatBlocEvent, VoiceChatState> {
       type: VoiceChatMessageType.text,
     );
 
+    // Add to local voice chat state
     final updatedMessages = List<VoiceChatMessage>.from(state.messages)
       ..add(message);
     emit(state.copyWith(messages: updatedMessages));
+
+    // Also add to global chat service for cross-screen visibility
+    final globalMessage = ChatMessage(
+      id: message.id,
+      text: text,
+      author: 'agent',
+      timestamp: message.timestamp,
+      isFromUser: false,
+    );
+    _globalChatService.addMessageToHistory(globalMessage);
+    
+    debugPrint('💬 Voice chat AI message added to global chat history: $text');
   }
 
   void _addSystemMessage(String text) {
